@@ -1,0 +1,10 @@
+#scriptarea {
+    width: 400px;
+    height: 400px;
+    font-family: 'Courier New', Courier, monospace;
+    border: 3px solid #CCCCCC;
+}
+#logocanvas {
+    border: 1px solid black;
+    background-color: #E8E8E8;
+}
