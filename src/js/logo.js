@@ -27,24 +27,18 @@ class Tokenizer {
     }
 
     canMoveForward() {
-        return this.index < this.lastindex;
+        return this.index < this.script.length;
     }
 
     getCharacter() {
+        console.log(`[${this.index}] ${this.script[this.index]}`);
         return this.script[this.index];
-    }
-
-    getCharacterAndMoveForward() {
-        let c = this.getCharacter();
-        this.moveForward();
-        return c;
     }
 
     initialize(script) {
         this.tokens = [];
         this.index = 0;
         this.script = script;
-        this.lastindex = script.length - 1;
     }
 
     isNumber(c) {
@@ -60,23 +54,18 @@ class Tokenizer {
     }
 
     tokenize(script = "") {
+        if (script.length === 0) {
+            return;
+        }
         this.initialize(script);
         let c = "";
 
         do {
-            c = this.getCharacterAndMoveForward();
-            console.log(c);
-            if (this.isWhiteSpace(c)) {
-                console.log(`yes ${c} is whitespace`);
-               c = this.getCharacterAndMoveForward();
-               console.log("**" + c);
-               while (this.isWhiteSpace(c) && this.canMoveForward()) {
-                   console.log("continue");
-                   c = this.getCharacterAndMoveForward();
-               }
-            }
-           
-        } while (this.canMoveForward())
+            c = this.getCharacter();
+            this.moveForward();
+        } while(this.canMoveForward());
     }
 
 }
+
+module.exports.tokenizer = Tokenizer;
