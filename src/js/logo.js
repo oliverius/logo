@@ -27,7 +27,7 @@ class Tokenizer {
     }
 
     canMoveForward() {
-        return this.index < this.script.length;
+        return this.index < this.script.length - 1;
     }
 
     getCharacter() {
@@ -39,6 +39,10 @@ class Tokenizer {
         this.tokens = [];
         this.index = 0;
         this.script = script;
+    }
+
+    isLastCharacter() {
+        return this.index === this.script.length - 1;
     }
 
     isNumber(c) {
@@ -62,8 +66,9 @@ class Tokenizer {
 
         do {
             c = this.getCharacter();
-            this.moveForward();
-        } while(this.canMoveForward());
+            
+            this.moveForward();            
+        } while(this.canMoveForward() || this.isLastCharacter());
     }
 
 }
