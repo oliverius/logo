@@ -67,8 +67,22 @@ class Tokenizer {
         do {
             c = this.getCharacter();
             
+            if (this.isWhiteSpace(c)) {
+                if (this.canMoveForward()) {
+                    this.moveForward();
+                    c = this.getCharacter();
+                    while(this.isWhiteSpace(c)) {
+                        if (this.canMoveForward()) {
+                            this.moveForward();
+                            c = this.getCharacter();
+                        }
+                    }
+                }
+            }
+
             this.moveForward();            
-        } while(this.canMoveForward() || this.isLastCharacter());
+        } while(this.canMoveForward());
+        console.log("finish tokenizer");
     }
 
 }
