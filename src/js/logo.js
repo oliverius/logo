@@ -19,14 +19,16 @@ const delimiters = {
     CLOSING_BRACKET: "]"
 };
 
-const double_quote = '"';
-
 class Token {
     constructor(startindex = 0, text = "", tokentype = token_types.NONE) {
         this.startindex = startindex;
         this.text = text;
         this.endindex = startindex + text.length - 1;
         this.tokentype = tokentype;
+    }
+    get [Symbol.toStringTag]() {
+        let tokenTypeKey = Object.keys(token_types).find(key => token_types[key] === this.tokentype);
+        return `{${this.startindex}-${this.endindex}} ${tokenTypeKey} "${this.text}"`;
     }
 }
 
@@ -35,7 +37,7 @@ class Tokenizer {
 
     get gettokens() {
         console.log("this is the tokens");
-        return this.tokens;
+        return this.tokens.toString();
     }
 
     getCharacterIndex() {
@@ -97,17 +99,6 @@ class Tokenizer {
                 this.tokens.push(token);
             }
 
-            /* if (this.isDoubleQuote(c)) {
-                let s = "";                
-                c = this.getCharacter();
-                let startindex = this.getCharacterIndex();
-                while(!this.isDoubleQuote(c)) {
-                    s += c;
-                    c = this.getCharacter();
-                }
-                let token = new Token(startindex, s, token_types.EOF);
-            } */
-
             if (this.isNumber(c)) {
                 let number = c;
                 c = this.getCharacter();
@@ -128,6 +119,8 @@ class Tokenizer {
                     word += c;
                     c = this.getCharacter();
                 }
+
+                // without variables, only commands.
                 let token = new Token(startindex, word, token_types.STRING);
                 this.tokens.push(token);
             }
