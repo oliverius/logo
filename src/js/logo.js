@@ -8,31 +8,49 @@ function run(canvas, script) {
 
 const token_types = {
     NONE: 0,
-    COMMAND: 1
+    DELIMITER: 1,
+    NUMBER: 2,
+    STRING: 3,
+    COMMAND: 4
 };
 
+const delimiters = {
+    OPENING_BRACKET: "[",
+    CLOSING_BRACKET: "]"
+};
+
+const double_quote = '"';
+
 class Token {
-    constructor(startindex = 0, text = "") {
+    constructor(startindex = 0, text = "", tokentype = token_types.NONE) {
         this.startindex = startindex;
         this.text = text;
-        this.endindex = startindex + text.length();
+        this.endindex = startindex + text.length - 1;
+        this.tokentype = tokentype;
     }
 }
 
 class Tokenizer {
+    EOF = "\0";
 
     get gettokens() {
         console.log("this is the tokens");
         return this.tokens;
     }
 
-    canMoveForward() {
-        return this.index < this.script.length - 1;
+    getCharacterIndex() {
+        return this.index - 1;
     }
 
     getCharacter() {
-        console.log(`[${this.index}] ${this.script[this.index]}`);
-        return this.script[this.index];
+        console.log(`[${this.index}] "${this.script[this.index]}"`);
+        if (this.index < this.script.length) {
+            let c = this.script[this.index];
+            this.index++;
+            return c;
+        } else {
+            return this.EOF;
+        }
     }
 
     initialize(script) {
@@ -41,47 +59,82 @@ class Tokenizer {
         this.script = script;
     }
 
-    isLastCharacter() {
-        return this.index === this.script.length - 1;
+    isDelimiter(c) {
+        return `${delimiters.OPENING_BRACKET}${delimiters.CLOSING_BRACKET}`.indexOf(c) !== -1;
+    }
+
+    /* isDoubleQuote(c) {
+        return c === double_quote;
+    } */
+
+    isLetter(c) {
+        return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".indexOf(c) !== -1;
     }
 
     isNumber(c) {
-        return "0123456789".indexOf(c) != -1;
+        return "0123456789".indexOf(c) !== -1;
     }
 
     isWhiteSpace(c) {
         return c === " " || c === "\t";
     }
 
-    moveForward() {
-        this.index++;
-    }
-
     tokenize(script = "") {
-        if (script.length === 0) {
-            return;
-        }
         this.initialize(script);
         let c = "";
 
-        do {
-            c = this.getCharacter();
+        while ((c = this.getCharacter()) !== this.EOF) {
             
             if (this.isWhiteSpace(c)) {
-                if (this.canMoveForward()) {
-                    this.moveForward();
+                c = this.getCharacter();
+                while(this.isWhiteSpace(c)) {
                     c = this.getCharacter();
-                    while(this.isWhiteSpace(c)) {
-                        if (this.canMoveForward()) {
-                            this.moveForward();
-                            c = this.getCharacter();
-                        }
-                    }
                 }
             }
 
-            this.moveForward();            
-        } while(this.canMoveForward());
+            if (this.isDelimiter(c)) {
+                let token = new Token(this.getCharacterIndex(), c, token_types.DELIMITER);
+                this.tokens.push(token);
+            }
+
+            /* if (this.isDoubleQuote(c)) {
+                let s = "";                
+                c = this.getCharacter();
+                let startindex = this.getCharacterIndex();
+                while(!this.isDoubleQuote(c)) {
+                    s += c;
+                    c = this.getCharacter();
+                }
+                let token = new Token(startindex, s, token_types.EOF);
+            } */
+
+            if (this.isNumber(c)) {
+                let number = c;
+                c = this.getCharacter();
+                let startindex = this.getCharacterIndex();
+                while(this.isNumber(c)) {
+                    number += c;
+                    c = this.getCharacter();
+                }
+                let token = new Token(startindex, number, token_types.NUMBER);
+                this.tokens.push(token);               
+            }
+
+            if (this.isLetter(c)) {
+                let word = c;
+                c = this.getCharacter();
+                let startindex = this.getCharacterIndex();
+                while(this.isLetter(c)) {
+                    word += c;
+                    c = this.getCharacter();
+                }
+                let token = new Token(startindex, word, token_types.STRING);
+                this.tokens.push(token);
+            }
+
+        }
+
+        
         console.log("finish tokenizer");
     }
 
