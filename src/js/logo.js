@@ -2,7 +2,7 @@ function run(canvas, script) {
     console.log(canvas, script);
     let tokenizer = new Tokenizer();
     tokenizer.tokenize(script);
-    console.log(tokenizer.gettokens);
+    tokenizer.gettokens.forEach(x => console.log(x.toString()));
 
 }
 
@@ -10,8 +10,7 @@ const token_types = {
     NONE: 0,
     DELIMITER: 1,
     NUMBER: 2,
-    STRING: 3,
-    COMMAND: 4
+    COMMAND: 3
 };
 
 const delimiters = {
@@ -28,7 +27,7 @@ class Token {
     }
     get [Symbol.toStringTag]() {
         let tokenTypeKey = Object.keys(token_types).find(key => token_types[key] === this.tokentype);
-        return `{${this.startindex}-${this.endindex}} ${tokenTypeKey} "${this.text}"`;
+        return `[${this.startindex.toString().padStart(3, '0')}-${this.endindex.toString().padStart(3, '3')}] ${tokenTypeKey.padEnd(12)} "${this.text}"`;
     }
 }
 
@@ -37,7 +36,7 @@ class Tokenizer {
 
     get gettokens() {
         console.log("this is the tokens");
-        return this.tokens.toString();
+        return this.tokens;
     }
 
     getCharacterIndex() {
@@ -119,9 +118,9 @@ class Tokenizer {
                     word += c;
                     c = this.getCharacter();
                 }
-
                 // without variables, only commands.
-                let token = new Token(startindex, word, token_types.STRING);
+                // TODO do a lookup in the commands table to see if it can find him.
+                let token = new Token(startindex, word, token_types.COMMAND);
                 this.tokens.push(token);
             }
 
