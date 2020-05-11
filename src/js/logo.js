@@ -82,10 +82,8 @@ class Tokenizer {
 
     tokenize(script = "") {
         this.initialize(script);
-        let c = "";
-
-        while ((c = this.getCharacter()) !== this.EOF) {
-            
+        let c = this.getCharacter();
+        do {
             if (this.isWhiteSpace(c)) {
                 c = this.getCharacter();
                 while(this.isWhiteSpace(c)) {
@@ -96,6 +94,7 @@ class Tokenizer {
             if (this.isDelimiter(c)) {
                 let token = new Token(this.getCharacterIndex(), c, token_types.DELIMITER);
                 this.tokens.push(token);
+                c = this.getCharacter();
             }
 
             if (this.isNumber(c)) {
@@ -107,7 +106,8 @@ class Tokenizer {
                     c = this.getCharacter();
                 }
                 let token = new Token(startindex, number, token_types.NUMBER);
-                this.tokens.push(token);               
+                this.tokens.push(token);
+                console.log("After pushing number, the character is" + c);        
             }
 
             if (this.isLetter(c)) {
@@ -124,8 +124,9 @@ class Tokenizer {
                 this.tokens.push(token);
             }
 
-        }
 
+
+        } while(c !== this.EOF)
         
         console.log("finish tokenizer");
     }
