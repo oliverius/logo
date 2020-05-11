@@ -3,7 +3,6 @@ function run(canvas, script) {
     let tokenizer = new Tokenizer();
     tokenizer.tokenize(script);
     tokenizer.gettokens.forEach(x => console.log(x.toString()));
-
 }
 
 const token_types = {
@@ -18,16 +17,33 @@ const delimiters = {
     CLOSING_BRACKET: "]"
 };
 
+const commands = {
+    NONE: 0,
+    FORWARD: 1,
+    BACK: 2,
+    LEFT: 3,
+    RIGHT: 4,
+    REPEAT: 5
+};
+
 class Token {
-    constructor(startindex = 0, text = "", tokentype = token_types.NONE) {
+    constructor(startindex = 0, text = "", tokentype = token_types.NONE, command = commands.NONE) {
         this.startindex = startindex;
         this.text = text;
         this.endindex = startindex + text.length - 1;
         this.tokentype = tokentype;
+        this.command = command;
     }
     get [Symbol.toStringTag]() {
         let tokenTypeKey = Object.keys(token_types).find(key => token_types[key] === this.tokentype);
-        return `[${this.startindex.toString().padStart(3, '0')}-${this.endindex.toString().padStart(3, '3')}] ${tokenTypeKey.padEnd(12)} "${this.text}"`;
+        let commandKey = Object.keys(commands).find(key => commands[key] === this.command);
+        
+        let paddedStartIndex = this.startindex.toString().padStart(3, '0');
+        let paddedEndIndex = this.endindex.toString().padStart(3, '0');
+        let paddedTokenTypeKey = tokenTypeKey.padEnd(12);
+        let paddedCommandKey = commandKey.padStart(8, ' '); 
+        
+        return `[${paddedStartIndex}-${paddedEndIndex}] ${paddedTokenTypeKey}\t${paddedCommandKey}\t"${this.text}"`;
     }
 }
 
@@ -35,8 +51,11 @@ class Tokenizer {
     EOF = "\0";
 
     get gettokens() {
-        console.log("this is the tokens");
         return this.tokens;
+    }
+
+    isEndOfFile(c) {
+        return c === this.EOF;
     }
 
     getCharacterIndex() {
@@ -44,13 +63,29 @@ class Tokenizer {
     }
 
     getCharacter() {
-        console.log(`[${this.index}] "${this.script[this.index]}"`);
         if (this.index < this.script.length) {
             let c = this.script[this.index];
             this.index++;
             return c;
         } else {
             return this.EOF;
+        }
+    }
+
+    getCommand(commandString="") {
+        switch(commandString.toLowerCase()) {
+            case "av":
+                return commands.FORWARD;
+            case "bk":
+                return commands.BACK;
+            case "gd":
+                return commands.RIGHT;
+            case "gi":
+                return commands.LEFT;
+            case "repite":
+                return commands.REPEAT;
+            default:
+                return commands.NONE; // This will produce an error.
         }
     }
 
@@ -63,10 +98,6 @@ class Tokenizer {
     isDelimiter(c) {
         return `${delimiters.OPENING_BRACKET}${delimiters.CLOSING_BRACKET}`.indexOf(c) !== -1;
     }
-
-    /* isDoubleQuote(c) {
-        return c === double_quote;
-    } */
 
     isLetter(c) {
         return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".indexOf(c) !== -1;
@@ -107,7 +138,6 @@ class Tokenizer {
                 }
                 let token = new Token(startindex, number, token_types.NUMBER);
                 this.tokens.push(token);
-                console.log("After pushing number, the character is" + c);        
             }
 
             if (this.isLetter(c)) {
@@ -119,16 +149,11 @@ class Tokenizer {
                     c = this.getCharacter();
                 }
                 // without variables, only commands.
-                // TODO do a lookup in the commands table to see if it can find him.
-                let token = new Token(startindex, word, token_types.COMMAND);
+                let command = this.getCommand(word);
+                let token = new Token(startindex, word, token_types.COMMAND, command);
                 this.tokens.push(token);
             }
-
-
-
-        } while(c !== this.EOF)
-        
-        console.log("finish tokenizer");
+        } while(!this.isEndOfFile(c))
     }
 
 }
