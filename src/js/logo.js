@@ -1,15 +1,15 @@
 function run(canvas, script) {
     console.log(canvas, script);
-    let tokenizer = new Tokenizer();
-    tokenizer.tokenize(script);
-    tokenizer.gettokens.forEach(x => console.log(x.toString()));
+    let parser = new Parser(canvas);
+    parser.parse(script);
 }
 
 const token_types = {
     NONE: 0,
     DELIMITER: 1,
     NUMBER: 2,
-    COMMAND: 3
+    COMMAND: 3,
+    END_OF_SCRIPT : 4
 };
 
 const delimiters = {
@@ -25,6 +25,51 @@ const commands = {
     RIGHT: 4,
     REPEAT: 5
 };
+
+class Parser {
+    constructor(canvasObject) {
+        this.tokenizer = new Tokenizer();
+        this.turtle = new Turtle(canvasObject);
+        this.turtle.showturtle();
+    }
+    get_token() {
+        return this.tokens[this.index++];
+    }
+    initialize() {
+        this.index = 0;
+        this.tokens = [];
+    }
+    parse(script = "") {
+        this.initialize();
+        this.tokenizer.tokenize(script);
+        this.tokens = this.tokenizer.gettokens;
+        let token;      
+        do {
+            token = this.get_token();
+            console.log(token.toString());
+            if(token.tokentype === token_types.COMMAND) {
+                switch(token.command) {
+                    case commands.FORWARD:
+                        let argumentToken = this.get_token();
+                        if (argumentToken.tokentype === token_types.NUMBER) {
+                            let n = parseInt(argumentToken.text);
+                            this.turtle.execute_forward(n);
+                        }
+                        break;
+                    case commands.BACK:
+                        // TODO using forward code
+                        break;
+                    case commands.LEFT:
+                        break;
+                    case commands.RIGHT:
+                        break;
+                    case commands.REPEAT:
+                        break;
+                }
+            }
+        } while(token.tokentype !== token_types.END_OF_SCRIPT)
+    }
+}
 
 class Token {
     constructor(startindex = 0, text = "", tokentype = token_types.NONE, command = commands.NONE) {
@@ -52,6 +97,11 @@ class Tokenizer {
 
     get gettokens() {
         return this.tokens;
+    }
+
+    addEndOfScriptToken() {
+        let token = new Token(this.getCharacterIndex(), this.EOF, token_types.END_OF_SCRIPT);
+        this.tokens.push(token);
     }
 
     isEndOfFile(c) {
@@ -154,8 +204,55 @@ class Tokenizer {
                 this.tokens.push(token);
             }
         } while(!this.isEndOfFile(c))
+
+        this.addEndOfScriptToken();
+    }
+}
+
+class Turtle {
+    constructor(canvasObject) {
+        this.canvasObject = canvasObject;
+        this.ctx = canvasObject.getContext('2d');        
+        this.x = parseInt(this.canvasObject.width / 2);
+        this.y = parseInt(this.canvasObject.height / 2);
+        this.angleInDegrees = 0;
     }
 
+    execute_backward(n = 0) {
+        this.execute_forward(-1 * n);
+    }
+
+    execute_forward(n = 0) {
+        let newY = this.y - n;
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.x, this.y);
+        this.ctx.lineTo(this.x, newY);
+        this.ctx.stroke();
+
+        this.updateTurtlePosition(this.x, newY);
+    }
+
+    execute_left(deg = 0) {
+
+    }
+
+    showturtle() {
+        let r = 10;        
+        this.ctx.beginPath();
+        this.ctx.arc(this.x, this.y, r, 0, 2 * Math.PI);
+        this.ctx.stroke();
+    }
+
+    updateTurtleOrientation(deg = 0) {
+        // todo rotate the turtle
+        this.angleInDegrees += deg;
+    }
+
+    updateTurtlePosition(x = 0, y = 0) {
+        this.x = x;
+        this.y = y;
+    }
 }
 
 module.exports.tokenizer = Tokenizer;
