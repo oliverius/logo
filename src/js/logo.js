@@ -229,11 +229,23 @@ class Turtle {
     toRadians = (deg=0) => { return Number(deg * this.DEGREE_TO_RADIAN) };
 
     constructor(canvasObject) {
-        this.canvasObject = canvasObject;
-        this.ctx = canvasObject.getContext('2d');        
-        this.x = parseInt(this.canvasObject.width / 2);
-        this.y = parseInt(this.canvasObject.height / 2);
+        this.ctx = canvasObject.getContext('2d');
+        this.width = canvasObject.width;
+        this.height = canvasObject.height;
+        this.x = parseInt(this.width / 2);
+        this.y = parseInt(this.height / 2);
         this.angleInDegrees = 0;
+
+        let virtualDrawingCanvas = document.createElement('canvas');
+        this.drawingCtx = virtualDrawingCanvas.getContext('2d');
+
+        this.renderLoop();
+    }
+
+    renderLoop() {
+        setInterval(() => {
+            console.log("*");
+        }, 1000);
     }
 
     execute_backward(n = 0) {
@@ -244,7 +256,7 @@ class Turtle {
         let angleFromYaxis = 90 - this.angleInDegrees;
         let angleFromYaxisInRadians = this.toRadians(angleFromYaxis);
 
-        // Rounding issues if parseInt doesn't include x or y
+        // Rounding issues if parseInt doesn't include this.x or this.y
         let newX = parseInt(this.x + n * Math.cos(angleFromYaxisInRadians));
         let newY = parseInt(this.y - n * Math.sin(angleFromYaxisInRadians));
 
@@ -264,7 +276,6 @@ class Turtle {
     execute_right(deg = 0) {
         let t = this.angleInDegrees;
         this.angleInDegrees += deg;
-        console.log(`GD ${t} -> ${this.angleInDegrees}`)
     }
 
     showturtle() {
