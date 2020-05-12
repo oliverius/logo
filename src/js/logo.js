@@ -236,8 +236,17 @@ class Turtle {
         this.y = parseInt(this.height / 2);
         this.angleInDegrees = 0;
 
-        let virtualDrawingCanvas = document.createElement('canvas');
-        this.drawingCtx = virtualDrawingCanvas.getContext('2d');
+        this.virtualTurtleCanvas = document.createElement('canvas');
+        this.virtualTurtleCanvas.width = this.width;
+        this.virtualTurtleCanvas.height = this.height;
+        this.turtleCtx = this.virtualTurtleCanvas.getContext('2d');
+
+        this.virtualDrawingCanvas = document.createElement('canvas');
+        this.virtualDrawingCanvas.width = this.width;
+        this.virtualDrawingCanvas.height = this.height;
+        this.drawingCtx = this.virtualDrawingCanvas.getContext('2d');
+
+        this.drawingQueue = [];
 
         this.renderLoop();
     }
@@ -245,7 +254,13 @@ class Turtle {
     renderLoop() {
         setInterval(() => {
             console.log("*");
-        }, 1000);
+            if (this.drawingQueue.length > 0) {
+                this.ctx.clearRect(0, 0, this.width, this.height);
+                this.ctx.drawImage(this.virtualDrawingCanvas, 0, 0, this.width, this.height);
+                this.ctx.drawImage(this.virtualTurtleCanvas, 0, 0, this.width, this.height);
+                this.drawingQueue.shift();
+            }
+        }, 3000);
     }
 
     execute_backward(n = 0) {
@@ -260,13 +275,15 @@ class Turtle {
         let newX = parseInt(this.x + n * Math.cos(angleFromYaxisInRadians));
         let newY = parseInt(this.y - n * Math.sin(angleFromYaxisInRadians));
 
-        this.ctx.lineWidth = 2;
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.x, this.y);
-        this.ctx.lineTo(newX, newY);
-        this.ctx.stroke();
+        this.drawingCtx.lineWidth = 2;
+        this.drawingCtx.beginPath();
+        this.drawingCtx.moveTo(this.x, this.y);
+        this.drawingCtx.lineTo(newX, newY);
+        this.drawingCtx.stroke();
 
         this.updateTurtlePosition(newX, newY);
+
+        this.drawingQueue.push('*');
     }
 
     execute_left(deg = 0) {
@@ -280,9 +297,9 @@ class Turtle {
 
     showturtle() {
         let r = 10;        
-        this.ctx.beginPath();
-        this.ctx.arc(this.x, this.y, r, 0, 2 * Math.PI);
-        this.ctx.stroke();
+        this.turtleCtx.beginPath();
+        this.turtleCtx.arc(this.x, this.y, r, 0, 2 * Math.PI);
+        this.turtleCtx.stroke();
     }
 
     updateTurtleOrientation(deg = 0) {
