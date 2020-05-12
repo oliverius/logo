@@ -226,6 +226,8 @@ class Tokenizer {
 
 class Turtle {
     DEGREE_TO_RADIAN = Math.PI/180;
+    toRadians = (deg=0) => { return Number(deg * this.DEGREE_TO_RADIAN) };
+
     constructor(canvasObject) {
         this.canvasObject = canvasObject;
         this.ctx = canvasObject.getContext('2d');        
@@ -239,8 +241,12 @@ class Turtle {
     }
 
     execute_forward(n = 0) {
-        let newX = parseInt(this.x - n * Math.sin(this.DEGREE_TO_RADIAN * this.angleInDegrees));
-        let newY = parseInt(this.y - n * Math.cos(this.DEGREE_TO_RADIAN * this.angleInDegrees));
+        let angleFromYaxis = 90 - this.angleInDegrees;
+        let angleFromYaxisInRadians = this.toRadians(angleFromYaxis);
+
+        // Rounding issues if parseInt doesn't include x or y
+        let newX = parseInt(this.x + n * Math.cos(angleFromYaxisInRadians));
+        let newY = parseInt(this.y - n * Math.sin(angleFromYaxisInRadians));
 
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
@@ -256,7 +262,9 @@ class Turtle {
     }
 
     execute_right(deg = 0) {
+        let t = this.angleInDegrees;
         this.angleInDegrees += deg;
+        console.log(`GD ${t} -> ${this.angleInDegrees}`)
     }
 
     showturtle() {
@@ -274,6 +282,7 @@ class Turtle {
     updateTurtlePosition(x = 0, y = 0) {
         this.x = x;
         this.y = y;
+        this.showturtle();
     }
 }
 
