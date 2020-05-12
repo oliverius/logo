@@ -43,25 +43,40 @@ class Parser {
         this.initialize();
         this.tokenizer.tokenize(script);
         this.tokens = this.tokenizer.gettokens;
-        let token;      
+        let token;
+        let argumentToken;
         do {
             token = this.get_token();
             console.log(token.toString());
             if(token.tokentype === token_types.COMMAND) {
                 switch(token.command) {
                     case commands.FORWARD:
-                        let argumentToken = this.get_token();
+                        argumentToken = this.get_token();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
                             this.turtle.execute_forward(n);
                         }
                         break;
                     case commands.BACK:
-                        // TODO using forward code
+                        argumentToken = this.get_token();
+                        if (argumentToken.tokentype === token_types.NUMBER) {
+                            let n = parseInt(argumentToken.text);
+                            this.turtle.execute_backward(n);
+                        }
                         break;
                     case commands.LEFT:
+                        argumentToken = this.get_token();
+                        if (argumentToken.tokentype === token_types.NUMBER) {
+                            let n = parseInt(argumentToken.text);
+                            this.turtle.execute_left(n);
+                        }
                         break;
                     case commands.RIGHT:
+                        argumentToken = this.get_token();
+                        if (argumentToken.tokentype === token_types.NUMBER) {
+                            let n = parseInt(argumentToken.text);
+                            this.turtle.execute_right(n);
+                        }
                         break;
                     case commands.REPEAT:
                         break;
@@ -126,7 +141,7 @@ class Tokenizer {
         switch(commandString.toLowerCase()) {
             case "av":
                 return commands.FORWARD;
-            case "bk":
+            case "re":
                 return commands.BACK;
             case "gd":
                 return commands.RIGHT;
@@ -210,6 +225,7 @@ class Tokenizer {
 }
 
 class Turtle {
+    DEGREE_TO_RADIAN = Math.PI/180;
     constructor(canvasObject) {
         this.canvasObject = canvasObject;
         this.ctx = canvasObject.getContext('2d');        
@@ -219,22 +235,28 @@ class Turtle {
     }
 
     execute_backward(n = 0) {
-        this.execute_forward(-1 * n);
+        this.execute_forward(-n);
     }
 
     execute_forward(n = 0) {
-        let newY = this.y - n;
+        let newX = parseInt(this.x - n * Math.sin(this.DEGREE_TO_RADIAN * this.angleInDegrees));
+        let newY = parseInt(this.y - n * Math.cos(this.DEGREE_TO_RADIAN * this.angleInDegrees));
 
+        this.ctx.lineWidth = 2;
         this.ctx.beginPath();
         this.ctx.moveTo(this.x, this.y);
-        this.ctx.lineTo(this.x, newY);
+        this.ctx.lineTo(newX, newY);
         this.ctx.stroke();
 
-        this.updateTurtlePosition(this.x, newY);
+        this.updateTurtlePosition(newX, newY);
     }
 
     execute_left(deg = 0) {
+        this.angleInDegrees -= deg;
+    }
 
+    execute_right(deg = 0) {
+        this.angleInDegrees += deg;
     }
 
     showturtle() {
