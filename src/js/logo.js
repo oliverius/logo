@@ -32,12 +32,30 @@ class Parser {
         this.turtle = new Turtle(canvasObject);
         this.turtle.showturtle();
     }
+    addToExecutionQueue(methodname = "", arg = 0) {
+        this.executionqueue.push({
+            methodname: methodname,
+            arg: arg
+        })
+    }
+    executionLoop() {
+        setInterval(() => {
+            console.log("*");
+            if (this.executionqueue.length > 0) {
+                let obj = this.executionqueue.shift();
+                console.log(obj.methodname);
+                this.turtle[obj.methodname](obj.arg);
+            }
+        }, 500);
+    }
     get_token() {
         return this.tokens[this.index++];
     }
     initialize() {
         this.index = 0;
         this.tokens = [];
+        this.executionqueue = [];
+        this.executionLoop();
     }
     parse(script = "") {
         this.initialize();
@@ -54,28 +72,32 @@ class Parser {
                         argumentToken = this.get_token();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            this.turtle.execute_forward(n);
+                            //this.turtle.execute_forward(n);                            
+                            this.addToExecutionQueue("execute_forward", n);
                         }
                         break;
                     case commands.BACK:
                         argumentToken = this.get_token();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            this.turtle.execute_backward(n);
+                            this.addToExecutionQueue("execute_backward", n);
+                            //this.turtle.execute_backward(n);
                         }
                         break;
                     case commands.LEFT:
                         argumentToken = this.get_token();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            this.turtle.execute_left(n);
+                            this.addToExecutionQueue("execute_left", n);
+                            //this.turtle.execute_left(n);
                         }
                         break;
                     case commands.RIGHT:
                         argumentToken = this.get_token();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            this.turtle.execute_right(n);
+                            this.addToExecutionQueue("execute_right", n);
+                            //this.turtle.execute_right(n);
                         }
                         break;
                     case commands.REPEAT:
@@ -245,31 +267,12 @@ class Turtle {
         this.virtualDrawingCanvas.width = this.width;
         this.virtualDrawingCanvas.height = this.height;
         this.drawingCtx = this.virtualDrawingCanvas.getContext('2d');
-
-        this.drawingQueue = [];
-
-        this.renderLoop();
     }
 
-    addToDrawingQueue(methodname = "", arg = 0) {
-        this.drawingQueue.push({
-            methodname: methodname,
-            arg: arg
-        });
-    }
-
-    renderLoop() {
-        setInterval(() => {
-            console.log("*");
-            if (this.drawingQueue.length > 0) {
-                let obj = this.drawingQueue.shift();
-                this[obj.methodname](obj.arg);
-
-                this.ctx.clearRect(0, 0, this.width, this.height);
-                this.ctx.drawImage(this.virtualDrawingCanvas, 0, 0, this.width, this.height);
-                this.ctx.drawImage(this.virtualTurtleCanvas, 0, 0, this.width, this.height);
-            }
-        }, 500);
+    draw() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        this.ctx.drawImage(this.virtualDrawingCanvas, 0, 0, this.width, this.height);
+        this.ctx.drawImage(this.virtualTurtleCanvas, 0, 0, this.width, this.height);
     }
 
     execute_backward(n = 0) {
@@ -277,18 +280,6 @@ class Turtle {
     }
 
     execute_forward(n = 0) {
-        this.addToDrawingQueue("queue_execute_forward", n);
-    }
-
-    execute_left(deg = 0) {
-        this.execute_right(-deg);
-    }
-
-    execute_right(deg = 0) {
-        this.addToDrawingQueue("queue_execute_right", deg);
-    }
-
-    queue_execute_forward(n = 0) {
         let angleFromYaxis = 90 - this.angleInDegrees;
         let angleFromYaxisInRadians = this.toRadians(angleFromYaxis);
 
@@ -303,10 +294,16 @@ class Turtle {
         this.drawingCtx.stroke();
 
         this.updateTurtlePosition(newX, newY);
+        this.draw();
     }
 
-    queue_execute_right(deg = 0) {
+    execute_left(deg = 0) {
+        this.execute_right(-deg);
+    }
+
+    execute_right(deg = 0) {
         this.angleInDegrees += deg;
+        this.draw();
     }
 
     showturtle() {
