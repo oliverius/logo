@@ -255,10 +255,11 @@ class Turtle {
         setInterval(() => {
             console.log("*");
             if (this.drawingQueue.length > 0) {
+                //let fn = this.drawingQueue.shift();
+                this["really_execute_forward"](200); // calling a method by name as string maybe works!
                 this.ctx.clearRect(0, 0, this.width, this.height);
                 this.ctx.drawImage(this.virtualDrawingCanvas, 0, 0, this.width, this.height);
                 this.ctx.drawImage(this.virtualTurtleCanvas, 0, 0, this.width, this.height);
-                this.drawingQueue.shift();
             }
         }, 3000);
     }
@@ -267,7 +268,11 @@ class Turtle {
         this.execute_forward(-n);
     }
 
-    execute_forward(n = 0) {
+    execute_forward(n = 0) {        
+        this.drawingQueue.push(this.really_execute_forward(n));
+    }
+
+    really_execute_forward(n=0) {
         let angleFromYaxis = 90 - this.angleInDegrees;
         let angleFromYaxisInRadians = this.toRadians(angleFromYaxis);
 
@@ -282,8 +287,6 @@ class Turtle {
         this.drawingCtx.stroke();
 
         this.updateTurtlePosition(newX, newY);
-
-        this.drawingQueue.push('*');
     }
 
     execute_left(deg = 0) {
