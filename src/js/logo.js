@@ -32,8 +32,9 @@ class Parser {
         this.turtle = new Turtle(canvasObject);
         this.turtle.showturtle();
     }
-    addToExecutionQueue(methodname = "", arg = 0) {
+    addToExecutionQueue(objectname = "", methodname = "", arg = 0) {
         this.executionqueue.push({
+            objectname: objectname,
             methodname: methodname,
             arg: arg
         })
@@ -42,9 +43,8 @@ class Parser {
         setInterval(() => {
             console.log("*");
             if (this.executionqueue.length > 0) {
-                let obj = this.executionqueue.shift();
-                console.log(obj.methodname);
-                this.turtle[obj.methodname](obj.arg);
+                let obj = this.executionqueue.shift();                
+                this[obj.objectname][obj.methodname](obj.arg);
             }
         }, 500);
     }
@@ -72,32 +72,28 @@ class Parser {
                         argumentToken = this.get_token();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            //this.turtle.execute_forward(n);                            
-                            this.addToExecutionQueue("execute_forward", n);
+                            this.addToExecutionQueue("turtle", "execute_forward", n);
                         }
                         break;
                     case commands.BACK:
                         argumentToken = this.get_token();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            this.addToExecutionQueue("execute_backward", n);
-                            //this.turtle.execute_backward(n);
+                            this.addToExecutionQueue("turtle", "execute_backward", n);
                         }
                         break;
                     case commands.LEFT:
                         argumentToken = this.get_token();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            this.addToExecutionQueue("execute_left", n);
-                            //this.turtle.execute_left(n);
+                            this.addToExecutionQueue("turtle", "execute_left", n);
                         }
                         break;
                     case commands.RIGHT:
                         argumentToken = this.get_token();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            this.addToExecutionQueue("execute_right", n);
-                            //this.turtle.execute_right(n);
+                            this.addToExecutionQueue("turtle", "execute_right", n);
                         }
                         break;
                     case commands.REPEAT:
