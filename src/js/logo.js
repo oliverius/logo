@@ -251,28 +251,44 @@ class Turtle {
         this.renderLoop();
     }
 
+    addToDrawingQueue(methodname = "", arg = 0) {
+        this.drawingQueue.push({
+            methodname: methodname,
+            arg: arg
+        });
+    }
+
     renderLoop() {
         setInterval(() => {
             console.log("*");
             if (this.drawingQueue.length > 0) {
-                //let fn = this.drawingQueue.shift();
-                this["really_execute_forward"](200); // calling a method by name as string maybe works!
+                let obj = this.drawingQueue.shift();
+                this[obj.methodname](obj.arg);
+
                 this.ctx.clearRect(0, 0, this.width, this.height);
                 this.ctx.drawImage(this.virtualDrawingCanvas, 0, 0, this.width, this.height);
                 this.ctx.drawImage(this.virtualTurtleCanvas, 0, 0, this.width, this.height);
             }
-        }, 3000);
+        }, 500);
     }
 
     execute_backward(n = 0) {
         this.execute_forward(-n);
     }
 
-    execute_forward(n = 0) {        
-        this.drawingQueue.push(this.really_execute_forward(n));
+    execute_forward(n = 0) {
+        this.addToDrawingQueue("queue_execute_forward", n);
     }
 
-    really_execute_forward(n=0) {
+    execute_left(deg = 0) {
+        this.execute_right(-deg);
+    }
+
+    execute_right(deg = 0) {
+        this.addToDrawingQueue("queue_execute_right", deg);
+    }
+
+    queue_execute_forward(n = 0) {
         let angleFromYaxis = 90 - this.angleInDegrees;
         let angleFromYaxisInRadians = this.toRadians(angleFromYaxis);
 
@@ -289,12 +305,7 @@ class Turtle {
         this.updateTurtlePosition(newX, newY);
     }
 
-    execute_left(deg = 0) {
-        this.angleInDegrees -= deg;
-    }
-
-    execute_right(deg = 0) {
-        let t = this.angleInDegrees;
+    queue_execute_right(deg = 0) {
         this.angleInDegrees += deg;
     }
 
