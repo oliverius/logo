@@ -46,7 +46,7 @@ class Parser {
                 let obj = this.executionqueue.shift();                
                 this[obj.objectname][obj.methodname](obj.arg);
             }
-        }, 500);
+        }, 1000);
     }
     get_token() {
         return this.tokens[this.index++];
@@ -262,13 +262,10 @@ class Turtle {
         this.virtualDrawingCanvas.width = this.width;
         this.virtualDrawingCanvas.height = this.height;
         this.drawingCtx = this.virtualDrawingCanvas.getContext('2d');
-    }
 
-    draw() {
-        this.ctx.clearRect(0, 0, this.width, this.height);
-        this.ctx.drawImage(this.virtualDrawingCanvas, 0, 0, this.width, this.height);
-        this.ctx.drawImage(this.virtualTurtleCanvas, 0, 0, this.width, this.height);
-    }
+        this.drawTurtle();
+        this.renderFrame();
+    }    
 
     execute_backward(n = 0) {
         this.execute_forward(-n);
@@ -288,9 +285,11 @@ class Turtle {
         this.drawingCtx.lineTo(newX, newY);
         this.drawingCtx.stroke();
 
-        this.updateTurtlePosition(newX, newY);        
+        this.updateTurtlePosition(newX, newY);
+        
+        this.deleteTurtle();
         this.drawTurtle();
-        this.draw();
+        this.renderFrame();
     }
 
     execute_left(deg = 0) {
@@ -299,16 +298,22 @@ class Turtle {
 
     execute_right(deg = 0) {
         this.updateTurtleOrientation(deg);
+
+        this.deleteTurtle();
         this.drawTurtle();
-        this.draw();
+        this.renderFrame();
+    }
+
+    deleteTurtle() {
+        this.turtleCtx.clearRect(0, 0, this.width, this.height);
     }
 
     drawTurtle() {
-        let vertexAngleInDeg = 20;
+        let vertexAngleInDeg = 40;
         let alpha = vertexAngleInDeg / 2;
         let angle = this.toRadians(270 + alpha);
         
-        let r = 50;
+        let r = 30;
         let halfbase = r * Math.sin(this.toRadians(alpha));
         let height = r * Math.cos(this.toRadians(alpha));
         
@@ -331,8 +336,12 @@ class Turtle {
         this.turtleCtx.lineTo(x3, y3);
         this.turtleCtx.lineTo(x1, y1);
         this.turtleCtx.stroke();
+    }
 
-        console.log(`When gd ${this.x}, ${this.y} ${this.angleInDegrees}`);
+    renderFrame() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        this.ctx.drawImage(this.virtualDrawingCanvas, 0, 0, this.width, this.height);
+        this.ctx.drawImage(this.virtualTurtleCanvas, 0, 0, this.width, this.height);
     }
 
     updateTurtleOrientation(deg = 0) {
