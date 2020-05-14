@@ -303,9 +303,26 @@ class Turtle {
     }
 
     showturtle() {
-        let r = 10;        
+        let vertexAngleInDeg = 20;
+        let alpha = vertexAngleInDeg / 2;
+        let angle = this.toRadians(270 + alpha);
+        
+        let r = 50;
+        let halfbase = r * Math.sin(this.toRadians(alpha));
+        let height = r * Math.cos(this.toRadians(alpha));
+        
+        let x1 = this.x;
+        let y1 = this.y - height/2;
+        let x2 = parseInt(x1 + r * Math.cos(angle));
+        let y2 = parseInt(y1 - r * Math.sin(angle));
+        let x3 = parseInt(x2 - 2 * halfbase);
+        let y3 = y2;
+
         this.turtleCtx.beginPath();
-        this.turtleCtx.arc(this.x, this.y, r, 0, 2 * Math.PI);
+        this.turtleCtx.moveTo(x1, y1);
+        this.turtleCtx.lineTo(x2, y2);
+        this.turtleCtx.lineTo(x3, y3);
+        this.turtleCtx.lineTo(x1, y1);
         this.turtleCtx.stroke();
     }
 
