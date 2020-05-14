@@ -1,7 +1,8 @@
 function run(canvas, script) {
     console.log(canvas, script);
     let parser = new Parser(canvas);
-    parser.parse(script);
+    //parser.parse(script);
+    parser.parse("gd 45 av 60");
 }
 
 const token_types = {
@@ -30,7 +31,6 @@ class Parser {
     constructor(canvasObject) {
         this.tokenizer = new Tokenizer();
         this.turtle = new Turtle(canvasObject);
-        this.turtle.showturtle();
     }
     addToExecutionQueue(objectname = "", methodname = "", arg = 0) {
         this.executionqueue.push({
@@ -65,7 +65,6 @@ class Parser {
         let argumentToken;
         do {
             token = this.get_token();
-            console.log(token.toString());
             if(token.tokentype === token_types.COMMAND) {
                 switch(token.command) {
                     case commands.FORWARD:
@@ -289,7 +288,8 @@ class Turtle {
         this.drawingCtx.lineTo(newX, newY);
         this.drawingCtx.stroke();
 
-        this.updateTurtlePosition(newX, newY);
+        this.updateTurtlePosition(newX, newY);        
+        this.drawTurtle();
         this.draw();
     }
 
@@ -298,11 +298,14 @@ class Turtle {
     }
 
     execute_right(deg = 0) {
-        this.angleInDegrees += deg;
+        console.log(`When gd ${this.x}, ${this.y}`)
+       
+        this.updateTurtleOrientation(deg);
+        this.drawTurtle();
         this.draw();
     }
 
-    showturtle() {
+    drawTurtle() {
         let vertexAngleInDeg = 20;
         let alpha = vertexAngleInDeg / 2;
         let angle = this.toRadians(270 + alpha);
@@ -318,23 +321,26 @@ class Turtle {
         let x3 = parseInt(x2 - 2 * halfbase);
         let y3 = y2;
 
+        console.log(`my angle now: ${this.angleInDegrees}`);
         this.turtleCtx.beginPath();
         this.turtleCtx.moveTo(x1, y1);
         this.turtleCtx.lineTo(x2, y2);
         this.turtleCtx.lineTo(x3, y3);
         this.turtleCtx.lineTo(x1, y1);
         this.turtleCtx.stroke();
+
+        this.turtleCtx.translate(this.x, this.y);
+        this.turtleCtx.rotate(this.toRadians(this.angleInDegrees));
+        this.turtleCtx.translate(-this.x, -this.y);
     }
 
     updateTurtleOrientation(deg = 0) {
-        // todo rotate the turtle
         this.angleInDegrees += deg;
     }
 
     updateTurtlePosition(x = 0, y = 0) {
         this.x = x;
         this.y = y;
-        this.showturtle();
     }
 }
 
