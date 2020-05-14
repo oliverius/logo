@@ -1,8 +1,8 @@
 function run(canvas, script) {
     console.log(canvas, script);
     let parser = new Parser(canvas);
-    //parser.parse(script);
-    parser.parse("gd 45 av 60");
+    parser.parse(script);
+    //parser.parse("gd 45 av 60");
 }
 
 const token_types = {
@@ -298,8 +298,6 @@ class Turtle {
     }
 
     execute_right(deg = 0) {
-        console.log(`When gd ${this.x}, ${this.y}`)
-       
         this.updateTurtleOrientation(deg);
         this.drawTurtle();
         this.draw();
@@ -321,7 +319,12 @@ class Turtle {
         let x3 = parseInt(x2 - 2 * halfbase);
         let y3 = y2;
 
-        console.log(`my angle now: ${this.angleInDegrees}`);
+        this.turtleCtx.resetTransform();;
+
+        this.turtleCtx.translate(this.x, this.y);
+        this.turtleCtx.rotate(this.toRadians(this.angleInDegrees));
+        this.turtleCtx.translate(-this.x, -this.y);
+
         this.turtleCtx.beginPath();
         this.turtleCtx.moveTo(x1, y1);
         this.turtleCtx.lineTo(x2, y2);
@@ -329,9 +332,7 @@ class Turtle {
         this.turtleCtx.lineTo(x1, y1);
         this.turtleCtx.stroke();
 
-        this.turtleCtx.translate(this.x, this.y);
-        this.turtleCtx.rotate(this.toRadians(this.angleInDegrees));
-        this.turtleCtx.translate(-this.x, -this.y);
+        console.log(`When gd ${this.x}, ${this.y} ${this.angleInDegrees}`);
     }
 
     updateTurtleOrientation(deg = 0) {
