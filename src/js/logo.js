@@ -306,6 +306,14 @@ class Turtle {
         this.execute_clearscreen();
     }    
 
+    deleteGraphics() {
+        this.drawingCtx.clearRect(0, 0, this.width, this.height);
+    }
+
+    deleteTurtle() {
+        this.turtleCtx.clearRect(0, 0, this.width, this.height);
+    }
+
     execute_backward(n = 0) {
         this.execute_forward(-n);
     }
@@ -313,9 +321,9 @@ class Turtle {
     execute_clearscreen() {
         this.deleteGraphics();
         this.deleteTurtle();
-
-        this.x = this.centerX;
-        this.y = this.centerY;
+        
+        this.updateTurtlePosition(this.centerX, this.centerY);
+        this.updateTurtleOrientation(-this.angleInDegrees);
         this.drawTurtle();
 
         this.renderFrame();
@@ -351,14 +359,6 @@ class Turtle {
         this.deleteTurtle();
         this.drawTurtle();
         this.renderFrame();
-    }
-
-    deleteGraphics() {
-        this.drawingCtx.clearRect(0, 0, this.width, this.height);
-    }
-
-    deleteTurtle() {
-        this.turtleCtx.clearRect(0, 0, this.width, this.height);
     }
 
     drawTurtle() {
