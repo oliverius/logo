@@ -3,6 +3,7 @@ function run(canvas, script) {
     parser.parse(script);
     //parser.parse("gd 45 av 60");
     //parser.parse("repite 4 [av 60 gd 90]");
+    //parser.parse("av 120 repite 4 [av 60 gd 90] bp");
 }
 
 const token_types = {
@@ -10,7 +11,8 @@ const token_types = {
     DELIMITER: 1,
     NUMBER: 2,
     COMMAND: 3,
-    END_OF_SCRIPT : 4
+    PROCEDURE: 4,
+    END_OF_SCRIPT : 5
 };
 
 const delimiters = {
@@ -24,7 +26,8 @@ const commands = {
     BACK: 2,
     LEFT: 3,
     RIGHT: 4,
-    REPEAT: 5
+    REPEAT: 5,
+    CLEARSCREEN: 6
 };
 
 class Parser {
@@ -118,6 +121,9 @@ class Parser {
                             this.execute_repeat_begin(n);
                         }
                         break;
+                    case commands.CLEARSCREEN:
+                        this.addToExecutionQueue("turtle", "execute_clearscreen");
+                        break;
                 }
             }
             if(token.tokentype === token_types.DELIMITER) {
@@ -146,7 +152,7 @@ class Token {
         let paddedTokenTypeKey = tokenTypeKey.padEnd(12);
         let paddedCommandKey = commandKey.padStart(8, ' '); 
         
-        return `[${paddedStartIndex}-${paddedEndIndex}] ${paddedTokenTypeKey}\t${paddedCommandKey}\t"${this.text}"`;
+        return `Token (${paddedStartIndex}-${paddedEndIndex}) ${paddedTokenTypeKey}\t${paddedCommandKey}\t"${this.text}"`;
     }
 }
 
@@ -192,6 +198,8 @@ class Tokenizer {
                 return commands.LEFT;
             case "repite":
                 return commands.REPEAT;
+            case "bp":
+                return commands.CLEARSCREEN;
             default:
                 return commands.NONE; // This will produce an error.
         }
@@ -275,8 +283,8 @@ class Turtle {
         this.ctx = canvasObject.getContext('2d');
         this.width = canvasObject.width;
         this.height = canvasObject.height;
-        this.x = parseInt(this.width / 2);
-        this.y = parseInt(this.height / 2);
+        this.centerX = parseInt(this.width / 2);
+        this.centerY = parseInt(this.height / 2);
         this.angleInDegrees = 0;
 
         this.virtualTurtleCanvas = document.createElement('canvas');
@@ -289,12 +297,22 @@ class Turtle {
         this.virtualDrawingCanvas.height = this.height;
         this.drawingCtx = this.virtualDrawingCanvas.getContext('2d');
 
-        this.drawTurtle();
-        this.renderFrame();
+        this.execute_clearscreen();
     }    
 
     execute_backward(n = 0) {
         this.execute_forward(-n);
+    }
+
+    execute_clearscreen() {
+        this.deleteGraphics();
+        this.deleteTurtle();
+
+        this.x = this.centerX;
+        this.y = this.centerY;
+        this.drawTurtle();
+
+        this.renderFrame();
     }
 
     execute_forward(n = 0) {
@@ -327,6 +345,10 @@ class Turtle {
         this.deleteTurtle();
         this.drawTurtle();
         this.renderFrame();
+    }
+
+    deleteGraphics() {
+        this.drawingCtx.clearRect(0, 0, this.width, this.height);
     }
 
     deleteTurtle() {
