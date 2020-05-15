@@ -301,9 +301,8 @@ class Turtle {
         let angleFromYaxis = 90 - this.angleInDegrees;
         let angleFromYaxisInRadians = this.toRadians(angleFromYaxis);
 
-        // Rounding issues if parseInt doesn't include this.x or this.y
-        let newX = parseInt(this.x + n * Math.cos(angleFromYaxisInRadians));
-        let newY = parseInt(this.y - n * Math.sin(angleFromYaxisInRadians));
+        let newX = this.x + n * Math.cos(angleFromYaxisInRadians);
+        let newY = this.y - n * Math.sin(angleFromYaxisInRadians);
 
         this.drawingCtx.lineWidth = 2;
         this.drawingCtx.beginPath();
@@ -345,9 +344,9 @@ class Turtle {
         
         let x1 = this.x;
         let y1 = this.y - height/2;
-        let x2 = parseInt(x1 + r * Math.cos(angle));
-        let y2 = parseInt(y1 - r * Math.sin(angle));
-        let x3 = parseInt(x2 - 2 * halfbase);
+        let x2 = x1 + r * Math.cos(angle);
+        let y2 = y1 - r * Math.sin(angle);
+        let x3 = x2 - 2 * halfbase;
         let y3 = y2;
 
         this.turtleCtx.resetTransform();;
