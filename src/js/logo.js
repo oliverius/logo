@@ -38,6 +38,7 @@ class Parser {
         this.tokenizer = new Tokenizer();
         this.turtle = new Turtle(canvas);
         this.fps = 5;
+        this.procedures = [];
     }
     addToExecutionQueue(objectname = "", methodname = "", arg = 0) {
         this.executionqueue.push({
@@ -126,6 +127,11 @@ class Parser {
                     case commands.CLEARSCREEN:
                         this.addToExecutionQueue("turtle", "execute_clearscreen");
                         break;
+                    case commands.COMMAND_TO:
+
+                        break;
+                    case commands.COMMAND_END:
+                        break;
                 }
             }
             if(token.tokentype === token_types.DELIMITER) {
@@ -181,6 +187,7 @@ class Tokenizer {
     getCharacter() {
         if (this.index < this.script.length) {
             let c = this.script[this.index];
+            console.log(`[${this.index}] ${c}`);
             this.index++;
             return c;
         } else {
@@ -242,15 +249,11 @@ class Tokenizer {
                 while(this.isWhiteSpace(c)) {
                     c = this.getCharacter();
                 }
-            }
-
-            if (this.isDelimiter(c)) {
+            } else if (this.isDelimiter(c)) {
                 let token = new Token(this.getCharacterIndex(), c, token_types.DELIMITER);
                 this.tokens.push(token);
                 c = this.getCharacter();
-            }
-
-            if (this.isNumber(c)) {
+            } if (this.isNumber(c)) {
                 let number = c;
                 c = this.getCharacter();
                 let startindex = this.getCharacterIndex();
@@ -260,9 +263,7 @@ class Tokenizer {
                 }
                 let token = new Token(startindex, number, token_types.NUMBER);
                 this.tokens.push(token);
-            }
-
-            if (this.isLetter(c)) {
+            } if (this.isLetter(c)) {
                 let word = c;
                 c = this.getCharacter();
                 let startindex = this.getCharacterIndex();
@@ -274,6 +275,9 @@ class Tokenizer {
                 let command = this.getCommand(word);
                 let token = new Token(startindex, word, token_types.COMMAND, command);
                 this.tokens.push(token);
+            } else {
+                console.log(`Unexpected character: ${c}`);
+                c = this.getCharacter();
             }
         } while(!this.isEndOfFile(c))
 
@@ -321,7 +325,7 @@ class Turtle {
     execute_clearscreen() {
         this.deleteGraphics();
         this.deleteTurtle();
-        
+
         this.updateTurtlePosition(this.centerX, this.centerY);
         this.updateTurtleOrientation(-this.angleInDegrees);
         this.drawTurtle();
