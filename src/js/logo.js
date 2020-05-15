@@ -1,9 +1,9 @@
 function run(canvas, script) {
     console.log(canvas, script);
     let parser = new Parser(canvas);
-    //parser.parse(script);
+    parser.parse(script);
     //parser.parse("gd 45 av 60");
-    parser.parse("repite 4 [av 60 gd 90]");
+    //parser.parse("repite 4 [av 60 gd 90]");
 }
 
 const token_types = {
@@ -47,7 +47,21 @@ class Parser {
                 let obj = this.executionqueue.shift();                
                 this[obj.objectname][obj.methodname](obj.arg);
             }
-        }, 1000);
+        }, 500);
+    }
+    execute_repeat_begin(n = 0) {
+        let openingBracketToken = this.get_token();
+        if (openingBracketToken.tokentype === token_types.DELIMITER
+            && openingBracketToken.text === delimiters.OPENING_BRACKET) {
+            this.loopstack.push({loopStartIndex: this.index, remainingLoops: n - 1});
+        }
+    }
+    execute_repeat_end() {
+        let currentLoop = this.loopstack.pop();
+        if (currentLoop?.remainingLoops > 0) {
+            this.index = currentLoop.loopStartIndex;
+            this.loopstack.push({loopStartIndex: currentLoop.loopStartIndex, remainingLoops: currentLoop.remainingLoops - 1});
+        }
     }
     get_token() {
         return this.tokens[this.index++];
@@ -101,25 +115,14 @@ class Parser {
                         argumentToken = this.get_token();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            let openingBracketToken = this.get_token();
-                            if (openingBracketToken.tokentype === token_types.DELIMITER
-                                && openingBracketToken.text === delimiters.OPENING_BRACKET) {
-                                    console.log(`Sending ${this.tokens[this.index]} - ${n}`);
-                                this.loopstack.push({loopStartIndex: this.index, loopCounter: n});
-                            }
+                            this.execute_repeat_begin(n);
                         }
                         break;
                 }
             }
             if(token.tokentype === token_types.DELIMITER) {
                 if (token.text === delimiters.CLOSING_BRACKET) {
-                    
-                    let currentLoop = this.loopstack.pop();
-                    if (currentLoop.loopCounter > 1) {
-                        this.index = currentLoop.loopStartIndex;
-                        this.loopstack.push({loopStartIndex: currentLoop.loopStartIndex, loopCounter: currentLoop.loopCounter - 1});
-                        console.log(`Push ${currentLoop.loopStartIndex} - ${currentLoop.loopCounter-1}`);
-                    }
+                    this.execute_repeat_end();
                 }
             }
         } while(token.tokentype !== token_types.END_OF_SCRIPT)
