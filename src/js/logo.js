@@ -12,7 +12,9 @@ const token_types = {
     DELIMITER: 1,
     NUMBER: 2,
     COMMAND: 3,
-    END_OF_SCRIPT : 4
+    VARIABLE: 4,
+    TEXT: 5,
+    END_OF_SCRIPT : 6
 };
 
 const delimiters = {
@@ -83,6 +85,7 @@ class Parser {
         this.initialize();
         this.tokenizer.tokenize(script);
         this.tokens = this.tokenizer.gettokens;
+        console.log(this.tokens);
         let token;
         let argumentToken;
         do {
@@ -166,6 +169,7 @@ class Token {
 
 class Tokenizer {
     EOF = "\0";
+    VARIABLE_PREFIX = ":";
 
     get gettokens() {
         return this.tokens;
@@ -236,6 +240,10 @@ class Tokenizer {
         return "0123456789".indexOf(c) !== -1;
     }
 
+    isVariablePrefix(c) {
+        return c === this.VARIABLE_PREFIX;
+    }
+
     isWhiteSpace(c) {
         return c === " " || c === "\t";
     }
@@ -253,7 +261,7 @@ class Tokenizer {
                 let token = new Token(this.getCharacterIndex(), c, token_types.DELIMITER);
                 this.tokens.push(token);
                 c = this.getCharacter();
-            } if (this.isNumber(c)) {
+            } else if (this.isNumber(c)) {
                 let number = c;
                 c = this.getCharacter();
                 let startindex = this.getCharacterIndex();
@@ -263,7 +271,7 @@ class Tokenizer {
                 }
                 let token = new Token(startindex, number, token_types.NUMBER);
                 this.tokens.push(token);
-            } if (this.isLetter(c)) {
+            } else if (this.isLetter(c)) {
                 let word = c;
                 c = this.getCharacter();
                 let startindex = this.getCharacterIndex();
@@ -271,13 +279,27 @@ class Tokenizer {
                     word += c;
                     c = this.getCharacter();
                 }
-                // without variables, only commands.
                 let command = this.getCommand(word);
-                let token = new Token(startindex, word, token_types.COMMAND, command);
+                if (command === commands.NONE) {
+                    let token = new Token(startindex, word, token_types.TEXT, command);
+                    this.tokens.push(token);
+                } else {
+                    let token = new Token(startindex, word, token_types.COMMAND, command);
+                    this.tokens.push(token);
+                }
+            } else if (this.isVariablePrefix(c)) {
+                let variable = c;
+                c = this.getCharacter();
+                let startindex = this.getCharacterIndex();
+                while(this.isLetter(c)) {
+                    variable += c;
+                    c = this.getCharacter();
+                }
+                let token = new Token(startindex, variable, token_types.VARIABLE);
                 this.tokens.push(token);
             } else {
                 console.log(`Unexpected character: ${c}`);
-                c = this.getCharacter();
+                c = this.getCharacter(); // This avoids an endless loop
             }
         } while(!this.isEndOfFile(c))
 
