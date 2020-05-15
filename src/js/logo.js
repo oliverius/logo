@@ -1,8 +1,9 @@
 function run(canvas, script) {
     console.log(canvas, script);
     let parser = new Parser(canvas);
-    parser.parse(script);
+    //parser.parse(script);
     //parser.parse("gd 45 av 60");
+    parser.parse("repite 4 [av 60 gd 90]");
 }
 
 const token_types = {
@@ -54,6 +55,7 @@ class Parser {
     initialize() {
         this.index = 0;
         this.tokens = [];
+        this.loopstack = [];
         this.executionqueue = [];
         this.executionLoop();
     }
@@ -64,7 +66,7 @@ class Parser {
         let token;
         let argumentToken;
         do {
-            token = this.get_token();
+            token = this.get_token(); console.log(token.text);
             if(token.tokentype === token_types.COMMAND) {
                 switch(token.command) {
                     case commands.FORWARD:
@@ -96,7 +98,28 @@ class Parser {
                         }
                         break;
                     case commands.REPEAT:
+                        argumentToken = this.get_token();
+                        if (argumentToken.tokentype === token_types.NUMBER) {
+                            let n = parseInt(argumentToken.text);
+                            let openingBracketToken = this.get_token();
+                            if (openingBracketToken.tokentype === token_types.DELIMITER
+                                && openingBracketToken.text === delimiters.OPENING_BRACKET) {
+                                    console.log(`Sending ${this.tokens[this.index]} - ${n}`);
+                                this.loopstack.push({loopStartIndex: this.index, loopCounter: n});
+                            }
+                        }
                         break;
+                }
+            }
+            if(token.tokentype === token_types.DELIMITER) {
+                if (token.text === delimiters.CLOSING_BRACKET) {
+                    
+                    let currentLoop = this.loopstack.pop();
+                    if (currentLoop.loopCounter > 1) {
+                        this.index = currentLoop.loopStartIndex;
+                        this.loopstack.push({loopStartIndex: currentLoop.loopStartIndex, loopCounter: currentLoop.loopCounter - 1});
+                        console.log(`Push ${currentLoop.loopStartIndex} - ${currentLoop.loopCounter-1}`);
+                    }
                 }
             }
         } while(token.tokentype !== token_types.END_OF_SCRIPT)
