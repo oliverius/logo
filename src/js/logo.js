@@ -1,6 +1,7 @@
-function run(canvas, script) {
-    let parser = new Parser(canvas);
+
+function run(script) {
     parser.parse(script);
+    
     //parser.parse("gd 45 av 60");
     //parser.parse("repite 4 [av 60 gd 90]");
     //parser.parse("av 120 repite 4 [av 60 gd 90] bp");
@@ -11,8 +12,7 @@ const token_types = {
     DELIMITER: 1,
     NUMBER: 2,
     COMMAND: 3,
-    PROCEDURE: 4,
-    END_OF_SCRIPT : 5
+    END_OF_SCRIPT : 4
 };
 
 const delimiters = {
@@ -27,13 +27,16 @@ const commands = {
     LEFT: 3,
     RIGHT: 4,
     REPEAT: 5,
-    CLEARSCREEN: 6
+    CLEARSCREEN: 6,
+    COMMAND_TO: 7,
+    COMMAND_END: 8
 };
 
 class Parser {
-    constructor(canvasObject) {
+    constructor(canvasId) {
+        let canvas = document.getElementById('logocanvas');
         this.tokenizer = new Tokenizer();
-        this.turtle = new Turtle(canvasObject);
+        this.turtle = new Turtle(canvas);
         this.fps = 5;
     }
     addToExecutionQueue(objectname = "", methodname = "", arg = 0) {
@@ -45,7 +48,6 @@ class Parser {
     }
     executionLoop() {
         setInterval(() => {
-            console.log("*");
             if (this.executionqueue.length > 0) {
                 let obj = this.executionqueue.shift();                
                 this[obj.objectname][obj.methodname](obj.arg);
@@ -200,6 +202,10 @@ class Tokenizer {
                 return commands.REPEAT;
             case "bp":
                 return commands.CLEARSCREEN;
+            case "para":
+                return commands.COMMAND_TO;
+            case "fin":
+                return commands.COMMAND_END;
             default:
                 return commands.NONE; // This will produce an error.
         }
@@ -360,7 +366,7 @@ class Turtle {
         let alpha = vertexAngleInDeg / 2;
         let angle = this.toRadians(270 + alpha);
         
-        let r = 30;
+        let r = 20;
         let halfbase = r * Math.sin(this.toRadians(alpha));
         let height = r * Math.cos(this.toRadians(alpha));
         
@@ -401,4 +407,8 @@ class Turtle {
     }
 }
 
-module.exports.tokenizer = Tokenizer;
+console.log("hello");
+const parser = new Parser('logocanvas');
+
+
+//module.exports.tokenizer = Tokenizer;
