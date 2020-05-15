@@ -1,5 +1,4 @@
 function run(canvas, script) {
-    console.log(canvas, script);
     let parser = new Parser(canvas);
     parser.parse(script);
     //parser.parse("gd 45 av 60");
@@ -32,6 +31,7 @@ class Parser {
     constructor(canvasObject) {
         this.tokenizer = new Tokenizer();
         this.turtle = new Turtle(canvasObject);
+        this.fps = 5;
     }
     addToExecutionQueue(objectname = "", methodname = "", arg = 0) {
         this.executionqueue.push({
@@ -47,7 +47,7 @@ class Parser {
                 let obj = this.executionqueue.shift();                
                 this[obj.objectname][obj.methodname](obj.arg);
             }
-        }, 500);
+        }, 1000/this.fps);
     }
     execute_repeat_begin(n = 0) {
         let openingBracketToken = this.get_token();
@@ -80,7 +80,7 @@ class Parser {
         let token;
         let argumentToken;
         do {
-            token = this.get_token(); console.log(token.text);
+            token = this.get_token();
             if(token.tokentype === token_types.COMMAND) {
                 switch(token.command) {
                     case commands.FORWARD:
