@@ -1,10 +1,39 @@
+body {
+    background-color:cornflowerblue;
+}
+.container {
+    display: grid;
+    grid-template-columns: [logo-script] 420px [logo-canvas] 420px;
+    grid-template-rows: 420px 120px;
+    justify-content: center;
+}
+
+.logo-script {
+   grid-column: logo-script;
+   grid-row: row;
+   background-color: darkolivegreen;
+}
+.logo-canvas {
+    grid-column: logo-canvas;
+    grid-row: row 1;
+    background-color: darkmagenta;
+ }
+ .logo-controls {
+    grid-column: logo-script / span 2;
+    grid-row: row 2;
+    background-color: black;
+ }
+
 #scriptarea {
     width: 400px;
-    height: 100px;
+    height: 400px;
     font-family: 'Courier New', Courier, monospace;
-    border: 3px solid #CCCCCC;
 }
 #logocanvas {
     border: 1px solid black;
     background-color: #E8E8E8;
+}
+.button {
+    width: 100px;
+    height: 80px; /* this class doesn't seem to work */
 }
