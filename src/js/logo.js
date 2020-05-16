@@ -1,9 +1,9 @@
 
 function run(script) {
     //parser.parse(script);
-    parser.parse("para cuadrado :lado av 60");
+    //parser.parse("para cuadrado :lado av 60");
     //parser.parse("gd 45 av 60");
-    //parser.parse("repite 4 [av 60 gd 90]");
+    parser.parse("repite 4 [av 60 gd 90]");
     //parser.parse("av 120 repite 4 [av 60 gd 90] bp");
 }
 
@@ -86,11 +86,10 @@ class Parser {
         console.log(procedure);
     }
     get_token() {
-        return this.tokens[this.index++];
+        return this.tokenizer.tokens[this.index++];
     }
     initialize() {
         this.index = 0;
-        this.tokens = [];
         this.loopstack = [];
         this.executionqueue = [];
         this.executionLoop();
@@ -98,8 +97,7 @@ class Parser {
     parse(script = "") {
         this.initialize();
         this.tokenizer.tokenize(script);
-        this.tokens = this.tokenizer.gettokens;
-        this.tokens.forEach(x => console.log(x.toString()));
+        this.tokenizer.tokens.forEach(x => console.log(x.toString()));
         let token;
         let argumentToken;
         do {
@@ -184,10 +182,6 @@ class Token {
 class Tokenizer {
     EOF = "\0";
     VARIABLE_PREFIX = ":";
-
-    get gettokens() {
-        return this.tokens;
-    }
 
     addEndOfScriptToken() {
         let token = new Token(this.getCharacterIndex(), this.EOF, token_types.END_OF_SCRIPT);
