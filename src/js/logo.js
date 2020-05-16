@@ -1,7 +1,7 @@
 
 function run(script) {
-    parser.parse(script);
-    
+    //parser.parse(script);
+    parser.parse("para cuadrado :lado av 60");
     //parser.parse("gd 45 av 60");
     //parser.parse("repite 4 [av 60 gd 90]");
     //parser.parse("av 120 repite 4 [av 60 gd 90] bp");
@@ -14,7 +14,7 @@ const token_types = {
     COMMAND: 3,
     VARIABLE: 4,
     TEXT: 5,
-    END_OF_SCRIPT : 6
+    END_OF_SCRIPT : 6 // TODO rename "End of token stream"
 };
 
 const delimiters = {
@@ -36,7 +36,7 @@ const commands = {
 
 class Parser {
     constructor(canvasId) {
-        let canvas = document.getElementById('logocanvas');
+        let canvas = document.getElementById(canvasId);
         this.tokenizer = new Tokenizer();
         this.turtle = new Turtle(canvas);
         this.fps = 5;
@@ -71,6 +71,20 @@ class Parser {
             this.loopstack.push({loopStartIndex: currentLoop.loopStartIndex, remainingLoops: currentLoop.remainingLoops - 1});
         }
     }
+    execute_to() {
+        let procedure = {};
+        let token = this.get_token();
+        if (token.tokentype === token_types.TEXT) {
+            procedure["name"] = token.text;
+            procedure["variables"] = [];
+            token = this.get_token();
+            while(token.tokentype === token_types.VARIABLE) {
+                procedure["variables"].push(token.text);
+                token = this.get_token();
+            }
+        }
+        console.log(procedure);
+    }
     get_token() {
         return this.tokens[this.index++];
     }
@@ -85,7 +99,7 @@ class Parser {
         this.initialize();
         this.tokenizer.tokenize(script);
         this.tokens = this.tokenizer.gettokens;
-        console.log(this.tokens);
+        this.tokens.forEach(x => console.log(x.toString()));
         let token;
         let argumentToken;
         do {
@@ -131,7 +145,7 @@ class Parser {
                         this.addToExecutionQueue("turtle", "execute_clearscreen");
                         break;
                     case commands.COMMAND_TO:
-
+                        this.execute_to();
                         break;
                     case commands.COMMAND_END:
                         break;
@@ -191,7 +205,7 @@ class Tokenizer {
     getCharacter() {
         if (this.index < this.script.length) {
             let c = this.script[this.index];
-            console.log(`[${this.index}] ${c}`);
+            //console.log(`[${this.index}] ${c}`);
             this.index++;
             return c;
         } else {
