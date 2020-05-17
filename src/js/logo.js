@@ -5,7 +5,7 @@ function run(script) {
     //parser.parse("gd 45 av 60");
     //parser.parse("repite 4 [av 60 gd 90]");
     //parser.parse("av 120 repite 4 [av 60 gd 90] bp");
-    interpreter.run("av 60 gd 90 av 30");
+    interpreter.run(script);
 }
 
 const token_types = {
@@ -49,8 +49,6 @@ class Interpreter {
                 methodname: e.detail.methodname,
                 arg: e.detail.arg
             });
-
-            console.log(e.detail);
         }); // TODO can't make it static in the parser though;
 
         this.executionLoop();
@@ -91,6 +89,20 @@ class Parser2 {
             }
         });
         window.dispatchEvent(event);
+    }
+    execute_repeat_begin(n = 0) {
+        let openingBracketToken = this.getToken();
+        if (openingBracketToken.tokentype === token_types.DELIMITER
+            && openingBracketToken.text === delimiters.OPENING_BRACKET) {
+            this.loopStack.push({loopStartIndex: this.tokenIndex, remainingLoops: n - 1});
+        }
+    }
+    execute_repeat_end() {
+        let currentLoop = this.loopStack.pop();
+        if (currentLoop?.remainingLoops > 0) {
+            this.tokenIndex = currentLoop.loopStartIndex;
+            this.loopStack.push({loopStartIndex: currentLoop.loopStartIndex, remainingLoops: currentLoop.remainingLoops - 1});
+        }
     }
     getToken() {
         return this.tokens[this.tokenIndex++];
@@ -134,7 +146,7 @@ class Parser2 {
                         argumentToken = this.getToken();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            //this.execute_repeat_begin(n);
+                            this.execute_repeat_begin(n);
                         }
                         break;
                     case commands.CLEARSCREEN:
@@ -149,7 +161,7 @@ class Parser2 {
             }
             if(token.tokentype === token_types.DELIMITER) {
                 if (token.text === delimiters.CLOSING_BRACKET) {
-                    //this.execute_repeat_end();
+                    this.execute_repeat_end();
                 }
             }
         } while(token.tokentype !== token_types.END_OF_SCRIPT)
