@@ -12,7 +12,7 @@ const token_types = {
     NONE: 0,
     DELIMITER: 1,
     NUMBER: 2,
-    COMMAND: 3,
+    PRIMITIVE: 3,
     VARIABLE: 4,
     TEXT: 5,
     END_OF_SCRIPT : 6 // TODO rename "End of token stream"
@@ -23,7 +23,7 @@ const delimiters = {
     CLOSING_BRACKET: "]"
 };
 
-const commands = {
+const primitives = {
     NONE: 0,
     FORWARD: 1,
     BACK: 2,
@@ -31,8 +31,8 @@ const commands = {
     RIGHT: 4,
     REPEAT: 5,
     CLEARSCREEN: 6,
-    COMMAND_TO: 7,
-    COMMAND_END: 8
+    PRIMITIVE_TO: 7,
+    PRIMITIVE_END: 8
 };
 
 class Interpreter {
@@ -64,19 +64,12 @@ class Interpreter {
     }
     run(script = "") {
         let tokens = this.tokenizer.tokenize(script);
-        let parser = new Parser(tokens);
+        let parser = new Parser();
+        parser.parse(tokens);
     }
 }
 
 class Parser {
-    constructor(tokens) {
-        this.tokens = tokens;
-
-        this.tokenIndex = 0;
-        this.loopStack = [];
-
-        this.parse();
-    }
     eventName() { return "PARSER_ADD_TO_EXECUTION_QUEUE_EVENT"; }
 
     addToExecutionQueue(objectname = "", methodname = "", arg = 0) {
@@ -107,55 +100,59 @@ class Parser {
     getToken() {
         return this.tokens[this.tokenIndex++];
     }
-    parse() {
+    parse(tokens) {
+        this.tokens = tokens;
+        this.tokenIndex = 0;
+        this.loopStack = [];
+
         let token;
         let argumentToken;
         do {
             token = this.getToken();
-            if(token.tokentype === token_types.COMMAND) {
-                switch(token.command) {
-                    case commands.FORWARD:
+            if(token.tokentype === token_types.PRIMITIVE) {
+                switch(token.primitive) {
+                    case primitives.FORWARD:
                         argumentToken = this.getToken();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
                             this.addToExecutionQueue("turtle", "execute_forward", n);
                         }
                         break;
-                    case commands.BACK:
+                    case primitives.BACK:
                         argumentToken = this.getToken();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
                             this.addToExecutionQueue("turtle", "execute_backward", n);
                         }
                         break;
-                    case commands.LEFT:
+                    case primitives.LEFT:
                         argumentToken = this.getToken();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
                             this.addToExecutionQueue("turtle", "execute_left", n);
                         }
                         break;
-                    case commands.RIGHT:
+                    case primitives.RIGHT:
                         argumentToken = this.getToken();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
                             this.addToExecutionQueue("turtle", "execute_right", n);
                         }
                         break;
-                    case commands.REPEAT:
+                    case primitives.REPEAT:
                         argumentToken = this.getToken();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
                             this.execute_repeat_begin(n);
                         }
                         break;
-                    case commands.CLEARSCREEN:
+                    case primitives.CLEARSCREEN:
                         this.addToExecutionQueue("turtle", "execute_clearscreen");
                         break;
-                    case commands.COMMAND_TO:
+                    case primitives.PRIMITIVE_TO:
                         //this.execute_to();
                         break;
-                    case commands.COMMAND_END:
+                    case primitives.PRIMITIVE_END:
                         break;
                 }
             }
@@ -200,14 +197,14 @@ class Parser2 {
         let argumentToken;
         do {
             token = this.get_token();
-            if(token.tokentype === token_types.COMMAND) {
-                switch(token.command) {
+            if(token.tokentype === token_types.PRIMITIVE) {
+                switch(token.primitive) {
 
 
-                    case commands.COMMAND_TO:
+                    case primitives.PRIMITIVE_TO:
                         this.execute_to();
                         break;
-                    case commands.COMMAND_END:
+                    case primitives.PRIMITIVE_END:
                         break;
                 }
             }
@@ -221,23 +218,23 @@ class Parser2 {
 }
 
 class Token {
-    constructor(startindex = 0, text = "", tokentype = token_types.NONE, command = commands.NONE) {
+    constructor(startindex = 0, text = "", tokentype = token_types.NONE, primitive = primitives.NONE) {
         this.startindex = startindex;
         this.text = text;
         this.endindex = startindex + text.length - 1;
         this.tokentype = tokentype;
-        this.command = command;
+        this.primitive = primitive;
     }
     get [Symbol.toStringTag]() {
         let tokenTypeKey = Object.keys(token_types).find(key => token_types[key] === this.tokentype);
-        let commandKey = Object.keys(commands).find(key => commands[key] === this.command);
+        let primitiveKey = Object.keys(primitives).find(key => primitives[key] === this.primitive);
         
         let paddedStartIndex = this.startindex.toString().padStart(3, '0');
         let paddedEndIndex = this.endindex.toString().padStart(3, '0');
         let paddedTokenTypeKey = tokenTypeKey.padEnd(12);
-        let paddedCommandKey = commandKey.padStart(8, ' '); 
+        let paddedPrimitiveKey = primitiveKey.padStart(8, ' '); 
         
-        return `Token (${paddedStartIndex}-${paddedEndIndex}) ${paddedTokenTypeKey}\t${paddedCommandKey}\t"${this.text}"`;
+        return `Token (${paddedStartIndex}-${paddedEndIndex}) ${paddedTokenTypeKey}\t${paddedPrimitiveKey}\t"${this.text}"`;
     }
 }
 
@@ -269,26 +266,26 @@ class Tokenizer {
         }
     }
 
-    getCommand(commandString="") {
-        switch(commandString.toLowerCase()) {
+    getPrimitive(primitiveString="") {
+        switch(primitiveString.toLowerCase()) {
             case "av":
-                return commands.FORWARD;
+                return primitives.FORWARD;
             case "re":
-                return commands.BACK;
+                return primitives.BACK;
             case "gd":
-                return commands.RIGHT;
+                return primitives.RIGHT;
             case "gi":
-                return commands.LEFT;
+                return primitives.LEFT;
             case "repite":
-                return commands.REPEAT;
+                return primitives.REPEAT;
             case "bp":
-                return commands.CLEARSCREEN;
+                return primitives.CLEARSCREEN;
             case "para":
-                return commands.COMMAND_TO;
+                return primitives.PRIMITIVE_TO;
             case "fin":
-                return commands.COMMAND_END;
+                return primitives.PRIMITIVE_END;
             default:
-                return commands.NONE; // This will produce an error.
+                return primitives.NONE; // This will produce an error.
         }
     }
 
@@ -349,12 +346,12 @@ class Tokenizer {
                     word += c;
                     c = this.getCharacter();
                 }
-                let command = this.getCommand(word);
-                if (command === commands.NONE) {
-                    let token = new Token(startindex, word, token_types.TEXT, command);
+                let primitive = this.getPrimitive(word);
+                if (primitive === primitives.NONE) {
+                    let token = new Token(startindex, word, token_types.TEXT, primitive);
                     this.tokens.push(token);
                 } else {
-                    let token = new Token(startindex, word, token_types.COMMAND, command);
+                    let token = new Token(startindex, word, token_types.PRIMITIVE, primitive);
                     this.tokens.push(token);
                 }
             } else if (this.isVariablePrefix(c)) {
