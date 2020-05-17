@@ -42,6 +42,7 @@ class Interpreter {
         this.tokenizer = new Tokenizer();
         this.fps = 5;
         this.executionQueue = [];
+        this.procedures = [];
         window.addEventListener("PARSER_ADD_TO_EXECUTION_QUEUE_EVENT", e => {
             console.log(this.executionQueue);
             this.executionQueue.push({
@@ -85,7 +86,7 @@ class Parser {
     }
     execute_repeat_begin(n = 0) {
         let openingBracketToken = this.getToken();
-        if (openingBracketToken.tokentype === token_types.DELIMITER
+        if (openingBracketToken.tokenType === token_types.DELIMITER
             && openingBracketToken.text === delimiters.OPENING_BRACKET) {
             this.loopStack.push({loopStartIndex: this.tokenIndex, remainingLoops: n - 1});
         }
@@ -96,6 +97,20 @@ class Parser {
             this.tokenIndex = currentLoop.loopStartIndex;
             this.loopStack.push({loopStartIndex: currentLoop.loopStartIndex, remainingLoops: currentLoop.remainingLoops - 1});
         }
+    }
+    execute_to() {
+        let procedure = {};
+        let token = this.getToken();
+        if (token.tokenType === token_types.TEXT) {
+            procedure["name"] = token.text;
+            procedure["variables"] = [];
+            token = this.getToken();
+            while(token.tokenType === token_types.VARIABLE) {
+                procedure["variables"].push(token.text);
+                token = this.getToken();
+            }
+        }
+        console.log(procedure);
     }
     getToken() {
         return this.tokens[this.tokenIndex++];
@@ -109,39 +124,39 @@ class Parser {
         let argumentToken;
         do {
             token = this.getToken();
-            if(token.tokentype === token_types.PRIMITIVE) {
+            if(token.tokenType === token_types.PRIMITIVE) {
                 switch(token.primitive) {
                     case primitives.FORWARD:
                         argumentToken = this.getToken();
-                        if (argumentToken.tokentype === token_types.NUMBER) {
+                        if (argumentToken.tokenType === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
                             this.addToExecutionQueue("turtle", "execute_forward", n);
                         }
                         break;
                     case primitives.BACK:
                         argumentToken = this.getToken();
-                        if (argumentToken.tokentype === token_types.NUMBER) {
+                        if (argumentToken.tokenType === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
                             this.addToExecutionQueue("turtle", "execute_backward", n);
                         }
                         break;
                     case primitives.LEFT:
                         argumentToken = this.getToken();
-                        if (argumentToken.tokentype === token_types.NUMBER) {
+                        if (argumentToken.tokenType === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
                             this.addToExecutionQueue("turtle", "execute_left", n);
                         }
                         break;
                     case primitives.RIGHT:
                         argumentToken = this.getToken();
-                        if (argumentToken.tokentype === token_types.NUMBER) {
+                        if (argumentToken.tokenType === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
                             this.addToExecutionQueue("turtle", "execute_right", n);
                         }
                         break;
                     case primitives.REPEAT:
                         argumentToken = this.getToken();
-                        if (argumentToken.tokentype === token_types.NUMBER) {
+                        if (argumentToken.tokenType === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
                             this.execute_repeat_begin(n);
                         }
@@ -156,81 +171,30 @@ class Parser {
                         break;
                 }
             }
-            if(token.tokentype === token_types.DELIMITER) {
+            if(token.tokenType === token_types.DELIMITER) {
                 if (token.text === delimiters.CLOSING_BRACKET) {
                     this.execute_repeat_end();
                 }
             }
-        } while(token.tokentype !== token_types.END_OF_SCRIPT)
+        } while(token.tokenType !== token_types.END_OF_SCRIPT)
         console.log("finish parsing", this.tokens);
     }
 }
 
-class Parser2 {
-    constructor(canvasId) {
-        
-        this.procedures = [];
-    }
-    
-    
-    execute_to() {
-        let procedure = {};
-        let token = this.get_token();
-        if (token.tokentype === token_types.TEXT) {
-            procedure["name"] = token.text;
-            procedure["variables"] = [];
-            token = this.get_token();
-            while(token.tokentype === token_types.VARIABLE) {
-                procedure["variables"].push(token.text);
-                token = this.get_token();
-            }
-        }
-        console.log(procedure);
-    }
-    
-    
-    parse(script = "") {
-        this.initialize();
-        this.tokenizer.tokenize(script);
-        this.tokenizer.tokens.forEach(x => console.log(x.toString()));
-        let token;
-        let argumentToken;
-        do {
-            token = this.get_token();
-            if(token.tokentype === token_types.PRIMITIVE) {
-                switch(token.primitive) {
-
-
-                    case primitives.PRIMITIVE_TO:
-                        this.execute_to();
-                        break;
-                    case primitives.PRIMITIVE_END:
-                        break;
-                }
-            }
-            if(token.tokentype === token_types.DELIMITER) {
-                if (token.text === delimiters.CLOSING_BRACKET) {
-                    this.execute_repeat_end();
-                }
-            }
-        } while(token.tokentype !== token_types.END_OF_SCRIPT)
-    }
-}
-
 class Token {
-    constructor(startindex = 0, text = "", tokentype = token_types.NONE, primitive = primitives.NONE) {
-        this.startindex = startindex;
+    constructor(startIndex = 0, text = "", tokenType = token_types.NONE, primitive = primitives.NONE) {
+        this.startIndex = startIndex;
         this.text = text;
-        this.endindex = startindex + text.length - 1;
-        this.tokentype = tokentype;
+        this.endIndex = startIndex + text.length - 1;
+        this.tokenType = tokenType;
         this.primitive = primitive;
     }
     get [Symbol.toStringTag]() {
-        let tokenTypeKey = Object.keys(token_types).find(key => token_types[key] === this.tokentype);
+        let tokenTypeKey = Object.keys(token_types).find(key => token_types[key] === this.tokenType);
         let primitiveKey = Object.keys(primitives).find(key => primitives[key] === this.primitive);
         
-        let paddedStartIndex = this.startindex.toString().padStart(3, '0');
-        let paddedEndIndex = this.endindex.toString().padStart(3, '0');
+        let paddedStartIndex = this.startIndex.toString().padStart(3, '0');
+        let paddedEndIndex = this.endIndex.toString().padStart(3, '0');
         let paddedTokenTypeKey = tokenTypeKey.padEnd(12);
         let paddedPrimitiveKey = primitiveKey.padStart(8, ' '); 
         
@@ -331,38 +295,38 @@ class Tokenizer {
             } else if (this.isNumber(c)) {
                 let number = c;
                 c = this.getCharacter();
-                let startindex = this.getCharacterIndex();
+                let startIndex = this.getCharacterIndex();
                 while(this.isNumber(c)) {
                     number += c;
                     c = this.getCharacter();
                 }
-                let token = new Token(startindex, number, token_types.NUMBER);
+                let token = new Token(startIndex, number, token_types.NUMBER);
                 this.tokens.push(token);
             } else if (this.isLetter(c)) {
                 let word = c;
                 c = this.getCharacter();
-                let startindex = this.getCharacterIndex();
+                let startIndex = this.getCharacterIndex();
                 while(this.isLetter(c)) {
                     word += c;
                     c = this.getCharacter();
                 }
                 let primitive = this.getPrimitive(word);
                 if (primitive === primitives.NONE) {
-                    let token = new Token(startindex, word, token_types.TEXT, primitive);
+                    let token = new Token(startIndex, word, token_types.TEXT, primitive);
                     this.tokens.push(token);
                 } else {
-                    let token = new Token(startindex, word, token_types.PRIMITIVE, primitive);
+                    let token = new Token(startIndex, word, token_types.PRIMITIVE, primitive);
                     this.tokens.push(token);
                 }
             } else if (this.isVariablePrefix(c)) {
                 let variable = c;
                 c = this.getCharacter();
-                let startindex = this.getCharacterIndex();
+                let startIndex = this.getCharacterIndex();
                 while(this.isLetter(c)) {
                     variable += c;
                     c = this.getCharacter();
                 }
-                let token = new Token(startindex, variable, token_types.VARIABLE);
+                let token = new Token(startIndex, variable, token_types.VARIABLE);
                 this.tokens.push(token);
             } else {
                 console.log(`Unexpected character: ${c}`);
