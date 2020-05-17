@@ -103,11 +103,11 @@ class Parser {
         let token = this.getToken();
         if (token.tokenType === token_types.TEXT) {
             procedure["name"] = token.text;
-            procedure["variables"] = [];
+            procedure["parameters"] = [];
             
             token = this.getToken();
             while(token.tokenType === token_types.VARIABLE) {
-                procedure["variables"].push(token.text);
+                procedure["parameters"].push(token.text);
                 token = this.getToken();
             }
             procedure["firstTokenIndex"] = this.getCurrentTokenIndex();
@@ -196,11 +196,19 @@ class Parser {
                     return procedure.name === token.text;
                 });
                 if (lookupProcedure.length > 0) {
-                    console.log("found text " + token, lookupProcedure);
+                    this.runProcedure(lookupProcedure[0]);
                 }
             }
         } while(token.tokenType !== token_types.END_OF_SCRIPT)
         console.log("finish parsing", this.tokens);
+    }
+    runProcedure(procedure) {
+        console.log("running procedure", procedure);
+        let parameterValues = procedure.parameters.forEach(p => {
+            let token = this.getToken();
+            console.log(token);
+        });
+        console.log(parameterValues);
     }
 }
 
