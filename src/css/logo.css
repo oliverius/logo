@@ -2,28 +2,26 @@ body {
     background-color:cornflowerblue;
 }
 .container {
-    display: grid;
-    grid-template-columns: [logo-script] 420px [logo-canvas] 420px;
-    grid-template-rows: 420px 120px;
+    display: grid;    
+    grid-template-columns: 410px 410px;
+    grid-template-rows: 410px 100px;
+    grid-template-areas: "logo-script logo-canvas" "logo-controls logo-controls";
+    gap: 1px 1px;
     justify-content: center;
+    align-content: center;
 }
-
 .logo-script {
-   grid-column: logo-script;
-   grid-row: row;
-   background-color: darkolivegreen;
+   grid-area: logo-script;
+   margin: auto;
 }
 .logo-canvas {
-    grid-column: logo-canvas;
-    grid-row: row 1;
-    background-color: darkmagenta;
+    grid-area: logo-canvas;
+    margin: auto;
  }
  .logo-controls {
-    grid-column: logo-script / span 2;
-    grid-row: row 2;
+    grid-area: logo-controls;
     background-color: black;
  }
-
 #scriptarea {
     width: 400px;
     height: 400px;
@@ -35,5 +33,5 @@ body {
 }
 .button {
     width: 100px;
-    height: 80px; /* this class doesn't seem to work */
+    height: 100px;
 }
