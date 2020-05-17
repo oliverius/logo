@@ -42,6 +42,7 @@ class Interpreter {
         this.tokenizer = new Tokenizer();
         this.fps = 5;
         this.executionQueue = [];
+        window.addEventListener('awesome', e => console.log(e.detail.text()));
 
         this.executionLoop();
     }
@@ -85,6 +86,7 @@ class Parser2 {
                         argumentToken = this.getToken();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
+                            window.dispatchEvent(new CustomEvent('awesome', {bubbles:true, detail:{text:() => `execute forward ${n}`}}));
                             //this.addToExecutionQueue("turtle", "execute_forward", n);
                         }
                         break;
@@ -546,7 +548,6 @@ class Turtle {
 }
 
 console.log("hello");
-const parser = new Parser('logocanvas');
 const interpreter = new Interpreter('logocanvas');
 
 
