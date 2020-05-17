@@ -185,13 +185,18 @@ class Parser {
                     case primitives.PRIMITIVE_TO:
                         this.execute_to();
                         break;
-                    case primitives.PRIMITIVE_END:
-                        break;
                 }
             }
             if(token.tokenType === token_types.DELIMITER) {
                 if (token.text === delimiters.CLOSING_BRACKET) {
                     this.execute_repeat_end();
+                }
+            } else if(token.tokenType === token_types.TEXT) {
+                let lookupProcedure = this.procedures.filter(procedure => {
+                    return procedure.name === token.text;
+                });
+                if (lookupProcedure.length > 0) {
+                    console.log("found text " + token, lookupProcedure);
                 }
             }
         } while(token.tokenType !== token_types.END_OF_SCRIPT)
