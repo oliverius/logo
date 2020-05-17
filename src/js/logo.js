@@ -42,7 +42,7 @@ class Interpreter {
         this.tokenizer = new Tokenizer();
         this.fps = 5;
         this.executionQueue = [];
-        window.addEventListener('awesome', e => console.log(e.detail.text()));
+        window.addEventListener(Parser2.eventName, e => console.log(e.detail.text()));
 
         this.executionLoop();
     }
@@ -72,6 +72,21 @@ class Parser2 {
 
         this.parse();
     }
+    static eventName() { return "PARSER_ADD_TO_EXECUTION_QUEUE_EVENT"; }
+
+    addToExecutionQueue(objectname = "", methodname = "", arg = 0) {
+        let event = new CustomEvent(this.eventName, {
+            bubbles: true,
+            detail: {text:() => `${objectname} ${methodname} ${arg}`}
+        });
+        window.dispatchEvent(event);
+     /*
+        this.executionqueue.push({
+            objectname: objectname,
+            methodname: methodname,
+            arg: arg
+        })*/
+    }
     getToken() {
         return this.tokens[this.tokenIndex++];
     }
@@ -86,29 +101,28 @@ class Parser2 {
                         argumentToken = this.getToken();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            window.dispatchEvent(new CustomEvent('awesome', {bubbles:true, detail:{text:() => `execute forward ${n}`}}));
-                            //this.addToExecutionQueue("turtle", "execute_forward", n);
+                            this.addToExecutionQueue("turtle", "execute_forward", n);
                         }
                         break;
                     case commands.BACK:
                         argumentToken = this.getToken();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            //this.addToExecutionQueue("turtle", "execute_backward", n);
+                            this.addToExecutionQueue("turtle", "execute_backward", n);
                         }
                         break;
                     case commands.LEFT:
                         argumentToken = this.getToken();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            //this.addToExecutionQueue("turtle", "execute_left", n);
+                            this.addToExecutionQueue("turtle", "execute_left", n);
                         }
                         break;
                     case commands.RIGHT:
                         argumentToken = this.getToken();
                         if (argumentToken.tokentype === token_types.NUMBER) {
                             let n = parseInt(argumentToken.text);
-                            //this.addToExecutionQueue("turtle", "execute_right", n);
+                            this.addToExecutionQueue("turtle", "execute_right", n);
                         }
                         break;
                     case commands.REPEAT:
@@ -119,7 +133,7 @@ class Parser2 {
                         }
                         break;
                     case commands.CLEARSCREEN:
-                        //this.addToExecutionQueue("turtle", "execute_clearscreen");
+                        this.addToExecutionQueue("turtle", "execute_clearscreen");
                         break;
                     case commands.COMMAND_TO:
                         //this.execute_to();
