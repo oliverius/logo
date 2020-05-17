@@ -64,11 +64,11 @@ class Interpreter {
     }
     run(script = "") {
         let tokens = this.tokenizer.tokenize(script);
-        let parser = new Parser2(tokens);
+        let parser = new Parser(tokens);
     }
 }
 
-class Parser2 {
+class Parser {
     constructor(tokens) {
         this.tokens = tokens;
 
@@ -169,43 +169,13 @@ class Parser2 {
     }
 }
 
-class Parser {
+class Parser2 {
     constructor(canvasId) {
-        let canvas = document.getElementById(canvasId);
-        this.tokenizer = new Tokenizer();
-        this.turtle = new Turtle(canvas);
-        this.fps = 5;
+        
         this.procedures = [];
     }
-    addToExecutionQueue(objectname = "", methodname = "", arg = 0) {
-        this.executionqueue.push({
-            objectname: objectname,
-            methodname: methodname,
-            arg: arg
-        })
-    }
-    executionLoop() {
-        setInterval(() => {
-            if (this.executionqueue.length > 0) {
-                let obj = this.executionqueue.shift();                
-                this[obj.objectname][obj.methodname](obj.arg);
-            }
-        }, 1000/this.fps);
-    }
-    execute_repeat_begin(n = 0) {
-        let openingBracketToken = this.get_token();
-        if (openingBracketToken.tokentype === token_types.DELIMITER
-            && openingBracketToken.text === delimiters.OPENING_BRACKET) {
-            this.loopstack.push({loopStartIndex: this.index, remainingLoops: n - 1});
-        }
-    }
-    execute_repeat_end() {
-        let currentLoop = this.loopstack.pop();
-        if (currentLoop?.remainingLoops > 0) {
-            this.index = currentLoop.loopStartIndex;
-            this.loopstack.push({loopStartIndex: currentLoop.loopStartIndex, remainingLoops: currentLoop.remainingLoops - 1});
-        }
-    }
+    
+    
     execute_to() {
         let procedure = {};
         let token = this.get_token();
@@ -220,15 +190,8 @@ class Parser {
         }
         console.log(procedure);
     }
-    get_token() {
-        return this.tokenizer.tokens[this.index++];
-    }
-    initialize() {
-        this.index = 0;
-        this.loopstack = [];
-        this.executionqueue = [];
-        this.executionLoop();
-    }
+    
+    
     parse(script = "") {
         this.initialize();
         this.tokenizer.tokenize(script);
@@ -239,44 +202,8 @@ class Parser {
             token = this.get_token();
             if(token.tokentype === token_types.COMMAND) {
                 switch(token.command) {
-                    case commands.FORWARD:
-                        argumentToken = this.get_token();
-                        if (argumentToken.tokentype === token_types.NUMBER) {
-                            let n = parseInt(argumentToken.text);
-                            this.addToExecutionQueue("turtle", "execute_forward", n);
-                        }
-                        break;
-                    case commands.BACK:
-                        argumentToken = this.get_token();
-                        if (argumentToken.tokentype === token_types.NUMBER) {
-                            let n = parseInt(argumentToken.text);
-                            this.addToExecutionQueue("turtle", "execute_backward", n);
-                        }
-                        break;
-                    case commands.LEFT:
-                        argumentToken = this.get_token();
-                        if (argumentToken.tokentype === token_types.NUMBER) {
-                            let n = parseInt(argumentToken.text);
-                            this.addToExecutionQueue("turtle", "execute_left", n);
-                        }
-                        break;
-                    case commands.RIGHT:
-                        argumentToken = this.get_token();
-                        if (argumentToken.tokentype === token_types.NUMBER) {
-                            let n = parseInt(argumentToken.text);
-                            this.addToExecutionQueue("turtle", "execute_right", n);
-                        }
-                        break;
-                    case commands.REPEAT:
-                        argumentToken = this.get_token();
-                        if (argumentToken.tokentype === token_types.NUMBER) {
-                            let n = parseInt(argumentToken.text);
-                            this.execute_repeat_begin(n);
-                        }
-                        break;
-                    case commands.CLEARSCREEN:
-                        this.addToExecutionQueue("turtle", "execute_clearscreen");
-                        break;
+
+
                     case commands.COMMAND_TO:
                         this.execute_to();
                         break;
