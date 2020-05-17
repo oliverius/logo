@@ -5,6 +5,7 @@ function run(script) {
     //parser.parse("gd 45 av 60");
     //parser.parse("repite 4 [av 60 gd 90]");
     //parser.parse("av 120 repite 4 [av 60 gd 90] bp");
+    // repite 4 [av 60 repite 5 [gi 72 re 20] gd 90]
     interpreter.run(script);
 }
 
@@ -44,7 +45,6 @@ class Interpreter {
         this.executionQueue = [];
         this.procedures = [];
         window.addEventListener("PARSER_ADD_TO_EXECUTION_QUEUE_EVENT", e => {
-            console.log(this.executionQueue);
             this.executionQueue.push({
                 objectname: e.detail.objectname,
                 methodname: e.detail.methodname,
@@ -104,13 +104,29 @@ class Parser {
         if (token.tokenType === token_types.TEXT) {
             procedure["name"] = token.text;
             procedure["variables"] = [];
+            
             token = this.getToken();
             while(token.tokenType === token_types.VARIABLE) {
                 procedure["variables"].push(token.text);
                 token = this.getToken();
             }
+            procedure["firstTokenIndex"] = this.getCurrentTokenIndex();
+              
+            token = this.getToken();
+            while(token.primitive !== primitives.PRIMITIVE_END) {
+                token = this.getToken();
+            }
+            procedure["lastTokenIndex"] = this.getPreviousTokenIndex();
+
+            this.procedures.push(procedure);
         }
         console.log(procedure);
+    }
+    getCurrentTokenIndex() {
+        return this.tokenIndex - 1;
+    }
+    getPreviousTokenIndex() {
+        return this.getCurrentTokenIndex() - 1;
     }
     getToken() {
         return this.tokens[this.tokenIndex++];
@@ -119,9 +135,11 @@ class Parser {
         this.tokens = tokens;
         this.tokenIndex = 0;
         this.loopStack = [];
+        this.procedures = [];
 
         let token;
         let argumentToken;
+
         do {
             token = this.getToken();
             if(token.tokenType === token_types.PRIMITIVE) {
@@ -165,7 +183,7 @@ class Parser {
                         this.addToExecutionQueue("turtle", "execute_clearscreen");
                         break;
                     case primitives.PRIMITIVE_TO:
-                        //this.execute_to();
+                        this.execute_to();
                         break;
                     case primitives.PRIMITIVE_END:
                         break;
@@ -329,7 +347,7 @@ class Tokenizer {
                 let token = new Token(startIndex, variable, token_types.VARIABLE);
                 this.tokens.push(token);
             } else {
-                console.log(`Unexpected character: ${c}`);
+                console.log(`Unexpected character: "${c}"`);
                 c = this.getCharacter(); // This avoids an endless loop
             }
         } while(!this.isEndOfFile(c))
@@ -466,8 +484,6 @@ class Turtle {
     }
 }
 
-console.log("hello");
 const interpreter = new Interpreter('logocanvas');
-
 
 //module.exports.tokenizer = Tokenizer;
