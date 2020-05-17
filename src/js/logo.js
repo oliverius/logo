@@ -42,7 +42,16 @@ class Interpreter {
         this.tokenizer = new Tokenizer();
         this.fps = 5;
         this.executionQueue = [];
-        window.addEventListener(Parser2.eventName, e => console.log(e.detail.text()));
+        window.addEventListener("PARSER_ADD_TO_EXECUTION_QUEUE_EVENT", e => {
+            console.log(this.executionQueue);
+            this.executionQueue.push({
+                objectname: e.detail.objectname,
+                methodname: e.detail.methodname,
+                arg: e.detail.arg
+            });
+
+            console.log(e.detail);
+        }); // TODO can't make it static in the parser though;
 
         this.executionLoop();
     }
@@ -50,21 +59,19 @@ class Interpreter {
         setInterval(() => {
             console.log("*");
             if (this.executionQueue.length > 0) {
-                //let obj = this.executionqueue.shift();                
-                //this[obj.objectname][obj.methodname](obj.arg);
+                let obj = this.executionQueue.shift();
+                this[obj.objectname][obj.methodname](obj.arg);
             }
         }, 1000/this.fps);
     }
     run(script = "") {
         let tokens = this.tokenizer.tokenize(script);
-        let parser = new Parser2(this.turtle, tokens);
+        let parser = new Parser2(tokens);
     }
-
 }
 
 class Parser2 {
-    constructor(turtle, tokens) {
-        this.turtle = turtle;
+    constructor(tokens) {
         this.tokens = tokens;
 
         this.tokenIndex = 0;
@@ -72,20 +79,18 @@ class Parser2 {
 
         this.parse();
     }
-    static eventName() { return "PARSER_ADD_TO_EXECUTION_QUEUE_EVENT"; }
+    eventName() { return "PARSER_ADD_TO_EXECUTION_QUEUE_EVENT"; }
 
     addToExecutionQueue(objectname = "", methodname = "", arg = 0) {
-        let event = new CustomEvent(this.eventName, {
+        let event = new CustomEvent(this.eventName(), {
             bubbles: true,
-            detail: {text:() => `${objectname} ${methodname} ${arg}`}
+            detail: {
+                objectname: objectname,
+                methodname: methodname,
+                arg: arg
+            }
         });
         window.dispatchEvent(event);
-     /*
-        this.executionqueue.push({
-            objectname: objectname,
-            methodname: methodname,
-            arg: arg
-        })*/
     }
     getToken() {
         return this.tokens[this.tokenIndex++];
