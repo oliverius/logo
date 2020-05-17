@@ -3,8 +3,9 @@ function run(script) {
     //parser.parse(script);
     //parser.parse("para cuadrado :lado av 60");
     //parser.parse("gd 45 av 60");
-    parser.parse("repite 4 [av 60 gd 90]");
+    //parser.parse("repite 4 [av 60 gd 90]");
     //parser.parse("av 120 repite 4 [av 60 gd 90] bp");
+    interpreter.run("av 60 gd 90 av 30");
 }
 
 const token_types = {
@@ -33,6 +34,107 @@ const commands = {
     COMMAND_TO: 7,
     COMMAND_END: 8
 };
+
+class Interpreter {
+    constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        this.turtle = new Turtle(this.canvas);
+        this.tokenizer = new Tokenizer();
+        this.fps = 5;
+        this.executionQueue = [];
+
+        this.executionLoop();
+    }
+    executionLoop() {
+        setInterval(() => {
+            console.log("*");
+            if (this.executionQueue.length > 0) {
+                //let obj = this.executionqueue.shift();                
+                //this[obj.objectname][obj.methodname](obj.arg);
+            }
+        }, 1000/this.fps);
+    }
+    run(script = "") {
+        let tokens = this.tokenizer.tokenize(script);
+        let parser = new Parser2(this.turtle, tokens);
+    }
+
+}
+
+class Parser2 {
+    constructor(turtle, tokens) {
+        this.turtle = turtle;
+        this.tokens = tokens;
+
+        this.tokenIndex = 0;
+        this.loopStack = [];
+
+        this.parse();
+    }
+    getToken() {
+        return this.tokens[this.tokenIndex++];
+    }
+    parse() {
+        let token;
+        let argumentToken;
+        do {
+            token = this.getToken();
+            if(token.tokentype === token_types.COMMAND) {
+                switch(token.command) {
+                    case commands.FORWARD:
+                        argumentToken = this.getToken();
+                        if (argumentToken.tokentype === token_types.NUMBER) {
+                            let n = parseInt(argumentToken.text);
+                            //this.addToExecutionQueue("turtle", "execute_forward", n);
+                        }
+                        break;
+                    case commands.BACK:
+                        argumentToken = this.getToken();
+                        if (argumentToken.tokentype === token_types.NUMBER) {
+                            let n = parseInt(argumentToken.text);
+                            //this.addToExecutionQueue("turtle", "execute_backward", n);
+                        }
+                        break;
+                    case commands.LEFT:
+                        argumentToken = this.getToken();
+                        if (argumentToken.tokentype === token_types.NUMBER) {
+                            let n = parseInt(argumentToken.text);
+                            //this.addToExecutionQueue("turtle", "execute_left", n);
+                        }
+                        break;
+                    case commands.RIGHT:
+                        argumentToken = this.getToken();
+                        if (argumentToken.tokentype === token_types.NUMBER) {
+                            let n = parseInt(argumentToken.text);
+                            //this.addToExecutionQueue("turtle", "execute_right", n);
+                        }
+                        break;
+                    case commands.REPEAT:
+                        argumentToken = this.getToken();
+                        if (argumentToken.tokentype === token_types.NUMBER) {
+                            let n = parseInt(argumentToken.text);
+                            //this.execute_repeat_begin(n);
+                        }
+                        break;
+                    case commands.CLEARSCREEN:
+                        //this.addToExecutionQueue("turtle", "execute_clearscreen");
+                        break;
+                    case commands.COMMAND_TO:
+                        //this.execute_to();
+                        break;
+                    case commands.COMMAND_END:
+                        break;
+                }
+            }
+            if(token.tokentype === token_types.DELIMITER) {
+                if (token.text === delimiters.CLOSING_BRACKET) {
+                    //this.execute_repeat_end();
+                }
+            }
+        } while(token.tokentype !== token_types.END_OF_SCRIPT)
+        console.log("finish parsing", this.tokens);
+    }
+}
 
 class Parser {
     constructor(canvasId) {
@@ -312,6 +414,8 @@ class Tokenizer {
         } while(!this.isEndOfFile(c))
 
         this.addEndOfScriptToken();
+
+        return this.tokens;
     }
 }
 
@@ -443,6 +547,7 @@ class Turtle {
 
 console.log("hello");
 const parser = new Parser('logocanvas');
+const interpreter = new Interpreter('logocanvas');
 
 
 //module.exports.tokenizer = Tokenizer;
