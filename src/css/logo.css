@@ -11,7 +11,7 @@ body {
     align-content: center;
 }
 .logo-script {
-   grid-area: logo-script;
+   grid-area: logo-script;   
    margin: auto;
 }
 .logo-canvas {
@@ -26,6 +26,7 @@ body {
     width: 400px;
     height: 400px;
     font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
     border: 2px solid black;
     resize: none;
 }
