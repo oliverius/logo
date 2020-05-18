@@ -129,7 +129,10 @@ class Parser {
         return this.getCurrentTokenIndex() - 1;
     }
     getToken() {
-        return this.tokens[this.tokenIndex++];
+        if (this.tokenIndex < this.tokens.length) {
+            return this.tokens[this.tokenIndex++];
+        }
+        return new Token(this.getCurrentTokenIndex(), "", token_types.END_OF_SCRIPT);
     }
     parse(tokens) {
         this.tokens = tokens;
@@ -204,11 +207,15 @@ class Parser {
     }
     runProcedure(procedure) {
         console.log("running procedure", procedure);
-        let parameterValues = procedure.parameters.forEach(p => {
+        let parameterValues = [];
+        procedure.parameters.forEach(p => {
             let token = this.getToken();
-            console.log(token);
+            parameterValues.push(token.text);
         });
-        console.log(parameterValues);
+        let p = new Parser();
+        let procedureTokens = this.tokens.slice(procedure.firstTokenIndex, procedure.lastTokenIndex + 1);        
+        p.parse(procedureTokens);
+        console.log("parameter values", parameterValues);
     }
 }
 
@@ -236,11 +243,6 @@ class Token {
 class Tokenizer {
     EOF = "\0";
     VARIABLE_PREFIX = ":";
-
-    addEndOfScriptToken() {
-        let token = new Token(this.getCharacterIndex(), this.EOF, token_types.END_OF_SCRIPT);
-        this.tokens.push(token);
-    }
 
     isEndOfFile(c) {
         return c === this.EOF;
@@ -365,8 +367,6 @@ class Tokenizer {
             }
         } while(!this.isEndOfFile(c))
 
-        this.addEndOfScriptToken();
-
         return this.tokens;
     }
 }
@@ -426,7 +426,7 @@ class Turtle {
         let newX = this.x + n * Math.cos(angleFromYaxisInRadians);
         let newY = this.y - n * Math.sin(angleFromYaxisInRadians);
 
-        this.drawingCtx.lineWidth = 2;
+        this.drawingCtx.lineWidth = 1;
         this.drawingCtx.beginPath();
         this.drawingCtx.moveTo(this.x, this.y);
         this.drawingCtx.lineTo(newX, newY);
