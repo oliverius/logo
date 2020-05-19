@@ -15,8 +15,8 @@ const token_types = {
     NUMBER: 2,
     PRIMITIVE: 3,
     VARIABLE: 4,
-    TEXT: 5,
-    END_OF_SCRIPT : 6 // TODO rename "End of token stream"
+    PROCEDURE_NAME: 5,
+    END_OF_TOKEN_STREAM : 6 // TODO rename "End of token stream"
 };
 
 const delimiters = {
@@ -98,10 +98,15 @@ class Parser {
             this.loopStack.push({loopStartIndex: currentLoop.loopStartIndex, remainingLoops: currentLoop.remainingLoops - 1});
         }
     }
-    execute_to() {
+    execute_procedure_end() {
+        console.log("this is the end");
+        let currentProcedure = this.procedureStack.pop();
+        this.setParserTokenIndex(currentProcedure.currentTokenIndex);
+    }
+    execute_procedure_to() {
         let procedure = {};
         let token = this.getToken();
-        if (token.tokenType === token_types.TEXT) {
+        if (token.tokenType === token_types.PROCEDURE_NAME) {
             procedure["name"] = token.text;
             procedure["parameters"] = [];
             
@@ -111,8 +116,7 @@ class Parser {
                 token = this.getToken();
             }
             procedure["firstTokenIndex"] = this.getCurrentTokenIndex();
-              
-            token = this.getToken();
+            
             while(token.primitive !== primitives.PRIMITIVE_END) {
                 token = this.getToken();
             }
@@ -132,13 +136,14 @@ class Parser {
         if (this.tokenIndex < this.tokens.length) {
             return this.tokens[this.tokenIndex++];
         }
-        return new Token(this.getCurrentTokenIndex(), "", token_types.END_OF_SCRIPT);
+        return new Token(this.getCurrentTokenIndex(), "", token_types.END_OF_TOKEN_STREAM);
     }
     parse(tokens) {
         this.tokens = tokens;
         this.tokenIndex = 0;
         this.loopStack = [];
         this.procedures = [];
+        this.procedureStack = [];
 
         let token;
         let argumentToken;
@@ -186,7 +191,10 @@ class Parser {
                         this.raiseTurtleExecutionQueueEvent("execute_clearscreen");
                         break;
                     case primitives.PRIMITIVE_TO:
-                        this.execute_to();
+                        this.execute_procedure_to();
+                        break;
+                    case primitives.PRIMITIVE_END:
+                        this.execute_procedure_end();
                         break;
                 }
             }
@@ -194,49 +202,60 @@ class Parser {
                 if (token.text === delimiters.CLOSING_BRACKET) {
                     this.execute_repeat_end();
                 }
-            } else if(token.tokenType === token_types.TEXT) {
-                let lookupProcedure = this.procedures.filter(procedure => {
-                    return procedure.name === token.text;
-                });
-                if (lookupProcedure.length > 0) {
-                    this.runProcedure(lookupProcedure[0]);
-                }
+            } else if(token.tokenType === token_types.PROCEDURE_NAME) {
+                this.runProcedure(token.text);
+            } else if(token.tokenType === token_types.VARIABLE) {
+                // TODO since we are in a procedure now, reading the variable would give me the right value to read
+                // but this is inside a "AV :lado" so we need to the logic inside the AV, calling a method "assignment"
+
             }
-        } while(token.tokenType !== token_types.END_OF_SCRIPT)
+        } while(token.tokenType !== token_types.END_OF_TOKEN_STREAM)
         console.log("finish parsing", this.tokens);
     }
-    runProcedure(procedure) {
-        console.log("running procedure", procedure);
-        let parameterValues = [];
-        procedure.parameters.forEach(p => {
-            let token = this.getToken();
-            parameterValues.push(token.text);
+    runProcedure(name) {
+        console.log("running procedure", name);
+        let searchProcedureResults = this.procedures.filter(procedure => {
+            return procedure.name === name;
         });
-        
-        let procedureTokens = [];
-        for (let i=procedure.firstTokenIndex; i<=procedure.lastTokenIndex; i++) {
-            let token = this.tokens[i];
-            if (token.tokenType === token_types.VARIABLE) {
-                token.value = parameterValues[0];
-            }
-            procedureTokens.push(token);
-        }
+        if (searchProcedureResults.length > 0) {
+            let procedure = searchProcedureResults[0];
+            console.log("found", procedure);
+            
+            let procedureStackSnapshot = {};
+            procedureStackSnapshot["name"] = procedure.name;
 
-        let procedureParser = new Parser();
-        procedureParser.parse(procedureTokens);
-        console.log("parameter values", parameterValues);
-        console.table(procedureTokens);
+            let values = [];
+            procedure.parameters.forEach(p => {
+                let token = this.getToken();
+                let value = {
+                    parameterName: p,
+                    parameterValue: token.text
+                };
+                values.push(value);
+            });
+            procedureStackSnapshot["parameters"] = values;
+
+            procedureStackSnapshot["currentTokenIndex"] = this.getCurrentTokenIndex();
+
+            this.procedureStack.push(procedureStackSnapshot);
+
+            this.setParserTokenIndex(procedure.firstTokenIndex);
+            console.log(this.procedureStack);
+        }
+        
+    }
+    setParserTokenIndex(index) {
+        this.tokenIndex = index;
     }
 }
 
 class Token {
-    constructor(startIndex = 0, text = "", tokenType = token_types.NONE, primitive = primitives.NONE, value = "") {
+    constructor(startIndex = 0, text = "", tokenType = token_types.NONE, primitive = primitives.NONE) {
         this.startIndex = startIndex;
         this.text = text;
         this.endIndex = startIndex + text.length - 1;
         this.tokenType = tokenType;
         this.primitive = primitive;
-        this.value = value;
     }
     get [Symbol.toStringTag]() {
         let tokenTypeKey = Object.keys(token_types).find(key => token_types[key] === this.tokenType);
@@ -247,7 +266,7 @@ class Token {
         let paddedTokenTypeKey = tokenTypeKey.padEnd(12);
         let paddedPrimitiveKey = primitiveKey.padStart(8, ' '); 
         
-        return `Token (${paddedStartIndex}-${paddedEndIndex}) "${this.text}" ${paddedTokenTypeKey}\t${paddedPrimitiveKey}\t${this.value}`;
+        return `Token (${paddedStartIndex}-${paddedEndIndex}) "${this.text}" ${paddedTokenTypeKey}\t${paddedPrimitiveKey}`;
     }
 }
 
@@ -356,7 +375,7 @@ class Tokenizer {
                 }
                 let primitive = this.getPrimitive(word);
                 if (primitive === primitives.NONE) {
-                    let token = new Token(startIndex, word, token_types.TEXT, primitive);
+                    let token = new Token(startIndex, word, token_types.PROCEDURE_NAME, primitive);
                     this.tokens.push(token);
                 } else {
                     let token = new Token(startIndex, word, token_types.PRIMITIVE, primitive);
