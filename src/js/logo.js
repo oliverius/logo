@@ -138,6 +138,13 @@ class Parser {
         }
         return new Token(this.getCurrentTokenIndex(), "", token_types.END_OF_TOKEN_STREAM);
     }
+    getPrimitiveParameter() {
+        let token = this.getToken();
+        if (token.tokenType === token_types.NUMBER) {
+            return parseInt(token.text);
+        }
+
+    }
     parse(tokens) {
         this.tokens = tokens;
         this.tokenIndex = 0;
@@ -146,46 +153,31 @@ class Parser {
         this.procedureStack = [];
 
         let token;
-        let argumentToken;
+        let parameter;
 
         do {
             token = this.getToken();
             if(token.tokenType === token_types.PRIMITIVE) {
                 switch(token.primitive) {
                     case primitives.FORWARD:
-                        argumentToken = this.getToken();
-                        if (argumentToken.tokenType === token_types.NUMBER) {
-                            let n = parseInt(argumentToken.text);
-                            this.raiseTurtleExecutionQueueEvent("execute_forward", n);
-                        }
+                        parameter = this.getPrimitiveParameter();
+                        this.raiseTurtleExecutionQueueEvent("execute_forward", parameter);
                         break;
                     case primitives.BACK:
-                        argumentToken = this.getToken();
-                        if (argumentToken.tokenType === token_types.NUMBER) {
-                            let n = parseInt(argumentToken.text);
-                            this.raiseTurtleExecutionQueueEvent("execute_backward", n);
-                        }
+                        parameter = this.getPrimitiveParameter();
+                        this.raiseTurtleExecutionQueueEvent("execute_backward", parameter);
                         break;
                     case primitives.LEFT:
-                        argumentToken = this.getToken();
-                        if (argumentToken.tokenType === token_types.NUMBER) {
-                            let n = parseInt(argumentToken.text);
-                            this.raiseTurtleExecutionQueueEvent("execute_left", n);
-                        }
+                        parameter = this.getPrimitiveParameter();
+                        this.raiseTurtleExecutionQueueEvent("execute_left", parameter);
                         break;
                     case primitives.RIGHT:
-                        argumentToken = this.getToken();
-                        if (argumentToken.tokenType === token_types.NUMBER) {
-                            let n = parseInt(argumentToken.text);
-                            this.raiseTurtleExecutionQueueEvent("execute_right", n);
-                        }
+                        parameter = this.getPrimitiveParameter();
+                        this.raiseTurtleExecutionQueueEvent("execute_right", parameter);
                         break;
                     case primitives.REPEAT:
-                        argumentToken = this.getToken();
-                        if (argumentToken.tokenType === token_types.NUMBER) {
-                            let n = parseInt(argumentToken.text);
-                            this.execute_repeat_begin(n);
-                        }
+                        parameter = this.getPrimitiveParameter();
+                        this.execute_repeat_begin(n);
                         break;
                     case primitives.CLEARSCREEN:
                         this.raiseTurtleExecutionQueueEvent("execute_clearscreen");
