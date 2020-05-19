@@ -7,12 +7,14 @@
     </head>
     <body>
         <div class="container">
+            <!-- <div class="popup">Popup examples</div>
+            <div class="popup">Popup help</div> -->
             <div class="logo-script">
-                <textarea id="scriptarea">para cuadrado :lado
-  av :lado gd 90
+                <textarea id="scriptarea">para cuadrado
+  av 30
 fin
-cuadrado 60
-gd 45 av 30</textarea>
+cuadrado
+</textarea>
             </div>
             <div class="logo-canvas">
                 <canvas id="logocanvas" width="400" height="400"></canvas>
@@ -23,8 +25,9 @@ gd 45 av 30</textarea>
                 <input type="button" class="button" value="Pause ⏸" onclick="run(scriptarea.value)">
                 <input type="button" class="button" value="Examples 🐢" onclick="run(scriptarea.value)">
                 <input type="button" class="button" value="Help 🆘" onclick="run(scriptarea.value)">
-            </div>
-        </div>        
+                <input type="button" class="button" value="Clear ❌" onclick="run(scriptarea.value)">
+            </div>           
+        </div>
         <script type="text/javascript" src="js/logo.js"></script>
     </body>
 </html>

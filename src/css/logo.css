@@ -2,7 +2,7 @@ body {
     background-color:cornflowerblue;
 }
 .container {
-    display: grid;    
+    display: grid;  
     grid-template-columns: 410px 410px;
     grid-template-rows: 410px 60px;
     grid-template-areas: "logo-script logo-canvas" "logo-controls logo-controls";
@@ -40,4 +40,18 @@ body {
     font-size: 14px;
     font-weight: bold;
     border: 2px solid black;
+}
+.popup {
+    width: 800px;
+    height: 400px;    
+
+    position: relative;
+    left: 10px;
+    top: -117%;
+
+    background: red;
+    box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.9);
+}
+.closed {
+    display: none;
 }

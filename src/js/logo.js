@@ -99,9 +99,9 @@ class Parser {
         }
     }
     execute_procedure_end() {
-        console.log("this is the end");
-        let currentProcedure = this.procedureStack.pop(); console.log(currentProcedure);
+        let currentProcedure = this.procedureStack.pop();
         this.setParserTokenIndex(currentProcedure.currentTokenIndex);
+        console.log("this is the end", currentProcedure);
     }
     execute_procedure_to() {
         let procedure = {};
@@ -125,6 +125,7 @@ class Parser {
             this.procedures.push(procedure);
         }
         console.log(procedure);
+        return token;
     }
     getCurrentTokenIndex() {
         return this.tokenIndex - 1;
@@ -153,7 +154,7 @@ class Parser {
         let parameter = parameters.find(p => p.parameterName === variableName);
         let value = parseInt(parameter.parameterValue);
         console.log("found the procedure", currentProcedureStack, value);
-        return 30;
+        return value;
     }
     parse(tokens) {
         this.tokens = tokens;
@@ -167,6 +168,7 @@ class Parser {
 
         do {
             token = this.getToken();
+            console.log(`my token ${token}`);
             if(token.tokenType === token_types.PRIMITIVE) {
                 switch(token.primitive) {
                     case primitives.FORWARD:
@@ -187,7 +189,7 @@ class Parser {
                         break;
                     case primitives.REPEAT:
                         parameter = this.getPrimitiveParameter();
-                        this.execute_repeat_begin(n);
+                        this.execute_repeat_begin(parameter);
                         break;
                     case primitives.CLEARSCREEN:
                         this.raiseTurtleExecutionQueueEvent("execute_clearscreen");
@@ -199,8 +201,7 @@ class Parser {
                         this.execute_procedure_end();
                         break;
                 }
-            }
-            if(token.tokenType === token_types.DELIMITER) {
+            } else if(token.tokenType === token_types.DELIMITER) {
                 if (token.text === delimiters.CLOSING_BRACKET) {
                     this.execute_repeat_end();
                 }
@@ -230,11 +231,10 @@ class Parser {
                 values.push(value);
             });
             procedureStackSnapshot["parameters"] = values;
-
             procedureStackSnapshot["currentTokenIndex"] = this.getCurrentTokenIndex();
 
             this.procedureStack.push(procedureStackSnapshot);
-
+            console.log(`in the procedure, I will jump to ${procedureStackSnapshot.currentTokenIndex} - ${this.tokens[procedureStackSnapshot.currentTokenIndex]}`);
             this.setParserTokenIndex(procedure.firstTokenIndex);
         }
         
