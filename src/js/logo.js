@@ -204,10 +204,6 @@ class Parser {
                 }
             } else if(token.tokenType === token_types.PROCEDURE_NAME) {
                 this.runProcedure(token.text);
-            } else if(token.tokenType === token_types.VARIABLE) {
-                // TODO since we are in a procedure now, reading the variable would give me the right value to read
-                // but this is inside a "AV :lado" so we need to the logic inside the AV, calling a method "assignment"
-
             }
         } while(token.tokenType !== token_types.END_OF_TOKEN_STREAM)
         console.log("finish parsing", this.tokens);
