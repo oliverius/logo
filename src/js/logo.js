@@ -100,7 +100,7 @@ class Parser {
     }
     execute_procedure_end() {
         console.log("this is the end");
-        let currentProcedure = this.procedureStack.pop();
+        let currentProcedure = this.procedureStack.pop(); console.log(currentProcedure);
         this.setParserTokenIndex(currentProcedure.currentTokenIndex);
     }
     execute_procedure_to() {
@@ -142,8 +142,18 @@ class Parser {
         let token = this.getToken();
         if (token.tokenType === token_types.NUMBER) {
             return parseInt(token.text);
+        } else if (token.tokenType === token_types.VARIABLE) {        
+            let value = this.assignVariable(token.text);
+            return value;
         }
-
+    }
+    assignVariable(variableName) {
+        let currentProcedureStack = this.procedureStack[this.procedureStack.length - 1];
+        let parameters = currentProcedureStack.parameters;
+        let parameter = parameters.find(p => p.parameterName === variableName);
+        let value = parseInt(parameter.parameterValue);
+        console.log("found the procedure", currentProcedureStack, value);
+        return 30;
     }
     parse(tokens) {
         this.tokens = tokens;
@@ -201,13 +211,11 @@ class Parser {
         console.log("finish parsing", this.tokens);
     }
     runProcedure(name) {
-        console.log("running procedure", name);
         let searchProcedureResults = this.procedures.filter(procedure => {
             return procedure.name === name;
         });
         if (searchProcedureResults.length > 0) {
             let procedure = searchProcedureResults[0];
-            console.log("found", procedure);
             
             let procedureStackSnapshot = {};
             procedureStackSnapshot["name"] = procedure.name;
@@ -228,7 +236,6 @@ class Parser {
             this.procedureStack.push(procedureStackSnapshot);
 
             this.setParserTokenIndex(procedure.firstTokenIndex);
-            console.log(this.procedureStack);
         }
         
     }
