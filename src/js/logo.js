@@ -73,61 +73,12 @@ class Interpreter {
 class Parser {
     eventName() { return "PARSER_ADD_TO_TURTLE_EXECUTION_QUEUE_EVENT"; }
 
-    raiseTurtleExecutionQueueEvent(methodname = "", arg = 0) {
-        let event = new CustomEvent(this.eventName(), {
-            bubbles: true,
-            detail: {
-                objectname: "turtle",
-                methodname: methodname,
-                arg: arg
-            }
-        });
-        window.dispatchEvent(event);
-    }
-    
     
     execute_procedure_end() {
         let currentProcedure = this.procedureStack.pop();
         this.setParserTokenIndex(currentProcedure.currentTokenIndex);
         console.log("this is the end", currentProcedure);
     }
-    execute_procedure_to() {
-        let procedure = {};
-        let token = this.getToken();
-        if (token.tokenType === token_types.PROCEDURE_NAME) {
-            procedure["name"] = token.text;
-            procedure["parameters"] = [];
-            
-            token = this.getToken();
-            while(token.tokenType === token_types.VARIABLE) {
-                procedure["parameters"].push(token.text);
-                token = this.getToken();
-            }
-            procedure["firstTokenIndex"] = this.getCurrentTokenIndex();
-            
-            while(token.primitive !== primitives.PRIMITIVE_END) {
-                token = this.getToken();
-            }
-            procedure["lastTokenIndex"] = this.getPreviousTokenIndex();
-
-            this.procedures.push(procedure);
-        }
-        console.log(procedure);
-        return token;
-    }
-    getCurrentTokenIndex() {
-        return this.tokenIndex - 1;
-    }
-    getPreviousTokenIndex() {
-        return this.getCurrentTokenIndex() - 1;
-    }
-    getToken() {
-        if (this.tokenIndex < this.tokens.length) {
-            return this.tokens[this.tokenIndex++];
-        }
-        return new Token(this.getCurrentTokenIndex(), "", token_types.END_OF_TOKEN_STREAM);
-    }
-    
     assignVariable(variableName) {
         let currentProcedureStack = this.procedureStack[this.procedureStack.length - 1];
         let parameters = currentProcedureStack.parameters;
@@ -138,6 +89,32 @@ class Parser {
     }
     
 
+
+    execute_procedure_to() {
+        console.log("** Execute procedure TO");
+        let procedure = {};
+        this.getNextToken();
+        if (this.currentToken.tokenType === token_types.PROCEDURE_NAME) {
+            procedure["name"] = this.currentToken.text;
+            procedure["parameters"] = [];
+            
+            this.getNextToken(); // todo maybe putback if no variables
+            while(this.currentToken.tokenType === token_types.VARIABLE) {
+                procedure["parameters"].push(this.currentToken.text);
+                this.getNextToken();
+            }
+            procedure["firstTokenInsideProcedureIndex"] = this.currentTokenIndex;
+            
+            while(this.currentToken.primitive !== primitives.PRIMITIVE_END) {
+                this.getNextToken();
+            }
+            let indexLastTokenNotIncludingEndToken = this.currentTokenIndex - 1;
+            procedure["lastTokenInsideProcedureIndex"] = indexLastTokenNotIncludingEndToken;
+
+            this.procedures.push(procedure);
+            console.log("** Added procedure: ", procedure);
+        }
+    }
     execute_repeat_begin(n = 0) {
         console.log("** REPEAT begin");
         this.getNextToken();
@@ -187,7 +164,6 @@ class Parser {
     parse(tokens) {
         this.tokens = tokens;
         this.initialize();
-        this.tokenIndex = 0;
         this.procedureStack = [];
 
         let n = 0;
@@ -231,12 +207,24 @@ class Parser {
                     this.execute_repeat_end();
                 }
             } else if(this.currentToken.tokenType === token_types.PROCEDURE_NAME) {
-                this.scanProcedure(this.currentToken.text);
+                //this.scanProcedure(this.currentToken.text);
             }
         } while(this.currentToken.tokenType !== token_types.END_OF_TOKEN_STREAM)
-        console.log("Finish parsing", this.tokens);
+        console.log("Finish parsing");
+    }
+    raiseTurtleExecutionQueueEvent(methodname = "", arg = 0) {
+        let event = new CustomEvent(this.eventName(), {
+            bubbles: true,
+            detail: {
+                objectname: "turtle",
+                methodname: methodname,
+                arg: arg
+            }
+        });
+        window.dispatchEvent(event);
     }
     scanProcedure(name) {
+        console.log(`** Scan procedure: ${name}`);
         let searchProcedureResults = this.procedures.filter(procedure => {
             return procedure.name === name;
         });
