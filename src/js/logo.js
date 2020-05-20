@@ -66,6 +66,7 @@ class Interpreter {
         let tokens = this.tokenizer.tokenize(script);
         let parser = new Parser();
         parser.parse(tokens);
+        //tokens.forEach(x => console.log(x.toString()));
     }
 }
 
@@ -150,7 +151,8 @@ class Parser {
             return value;
         }
     }
-    initialize() {
+    initialize(tokens) {
+        this.tokens = tokens;
         this.currentToken = {};
         this.currentTokenIndex = -1; // So when we get the first token, it will be 0, first index in an array.
         this.loopStack = [];
@@ -158,8 +160,7 @@ class Parser {
         this.procedureStack = [];
     }
     parse(tokens) {
-        this.tokens = tokens;
-        this.initialize();
+        this.initialize(tokens);
 
         let n = 0;
 
@@ -246,7 +247,7 @@ class Parser {
 
             this.procedureStack.push(procedureStackItem);
             let indexBeforeFirstTokenInsideProcedure = procedure.firstTokenInsideProcedureIndex - 1;
-            
+
             this.setCurrentTokenIndex(indexBeforeFirstTokenInsideProcedure); // So in the next getNextToken we have the first token inside the procedure
             console.log(`** Index set to: ${procedure.firstTokenInsideProcedureIndex}`, procedureStackItem);
         }
@@ -281,26 +282,16 @@ class Tokenizer {
     LF = "\n";
     VARIABLE_PREFIX = ":";
 
-    isEndOfFile(c) {
-        return c === this.EOF;
-    }
-
-    getCharacterIndex() {
-        return this.index - 1;
-    }
-
-    getCharacter() {
-        if (this.index < this.script.length) {
-            let c = this.script[this.index];
-            //console.log(`[${this.index}] ${c}`);
-            this.index++;
-            return c;
+    getNextCharacter() {
+        this.currentIndex++;
+        if (this.currentIndex < this.script.length) {
+            this.currentCharacter = this.script[this.currentIndex];
         } else {
-            return this.EOF;
+            this.currentCharacter = this.EOF;
         }
+        console.log(`Current character: ${this.currentIndex.toString().padStart(2, '0')} - ${this.currentCharacter}`);
     }
-
-    getPrimitive(primitiveString="") {
+    getPrimitive(primitiveString = "") {
         switch(primitiveString.toLowerCase()) {
             case "av":
                 return primitives.FORWARD;
@@ -322,73 +313,77 @@ class Tokenizer {
                 return primitives.NONE; // This will produce an error.
         }
     }
-
     initialize(script) {
-        this.tokens = [];
-        this.index = 0;
         this.script = script;
+        this.tokens = [];
+        this.currentIndex = -1; // So when we get the first character, it will be script[0]
+        this.currentCharacter = '';
     }
-
     isDelimiter(c) {
         return `${delimiters.OPENING_BRACKET}${delimiters.CLOSING_BRACKET}`.indexOf(c) !== -1;
     }
-
+    isEndOfFile(c) {
+        return c === this.EOF;
+    }
     isLetter(c) {
         return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".indexOf(c) !== -1;
     }
-
     isNewLine(c) {
         return this.LF.indexOf(c) !== -1;
     }
-
     isNumber(c) {
         return "0123456789".indexOf(c) !== -1;
     }
-
     isVariablePrefix(c) {
         return c === this.VARIABLE_PREFIX;
     }
-
     isWhiteSpace(c) {
         return c === " " || c === "\t";
     }
-
+    putbackCharacter() {
+        this.currentIndex--;
+        this.currentCharacter = this.script[this.currentIndex];
+    }
     tokenize(script = "") {
         this.initialize(script);
-        let c = this.getCharacter();
+        
         do {
-            if (this.isWhiteSpace(c)) {
-                c = this.getCharacter();
-                while(this.isWhiteSpace(c)) {
-                    c = this.getCharacter();
+            this.getNextCharacter();
+            if (this.isWhiteSpace(this.currentCharacter)) {
+                this.getNextCharacter();
+                while(this.isWhiteSpace(this.currentCharacter)) {
+                    this.getNextCharacter();
                 }
-            } if (this.isNewLine(c)) {
-                c = this.getCharacter();
-                while(this.isNewLine(c)) {
-                    c = this.getCharacter();
+                this.putbackCharacter();
+            } else if (this.isNewLine(this.currentCharacter)) {
+                this.getNextCharacter();
+                while(this.isNewLine(this.currentCharacter)) {
+                    this.getNextCharacter();
                 }
-            } else if (this.isDelimiter(c)) {
-                let token = new Token(this.getCharacterIndex(), c, token_types.DELIMITER);
+                this.putbackCharacter();
+            } else if (this.isDelimiter(this.currentCharacter)) {
+                let token = new Token(this.currentIndex, this.currentCharacter, token_types.DELIMITER);
                 this.tokens.push(token);
-                c = this.getCharacter();
-            } else if (this.isNumber(c)) {
-                let number = c;
-                c = this.getCharacter();
-                let startIndex = this.getCharacterIndex();
-                while(this.isNumber(c)) {
-                    number += c;
-                    c = this.getCharacter();
+            } else if (this.isNumber(this.currentCharacter)) {
+                let number = this.currentCharacter;
+                let startIndex = this.currentIndex;
+                this.getNextCharacter();                
+                while(this.isNumber(this.currentCharacter)) {
+                    number += this.currentCharacter;
+                    this.getNextCharacter();
                 }
                 let token = new Token(startIndex, number, token_types.NUMBER);
                 this.tokens.push(token);
-            } else if (this.isLetter(c)) {
-                let word = c;
-                c = this.getCharacter();
-                let startIndex = this.getCharacterIndex();
-                while(this.isLetter(c)) {
-                    word += c;
-                    c = this.getCharacter();
+                this.putbackCharacter();
+            } else if (this.isLetter(this.currentCharacter)) {
+                let word = this.currentCharacter;
+                let startIndex = this.currentIndex;
+                this.getNextCharacter();                
+                while(this.isLetter(this.currentCharacter)) {
+                    word += this.currentCharacter;
+                    this.getNextCharacter();
                 }
+                this.putbackCharacter();
                 let primitive = this.getPrimitive(word);
                 if (primitive === primitives.NONE) {
                     let token = new Token(startIndex, word, token_types.PROCEDURE_NAME, primitive);
@@ -397,21 +392,22 @@ class Tokenizer {
                     let token = new Token(startIndex, word, token_types.PRIMITIVE, primitive);
                     this.tokens.push(token);
                 }
-            } else if (this.isVariablePrefix(c)) {
-                let variable = c;
-                c = this.getCharacter();
-                let startIndex = this.getCharacterIndex();
-                while(this.isLetter(c)) {
-                    variable += c;
-                    c = this.getCharacter();
+            } else if (this.isVariablePrefix(this.currentCharacter)) {
+                let variable = this.currentCharacter;
+                let startIndex = this.currentIndex;
+                this.getNextCharacter();                
+                while(this.isLetter(this.currentCharacter)) {
+                    variable += this.currentCharacter;
+                    this.getNextCharacter();
                 }
+                this.putbackCharacter();
                 let token = new Token(startIndex, variable, token_types.VARIABLE);
                 this.tokens.push(token);
             } else {
-                console.log(`Unexpected character: "${c}" ${c.charCodeAt(0)}`);
-                c = this.getCharacter(); // This avoids an endless loop
+              console.log(`Unexpected character: "${this.currentCharacter}" ${this.currentCharacter.charCodeAt(0)}`);
             }
-        } while(!this.isEndOfFile(c))
+            console.log(`Check last token index with current index  ${this.currentIndex}`)
+        } while(!this.isEndOfFile(this.currentCharacter))
 
         return this.tokens;
     }
