@@ -84,20 +84,8 @@ class Parser {
         });
         window.dispatchEvent(event);
     }
-    execute_repeat_begin(n = 0) {
-        let openingBracketToken = this.getToken();
-        if (openingBracketToken.tokenType === token_types.DELIMITER
-            && openingBracketToken.text === delimiters.OPENING_BRACKET) {
-            this.loopStack.push({loopStartIndex: this.tokenIndex, remainingLoops: n - 1});
-        }
-    }
-    execute_repeat_end() {
-        let currentLoop = this.loopStack.pop();
-        if (currentLoop?.remainingLoops > 0) {
-            this.tokenIndex = currentLoop.loopStartIndex;
-            this.loopStack.push({loopStartIndex: currentLoop.loopStartIndex, remainingLoops: currentLoop.remainingLoops - 1});
-        }
-    }
+    
+    
     execute_procedure_end() {
         let currentProcedure = this.procedureStack.pop();
         this.setParserTokenIndex(currentProcedure.currentTokenIndex);
@@ -148,20 +136,38 @@ class Parser {
         console.log("found the procedure", currentProcedureStack, value);
         return value;
     }
-    initialize() {
-        this.currentToken = {};
-        this.currentTokenIndex = -1;
-        this.loopStack = [];
-        this.procedures = [];
+    
+
+    execute_repeat_begin(n = 0) {
+        console.log("** REPEAT begin");
+        this.getNextToken();
+        if (this.currentToken.tokenType === token_types.DELIMITER
+            && this.currentToken.text === delimiters.OPENING_BRACKET) {
+            let firstTokenInsideTheLoopIndex = this.currentTokenIndex;
+            this.loopStack.push({
+                firstTokenInsideTheLoopIndex: firstTokenInsideTheLoopIndex,
+                remainingLoops: n - 1});
+        }
+    }
+    execute_repeat_end() {
+        console.log("** REPEAT end");
+        let currentLoop = this.loopStack.pop();
+        if (currentLoop?.remainingLoops > 0) {
+            this.setCurrentTokenIndex(currentLoop.firstTokenInsideTheLoopIndex);
+            this.loopStack.push({
+                firstTokenInsideTheLoopIndex: currentLoop.firstTokenInsideTheLoopIndex,
+                remainingLoops: currentLoop.remainingLoops - 1
+            });
+        }
     }
     getNextToken() {
         this.currentTokenIndex++;
         if (this.currentTokenIndex < this.tokens.length) {
             this.currentToken = this.tokens[this.currentTokenIndex];
         } else {
-            this.currentToken = new Token(this.currentToken, "", token_types.END_OF_TOKEN_STREAM);
+            this.currentToken = new Token(this.currentTokenIndex, "", token_types.END_OF_TOKEN_STREAM);
         }
-        console.log(`Current token: ${this.currentTokenIndex} - ${this.currentToken}`);
+        console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
     }
     getPrimitiveParameter() {
         this.getNextToken();
@@ -171,6 +177,12 @@ class Parser {
             let value = this.assignVariable(this.currentToken.text);
             return value;
         }
+    }
+    initialize() {
+        this.currentToken = {};
+        this.currentTokenIndex = -1; // So when we get the first token, it will be 0, first index in an array.
+        this.loopStack = [];
+        this.procedures = [];
     }
     parse(tokens) {
         this.tokens = tokens;
@@ -222,7 +234,7 @@ class Parser {
                 this.scanProcedure(this.currentToken.text);
             }
         } while(this.currentToken.tokenType !== token_types.END_OF_TOKEN_STREAM)
-        console.log("finish parsing", this.tokens);
+        console.log("Finish parsing", this.tokens);
     }
     scanProcedure(name) {
         let searchProcedureResults = this.procedures.filter(procedure => {
@@ -252,8 +264,8 @@ class Parser {
         }
         
     }
-    setParserTokenIndex(index) {
-        this.tokenIndex = index;
+    setCurrentTokenIndex(index) {
+        this.currentTokenIndex = index;
     }
 }
 
