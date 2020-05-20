@@ -139,15 +139,7 @@ class Parser {
         }
         return new Token(this.getCurrentTokenIndex(), "", token_types.END_OF_TOKEN_STREAM);
     }
-    getPrimitiveParameter() {
-        let token = this.getToken();
-        if (token.tokenType === token_types.NUMBER) {
-            return parseInt(token.text);
-        } else if (token.tokenType === token_types.VARIABLE) {        
-            let value = this.assignVariable(token.text);
-            return value;
-        }
-    }
+    
     assignVariable(variableName) {
         let currentProcedureStack = this.procedureStack[this.procedureStack.length - 1];
         let parameters = currentProcedureStack.parameters;
@@ -156,40 +148,61 @@ class Parser {
         console.log("found the procedure", currentProcedureStack, value);
         return value;
     }
-    parse(tokens) {
-        this.tokens = tokens;
-        this.tokenIndex = 0;
+    initialize() {
+        this.currentToken = {};
+        this.currentTokenIndex = -1;
         this.loopStack = [];
         this.procedures = [];
+    }
+    getNextToken() {
+        this.currentTokenIndex++;
+        if (this.currentTokenIndex < this.tokens.length) {
+            this.currentToken = this.tokens[this.currentTokenIndex];
+        } else {
+            this.currentToken = new Token(this.currentToken, "", token_types.END_OF_TOKEN_STREAM);
+        }
+        console.log(`Current token: ${this.currentTokenIndex} - ${this.currentToken}`);
+    }
+    getPrimitiveParameter() {
+        this.getNextToken();
+        if (this.currentToken.tokenType === token_types.NUMBER) {
+            return parseInt(this.currentToken.text);
+        } else if (this.currentToken.tokenType === token_types.VARIABLE) {        
+            let value = this.assignVariable(this.currentToken.text);
+            return value;
+        }
+    }
+    parse(tokens) {
+        this.tokens = tokens;
+        this.initialize();
+        this.tokenIndex = 0;
         this.procedureStack = [];
 
-        let token;
-        let parameter;
+        let n = 0;
 
         do {
-            token = this.getToken();
-            console.log(`my token ${token}`);
-            if(token.tokenType === token_types.PRIMITIVE) {
-                switch(token.primitive) {
+            this.getNextToken();            
+            if (this.currentToken.tokenType === token_types.PRIMITIVE) {
+                switch(this.currentToken.primitive) {
                     case primitives.FORWARD:
-                        parameter = this.getPrimitiveParameter();
-                        this.raiseTurtleExecutionQueueEvent("execute_forward", parameter);
+                        n = this.getPrimitiveParameter();
+                        this.raiseTurtleExecutionQueueEvent("execute_forward", n);
                         break;
                     case primitives.BACK:
-                        parameter = this.getPrimitiveParameter();
-                        this.raiseTurtleExecutionQueueEvent("execute_backward", parameter);
+                        n = this.getPrimitiveParameter();
+                        this.raiseTurtleExecutionQueueEvent("execute_backward", n);
                         break;
                     case primitives.LEFT:
-                        parameter = this.getPrimitiveParameter();
-                        this.raiseTurtleExecutionQueueEvent("execute_left", parameter);
+                        n = this.getPrimitiveParameter();
+                        this.raiseTurtleExecutionQueueEvent("execute_left", n);
                         break;
                     case primitives.RIGHT:
-                        parameter = this.getPrimitiveParameter();
-                        this.raiseTurtleExecutionQueueEvent("execute_right", parameter);
+                        n = this.getPrimitiveParameter();
+                        this.raiseTurtleExecutionQueueEvent("execute_right", n);
                         break;
                     case primitives.REPEAT:
-                        parameter = this.getPrimitiveParameter();
-                        this.execute_repeat_begin(parameter);
+                        n = this.getPrimitiveParameter();
+                        this.execute_repeat_begin(n);
                         break;
                     case primitives.CLEARSCREEN:
                         this.raiseTurtleExecutionQueueEvent("execute_clearscreen");
@@ -201,17 +214,17 @@ class Parser {
                         this.execute_procedure_end();
                         break;
                 }
-            } else if(token.tokenType === token_types.DELIMITER) {
-                if (token.text === delimiters.CLOSING_BRACKET) {
+            } else if(this.currentToken.tokenType === token_types.DELIMITER) {
+                if (this.currentToken.text === delimiters.CLOSING_BRACKET) {
                     this.execute_repeat_end();
                 }
-            } else if(token.tokenType === token_types.PROCEDURE_NAME) {
-                this.runProcedure(token.text);
+            } else if(this.currentToken.tokenType === token_types.PROCEDURE_NAME) {
+                this.scanProcedure(this.currentToken.text);
             }
-        } while(token.tokenType !== token_types.END_OF_TOKEN_STREAM)
+        } while(this.currentToken.tokenType !== token_types.END_OF_TOKEN_STREAM)
         console.log("finish parsing", this.tokens);
     }
-    runProcedure(name) {
+    scanProcedure(name) {
         let searchProcedureResults = this.procedures.filter(procedure => {
             return procedure.name === name;
         });
@@ -223,10 +236,10 @@ class Parser {
 
             let values = [];
             procedure.parameters.forEach(p => {
-                let token = this.getToken();
+                this.getNextToken();
                 let value = {
                     parameterName: p,
-                    parameterValue: token.text
+                    parameterValue: this.currentToken.text
                 };
                 values.push(value);
             });
