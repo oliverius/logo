@@ -73,18 +73,13 @@ class Interpreter {
 class Parser {
     eventName() { return "PARSER_ADD_TO_TURTLE_EXECUTION_QUEUE_EVENT"; }
 
-    
-    
     assignVariable(variableName) {
-        let currentProcedureStack = this.procedureStack[this.procedureStack.length - 1];
-        let parameters = currentProcedureStack.parameters;
+        let item = this.peekLastProcedureStackItem();
+        let parameters = item.parameters;
         let parameter = parameters.find(p => p.parameterName === variableName);
         let value = parseInt(parameter.parameterValue);
-        console.log("found the procedure", currentProcedureStack, value);
         return value;
     }
-    
-
     execute_procedure_end() {
         console.log("** Execute procedure END");
         let item = this.procedureStack.pop();
@@ -161,11 +156,11 @@ class Parser {
         this.currentTokenIndex = -1; // So when we get the first token, it will be 0, first index in an array.
         this.loopStack = [];
         this.procedures = [];
+        this.procedureStack = [];
     }
     parse(tokens) {
         this.tokens = tokens;
         this.initialize();
-        this.procedureStack = [];
 
         let n = 0;
 
@@ -212,6 +207,9 @@ class Parser {
             }
         } while(this.currentToken.tokenType !== token_types.END_OF_TOKEN_STREAM)
         console.log("Finish parsing");
+    }
+    peekLastProcedureStackItem() {
+        return this.procedureStack[this.procedureStack.length - 1];
     }
     raiseTurtleExecutionQueueEvent(methodname = "", arg = 0) {
         let event = new CustomEvent(this.eventName(), {
