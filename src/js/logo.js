@@ -74,11 +74,7 @@ class Parser {
     eventName() { return "PARSER_ADD_TO_TURTLE_EXECUTION_QUEUE_EVENT"; }
 
     
-    execute_procedure_end() {
-        let currentProcedure = this.procedureStack.pop();
-        this.setParserTokenIndex(currentProcedure.currentTokenIndex);
-        console.log("this is the end", currentProcedure);
-    }
+    
     assignVariable(variableName) {
         let currentProcedureStack = this.procedureStack[this.procedureStack.length - 1];
         let parameters = currentProcedureStack.parameters;
@@ -89,7 +85,12 @@ class Parser {
     }
     
 
-
+    execute_procedure_end() {
+        console.log("** Execute procedure END");
+        let item = this.procedureStack.pop();
+        this.setCurrentTokenIndex(item.currentTokenIndexBeforeJumpingToProcedure);
+        console.log("** Execute procedure END - move the index to: " + item.currentTokenIndexBeforeJumpingToProcedure);
+    }
     execute_procedure_to() {
         console.log("** Execute procedure TO");
         let procedure = {};
@@ -207,7 +208,7 @@ class Parser {
                     this.execute_repeat_end();
                 }
             } else if(this.currentToken.tokenType === token_types.PROCEDURE_NAME) {
-                //this.scanProcedure(this.currentToken.text);
+                this.scanProcedure(this.currentToken.text);
             }
         } while(this.currentToken.tokenType !== token_types.END_OF_TOKEN_STREAM)
         console.log("Finish parsing");
@@ -231,8 +232,8 @@ class Parser {
         if (searchProcedureResults.length > 0) {
             let procedure = searchProcedureResults[0];
             
-            let procedureStackSnapshot = {};
-            procedureStackSnapshot["name"] = procedure.name;
+            let procedureStackItem = {};
+            procedureStackItem["name"] = procedure.name;
 
             let values = [];
             procedure.parameters.forEach(p => {
@@ -243,12 +244,14 @@ class Parser {
                 };
                 values.push(value);
             });
-            procedureStackSnapshot["parameters"] = values;
-            procedureStackSnapshot["currentTokenIndex"] = this.getCurrentTokenIndex();
+            procedureStackItem["parameters"] = values;
+            procedureStackItem["currentTokenIndexBeforeJumpingToProcedure"] = this.currentTokenIndex;
 
-            this.procedureStack.push(procedureStackSnapshot);
-            console.log(`in the procedure, I will jump to ${procedureStackSnapshot.currentTokenIndex} - ${this.tokens[procedureStackSnapshot.currentTokenIndex]}`);
-            this.setParserTokenIndex(procedure.firstTokenIndex);
+            this.procedureStack.push(procedureStackItem);
+            let indexBeforeFirstTokenInsideProcedure = procedure.firstTokenInsideProcedureIndex - 1;
+            console.log(indexBeforeFirstTokenInsideProcedure);
+            this.setCurrentTokenIndex(indexBeforeFirstTokenInsideProcedure); // So in the next getNextToken we have the first token inside the procedure
+            console.log(`** Index set to: ${procedure.firstTokenInsideProcedureIndex}`, procedureStackItem);
         }
         
     }
