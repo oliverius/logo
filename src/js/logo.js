@@ -16,7 +16,7 @@ const token_types = {
     PRIMITIVE: 3,
     VARIABLE: 4,
     PROCEDURE_NAME: 5,
-    END_OF_TOKEN_STREAM : 6 // TODO rename "End of token stream"
+    END_OF_TOKEN_STREAM : 6
 };
 
 const delimiters = {
@@ -44,13 +44,12 @@ class Interpreter {
         this.fps = 5;
         this.turtleExecutionQueue = [];
         this.procedures = [];
-        window.addEventListener("PARSER_ADD_TO_TURTLE_EXECUTION_QUEUE_EVENT", e => {
+        window.addEventListener(new Parser().eventName(), e => {
             this.turtleExecutionQueue.push({
-                objectname: e.detail.objectname,
                 methodname: e.detail.methodname,
                 arg: e.detail.arg
             });
-        }); // TODO can't make it static in the parser though;
+        });
 
         this.executionLoop();
     }
@@ -59,7 +58,7 @@ class Interpreter {
             console.log("*");
             if (this.turtleExecutionQueue.length > 0) {
                 let obj = this.turtleExecutionQueue.shift();
-                this[obj.objectname][obj.methodname](obj.arg);
+                this.turtle[obj.methodname](obj.arg);
             }
         }, 1000/this.fps);
     }
@@ -94,7 +93,7 @@ class Parser {
             procedure["name"] = this.currentToken.text;
             procedure["parameters"] = [];
             
-            this.getNextToken(); // todo maybe putback if no variables
+            this.getNextToken();
             while(this.currentToken.tokenType === token_types.VARIABLE) {
                 procedure["parameters"].push(this.currentToken.text);
                 this.getNextToken();
@@ -247,7 +246,7 @@ class Parser {
 
             this.procedureStack.push(procedureStackItem);
             let indexBeforeFirstTokenInsideProcedure = procedure.firstTokenInsideProcedureIndex - 1;
-            console.log(indexBeforeFirstTokenInsideProcedure);
+            
             this.setCurrentTokenIndex(indexBeforeFirstTokenInsideProcedure); // So in the next getNextToken we have the first token inside the procedure
             console.log(`** Index set to: ${procedure.firstTokenInsideProcedureIndex}`, procedureStackItem);
         }
@@ -272,15 +271,14 @@ class Token {
         
         let paddedStartIndex = this.startIndex.toString().padStart(3, '0');
         let paddedEndIndex = this.endIndex.toString().padStart(3, '0');
-        let paddedTokenTypeKey = tokenTypeKey.padEnd(12);
-        let paddedPrimitiveKey = primitiveKey.padStart(8, ' '); 
         
-        return `Token (${paddedStartIndex}-${paddedEndIndex}) "${this.text}" ${paddedTokenTypeKey}\t${paddedPrimitiveKey}`;
+        return `Token (${paddedStartIndex}-${paddedEndIndex}) "${this.text}" ${tokenTypeKey} {${primitiveKey}}`;
     }
 }
 
 class Tokenizer {
     EOF = "\0";
+    LF = "\n";
     VARIABLE_PREFIX = ":";
 
     isEndOfFile(c) {
@@ -339,6 +337,10 @@ class Tokenizer {
         return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".indexOf(c) !== -1;
     }
 
+    isNewLine(c) {
+        return this.LF.indexOf(c) !== -1;
+    }
+
     isNumber(c) {
         return "0123456789".indexOf(c) !== -1;
     }
@@ -358,6 +360,11 @@ class Tokenizer {
             if (this.isWhiteSpace(c)) {
                 c = this.getCharacter();
                 while(this.isWhiteSpace(c)) {
+                    c = this.getCharacter();
+                }
+            } if (this.isNewLine(c)) {
+                c = this.getCharacter();
+                while(this.isNewLine(c)) {
                     c = this.getCharacter();
                 }
             } else if (this.isDelimiter(c)) {
@@ -401,7 +408,7 @@ class Tokenizer {
                 let token = new Token(startIndex, variable, token_types.VARIABLE);
                 this.tokens.push(token);
             } else {
-                console.log(`Unexpected character: "${c}"`);
+                console.log(`Unexpected character: "${c}" ${c.charCodeAt(0)}`);
                 c = this.getCharacter(); // This avoids an endless loop
             }
         } while(!this.isEndOfFile(c))
