@@ -26,6 +26,31 @@ const logo = {
         "PRIMITIVE_TO": 7,
         "PRIMITIVE_END": 8
     },
+    "primitiveAliases": [{
+        "name": "FORWARD",
+        "aliases": [ "forward", "fd", "av" ]
+    }, {
+        "name": "BACK",
+        "aliases": [ "back", "bk", "re"]
+    }, {
+        "name": "LEFT",
+        "aliases": [ "left", "lt", "gi" ]
+    }, {
+        "name": "RIGHT",
+        "aliases": [ "right", "rt", "gd" ]
+    }, {
+        "name": "REPEAT",
+        "aliases": [ "repeat", "repite" ]
+    }, {
+        "name": "CLEARSCREEN",
+        "aliases": [ "clearscreen", "cs", "bp" ]
+    }, {
+        "name": "PRIMITIVE_TO",
+        "aliases": ["to", "para"]
+    }, {
+        "name": "PRIMITIVE_END",
+        "aliases": [ "end", "fin" ]
+    }],
     "tokenTypes" : {
         "NONE": 0,
         "DELIMITER": 1,
@@ -36,35 +61,6 @@ const logo = {
         "END_OF_TOKEN_STREAM" : 6
     }
 };
-
-// const lang = {
-//     primitives = [
-//         {   name: "FORWARD",
-//             aliases: ["fw", "forward"]
-//         },
-//         {   name: "BACK",
-//             aliases: ["bk", "backward"]
-//         },
-//         {   name: "LEFT",
-//             aliases: ["bk", "backward"]
-//         },
-//         {   name: "RIGHT",
-//             aliases: ["bk", "backward"]
-//         },
-//         {   name: "REPEAT",
-//             aliases: ["bk", "backward"]
-//         },
-//         {   name: "LEFT",
-//             aliases: ["bk", "backward"]
-//         },
-//         {   name: "RIGHT",
-//             aliases: ["bk", "backward"]
-//         },
-//         {   name: "REPEAT",
-//             aliases: ["bk", "backward"]
-//         }
-//     ]
-// }
 
 class Interpreter {
     constructor(canvasId) {
@@ -321,27 +317,16 @@ class Tokenizer {
         }
         console.log(`Current character: ${this.currentIndex.toString().padStart(2, '0')} - ${this.currentCharacter}`);
     }
-    getPrimitive(primitiveString = "") {
-        switch(primitiveString.toLowerCase()) {
-            case "av":
-                return logo.primitives.FORWARD;
-            case "re":
-                return logo.primitives.BACK;
-            case "gd":
-                return logo.primitives.RIGHT;
-            case "gi":
-                return logo.primitives.LEFT;
-            case "repite":
-                return logo.primitives.REPEAT;
-            case "bp":
-                return logo.primitives.CLEARSCREEN;
-            case "para":
-                return logo.primitives.PRIMITIVE_TO;
-            case "fin":
-                return logo.primitives.PRIMITIVE_END;
-            default:
-                return logo.primitives.NONE; // This will produce an error.
+    getPrimitive(primitiveAlias = "") {
+        let foundPrimitives = logo.primitiveAliases.filter(p =>
+            p.aliases.includes(primitiveAlias.toLowerCase())
+        );
+
+        if (foundPrimitives.length === 1) {
+            return logo.primitives[foundPrimitives[0].name];
+            
         }
+        return logo.primitives.NONE;
     }
     initialize(script) {
         this.script = script;
