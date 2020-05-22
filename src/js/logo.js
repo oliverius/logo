@@ -6,60 +6,37 @@ function run(script) {
     //parser.parse("repite 4 [av 60 gd 90]");
     //parser.parse("av 120 repite 4 [av 60 gd 90] bp");
     // repite 4 [av 60 repite 5 [gi 72 re 20] gd 90]
+    console.log(logo);
     interpreter.run(script);
 }
 
-// const logo = {
-//     delimiters = {
-//         OPENING_BRACKET: "[",
-//         CLOSING_BRACKET: "]"
-//     },
-//     primitives = {
-//         NONE: 0,
-//         FORWARD: 1,
-//         BACK: 2,
-//         LEFT: 3,
-//         RIGHT: 4,
-//         REPEAT: 5,
-//         CLEARSCREEN: 6,
-//         PRIMITIVE_TO: 7,
-//         PRIMITIVE_END: 8
-//     },
-//     tokenTypes = {
-//         NONE: 0,
-//         DELIMITER: 1,
-//         NUMBER: 2,
-//         PRIMITIVE: 3,
-//         VARIABLE: 4,
-//         PROCEDURE_NAME: 5,
-//         END_OF_TOKEN_STREAM : 6
-//     }
-// };
+const logo = {
+    "delimiters" :{
+        "OPENING_BRACKET": "[",
+        "CLOSING_BRACKET": "]"
+    },
+    "primitives" : {
+        "NONE": 0,
+        "FORWARD": 1,
+        "BACK": 2,
+        "LEFT": 3,
+        "RIGHT": 4,
+        "REPEAT": 5,
+        "CLEARSCREEN": 6,
+        "PRIMITIVE_TO": 7,
+        "PRIMITIVE_END": 8
+    },
+    "tokenTypes" : {
+        "NONE": 0,
+        "DELIMITER": 1,
+        "NUMBER": 2,
+        "PRIMITIVE": 3,
+        "VARIABLE": 4,
+        "PROCEDURE_NAME": 5,
+        "END_OF_TOKEN_STREAM" : 6
+    }
+};
 
-const delimiters = {
-    OPENING_BRACKET: "[",
-    CLOSING_BRACKET: "]"
-}
-const primitives = {
-    NONE: 0,
-    FORWARD: 1,
-    BACK: 2,
-    LEFT: 3,
-    RIGHT: 4,
-    REPEAT: 5,
-    CLEARSCREEN: 6,
-    PRIMITIVE_TO: 7,
-    PRIMITIVE_END: 8
-}
-const tokenTypes = {
-    NONE: 0,
-    DELIMITER: 1,
-    NUMBER: 2,
-    PRIMITIVE: 3,
-    VARIABLE: 4,
-    PROCEDURE_NAME: 5,
-    END_OF_TOKEN_STREAM : 6
-}
 // const lang = {
 //     primitives = [
 //         {   name: "FORWARD",
@@ -143,18 +120,18 @@ class Parser {
         console.log("** Execute procedure TO");
         let procedure = {};
         this.getNextToken();
-        if (this.currentToken.tokenType === tokenTypes.PROCEDURE_NAME) {
+        if (this.currentToken.tokenType === logo.tokenTypes.PROCEDURE_NAME) {
             procedure["name"] = this.currentToken.text;
             procedure["parameters"] = [];
             
             this.getNextToken();
-            while(this.currentToken.tokenType === tokenTypes.VARIABLE) {
+            while(this.currentToken.tokenType === logo.tokenTypes.VARIABLE) {
                 procedure["parameters"].push(this.currentToken.text);
                 this.getNextToken();
             }
             procedure["firstTokenInsideProcedureIndex"] = this.currentTokenIndex;
             
-            while(this.currentToken.primitive !== primitives.PRIMITIVE_END) {
+            while(this.currentToken.primitive !== logo.primitives.PRIMITIVE_END) {
                 this.getNextToken();
             }
             let indexLastTokenNotIncludingEndToken = this.currentTokenIndex - 1;
@@ -167,8 +144,8 @@ class Parser {
     execute_repeat_begin(n = 0) {
         console.log("** REPEAT begin");
         this.getNextToken();
-        if (this.currentToken.tokenType === tokenTypes.DELIMITER
-            && this.currentToken.text === delimiters.OPENING_BRACKET) {
+        if (this.currentToken.tokenType === logo.tokenTypes.DELIMITER
+            && this.currentToken.text === logo.delimiters.OPENING_BRACKET) {
             let firstTokenInsideTheLoopIndex = this.currentTokenIndex;
             this.loopStack.push({
                 firstTokenInsideTheLoopIndex: firstTokenInsideTheLoopIndex,
@@ -191,15 +168,15 @@ class Parser {
         if (this.currentTokenIndex < this.tokens.length) {
             this.currentToken = this.tokens[this.currentTokenIndex];
         } else {
-            this.currentToken = new Token(this.currentTokenIndex, "", tokenTypes.END_OF_TOKEN_STREAM);
+            this.currentToken = new Token(this.currentTokenIndex, "", logo.tokenTypes.END_OF_TOKEN_STREAM);
         }
         console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
     }
     getPrimitiveParameter() {
         this.getNextToken();
-        if (this.currentToken.tokenType === tokenTypes.NUMBER) {
+        if (this.currentToken.tokenType === logo.tokenTypes.NUMBER) {
             return parseInt(this.currentToken.text);
-        } else if (this.currentToken.tokenType === tokenTypes.VARIABLE) {        
+        } else if (this.currentToken.tokenType === logo.tokenTypes.VARIABLE) {        
             let value = this.assignVariable(this.currentToken.text);
             return value;
         }
@@ -219,46 +196,46 @@ class Parser {
 
         do {
             this.getNextToken();            
-            if (this.currentToken.tokenType === tokenTypes.PRIMITIVE) {
+            if (this.currentToken.tokenType === logo.tokenTypes.PRIMITIVE) {
                 switch(this.currentToken.primitive) {
-                    case primitives.FORWARD:
+                    case logo.primitives.FORWARD:
                         n = this.getPrimitiveParameter();
                         this.raiseTurtleExecutionQueueEvent("execute_forward", n);
                         break;
-                    case primitives.BACK:
+                    case logo.primitives.BACK:
                         n = this.getPrimitiveParameter();
                         this.raiseTurtleExecutionQueueEvent("execute_backward", n);
                         break;
-                    case primitives.LEFT:
+                    case logo.primitives.LEFT:
                         n = this.getPrimitiveParameter();
                         this.raiseTurtleExecutionQueueEvent("execute_left", n);
                         break;
-                    case primitives.RIGHT:
+                    case logo.primitives.RIGHT:
                         n = this.getPrimitiveParameter();
                         this.raiseTurtleExecutionQueueEvent("execute_right", n);
                         break;
-                    case primitives.REPEAT:
+                    case logo.primitives.REPEAT:
                         n = this.getPrimitiveParameter();
                         this.execute_repeat_begin(n);
                         break;
-                    case primitives.CLEARSCREEN:
+                    case logo.primitives.CLEARSCREEN:
                         this.raiseTurtleExecutionQueueEvent("execute_clearscreen");
                         break;
-                    case primitives.PRIMITIVE_TO:
+                    case logo.primitives.PRIMITIVE_TO:
                         this.execute_procedure_to();
                         break;
-                    case primitives.PRIMITIVE_END:
+                    case logo.primitives.PRIMITIVE_END:
                         this.execute_procedure_end();
                         break;
                 }
-            } else if(this.currentToken.tokenType === tokenTypes.DELIMITER) {
-                if (this.currentToken.text === delimiters.CLOSING_BRACKET) {
+            } else if(this.currentToken.tokenType === logo.tokenTypes.DELIMITER) {
+                if (this.currentToken.text === logo.delimiters.CLOSING_BRACKET) {
                     this.execute_repeat_end();
                 }
-            } else if(this.currentToken.tokenType === tokenTypes.PROCEDURE_NAME) {
+            } else if(this.currentToken.tokenType === logo.tokenTypes.PROCEDURE_NAME) {
                 this.scanProcedure(this.currentToken.text);
             }
-        } while(this.currentToken.tokenType !== tokenTypes.END_OF_TOKEN_STREAM)
+        } while(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM)
         console.log("Finish parsing");
     }
     peekLastProcedureStackItem() {
@@ -312,7 +289,7 @@ class Parser {
 }
 
 class Token {
-    constructor(startIndex = 0, text = "", tokenType = tokenTypes.NONE, primitive = primitives.NONE) {
+    constructor(startIndex = 0, text = "", tokenType = logo.tokenTypes.NONE, primitive = logo.primitives.NONE) {
         this.startIndex = startIndex;
         this.text = text;
         this.endIndex = startIndex + text.length - 1;
@@ -320,8 +297,8 @@ class Token {
         this.primitive = primitive;
     }
     get [Symbol.toStringTag]() {
-        let tokenTypeKey = Object.keys(tokenTypes).find(key => tokenTypes[key] === this.tokenType);
-        let primitiveKey = Object.keys(primitives).find(key => primitives[key] === this.primitive);
+        let tokenTypeKey = Object.keys(logo.tokenTypes).find(key => logo.tokenTypes[key] === this.tokenType);
+        let primitiveKey = Object.keys(logo.primitives).find(key => logo.primitives[key] === this.primitive);
         
         let paddedStartIndex = this.startIndex.toString().padStart(3, '0');
         let paddedEndIndex = this.endIndex.toString().padStart(3, '0');
@@ -347,23 +324,23 @@ class Tokenizer {
     getPrimitive(primitiveString = "") {
         switch(primitiveString.toLowerCase()) {
             case "av":
-                return primitives.FORWARD;
+                return logo.primitives.FORWARD;
             case "re":
-                return primitives.BACK;
+                return logo.primitives.BACK;
             case "gd":
-                return primitives.RIGHT;
+                return logo.primitives.RIGHT;
             case "gi":
-                return primitives.LEFT;
+                return logo.primitives.LEFT;
             case "repite":
-                return primitives.REPEAT;
+                return logo.primitives.REPEAT;
             case "bp":
-                return primitives.CLEARSCREEN;
+                return logo.primitives.CLEARSCREEN;
             case "para":
-                return primitives.PRIMITIVE_TO;
+                return logo.primitives.PRIMITIVE_TO;
             case "fin":
-                return primitives.PRIMITIVE_END;
+                return logo.primitives.PRIMITIVE_END;
             default:
-                return primitives.NONE; // This will produce an error.
+                return logo.primitives.NONE; // This will produce an error.
         }
     }
     initialize(script) {
@@ -373,7 +350,7 @@ class Tokenizer {
         this.currentCharacter = '';
     }
     isDelimiter(c) {
-        return `${delimiters.OPENING_BRACKET}${delimiters.CLOSING_BRACKET}`.indexOf(c) !== -1;
+        return `${logo.delimiters.OPENING_BRACKET}${logo.delimiters.CLOSING_BRACKET}`.indexOf(c) !== -1;
     }
     isEndOfFile(c) {
         return c === this.EOF;
@@ -415,7 +392,7 @@ class Tokenizer {
                 }
                 this.putbackCharacter();
             } else if (this.isDelimiter(this.currentCharacter)) {
-                let token = new Token(this.currentIndex, this.currentCharacter, tokenTypes.DELIMITER);
+                let token = new Token(this.currentIndex, this.currentCharacter, logo.tokenTypes.DELIMITER);
                 this.tokens.push(token);
             } else if (this.isNumber(this.currentCharacter)) {
                 let number = this.currentCharacter;
@@ -425,7 +402,7 @@ class Tokenizer {
                     number += this.currentCharacter;
                     this.getNextCharacter();
                 }
-                let token = new Token(startIndex, number, tokenTypes.NUMBER);
+                let token = new Token(startIndex, number, logo.tokenTypes.NUMBER);
                 this.tokens.push(token);
                 this.putbackCharacter();
             } else if (this.isLetter(this.currentCharacter)) {
@@ -438,11 +415,11 @@ class Tokenizer {
                 }
                 this.putbackCharacter();
                 let primitive = this.getPrimitive(word);
-                if (primitive === primitives.NONE) {
-                    let token = new Token(startIndex, word, tokenTypes.PROCEDURE_NAME, primitive);
+                if (primitive === logo.primitives.NONE) {
+                    let token = new Token(startIndex, word, logo.tokenTypes.PROCEDURE_NAME, primitive);
                     this.tokens.push(token);
                 } else {
-                    let token = new Token(startIndex, word, tokenTypes.PRIMITIVE, primitive);
+                    let token = new Token(startIndex, word, logo.tokenTypes.PRIMITIVE, primitive);
                     this.tokens.push(token);
                 }
             } else if (this.isVariablePrefix(this.currentCharacter)) {
@@ -454,7 +431,7 @@ class Tokenizer {
                     this.getNextCharacter();
                 }
                 this.putbackCharacter();
-                let token = new Token(startIndex, variable, tokenTypes.VARIABLE);
+                let token = new Token(startIndex, variable, logo.tokenTypes.VARIABLE);
                 this.tokens.push(token);
             } else {
               console.log(`Unexpected character: "${this.currentCharacter}" ${this.currentCharacter.charCodeAt(0)}`);
