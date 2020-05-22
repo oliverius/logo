@@ -9,21 +9,37 @@ function run(script) {
     interpreter.run(script);
 }
 
-const token_types = {
-    NONE: 0,
-    DELIMITER: 1,
-    NUMBER: 2,
-    PRIMITIVE: 3,
-    VARIABLE: 4,
-    PROCEDURE_NAME: 5,
-    END_OF_TOKEN_STREAM : 6
-};
+// const logo = {
+//     delimiters = {
+//         OPENING_BRACKET: "[",
+//         CLOSING_BRACKET: "]"
+//     },
+//     primitives = {
+//         NONE: 0,
+//         FORWARD: 1,
+//         BACK: 2,
+//         LEFT: 3,
+//         RIGHT: 4,
+//         REPEAT: 5,
+//         CLEARSCREEN: 6,
+//         PRIMITIVE_TO: 7,
+//         PRIMITIVE_END: 8
+//     },
+//     tokenTypes = {
+//         NONE: 0,
+//         DELIMITER: 1,
+//         NUMBER: 2,
+//         PRIMITIVE: 3,
+//         VARIABLE: 4,
+//         PROCEDURE_NAME: 5,
+//         END_OF_TOKEN_STREAM : 6
+//     }
+// };
 
 const delimiters = {
     OPENING_BRACKET: "[",
     CLOSING_BRACKET: "]"
-};
-
+}
 const primitives = {
     NONE: 0,
     FORWARD: 1,
@@ -34,7 +50,44 @@ const primitives = {
     CLEARSCREEN: 6,
     PRIMITIVE_TO: 7,
     PRIMITIVE_END: 8
-};
+}
+const tokenTypes = {
+    NONE: 0,
+    DELIMITER: 1,
+    NUMBER: 2,
+    PRIMITIVE: 3,
+    VARIABLE: 4,
+    PROCEDURE_NAME: 5,
+    END_OF_TOKEN_STREAM : 6
+}
+// const lang = {
+//     primitives = [
+//         {   name: "FORWARD",
+//             aliases: ["fw", "forward"]
+//         },
+//         {   name: "BACK",
+//             aliases: ["bk", "backward"]
+//         },
+//         {   name: "LEFT",
+//             aliases: ["bk", "backward"]
+//         },
+//         {   name: "RIGHT",
+//             aliases: ["bk", "backward"]
+//         },
+//         {   name: "REPEAT",
+//             aliases: ["bk", "backward"]
+//         },
+//         {   name: "LEFT",
+//             aliases: ["bk", "backward"]
+//         },
+//         {   name: "RIGHT",
+//             aliases: ["bk", "backward"]
+//         },
+//         {   name: "REPEAT",
+//             aliases: ["bk", "backward"]
+//         }
+//     ]
+// }
 
 class Interpreter {
     constructor(canvasId) {
@@ -90,12 +143,12 @@ class Parser {
         console.log("** Execute procedure TO");
         let procedure = {};
         this.getNextToken();
-        if (this.currentToken.tokenType === token_types.PROCEDURE_NAME) {
+        if (this.currentToken.tokenType === tokenTypes.PROCEDURE_NAME) {
             procedure["name"] = this.currentToken.text;
             procedure["parameters"] = [];
             
             this.getNextToken();
-            while(this.currentToken.tokenType === token_types.VARIABLE) {
+            while(this.currentToken.tokenType === tokenTypes.VARIABLE) {
                 procedure["parameters"].push(this.currentToken.text);
                 this.getNextToken();
             }
@@ -114,7 +167,7 @@ class Parser {
     execute_repeat_begin(n = 0) {
         console.log("** REPEAT begin");
         this.getNextToken();
-        if (this.currentToken.tokenType === token_types.DELIMITER
+        if (this.currentToken.tokenType === tokenTypes.DELIMITER
             && this.currentToken.text === delimiters.OPENING_BRACKET) {
             let firstTokenInsideTheLoopIndex = this.currentTokenIndex;
             this.loopStack.push({
@@ -138,15 +191,15 @@ class Parser {
         if (this.currentTokenIndex < this.tokens.length) {
             this.currentToken = this.tokens[this.currentTokenIndex];
         } else {
-            this.currentToken = new Token(this.currentTokenIndex, "", token_types.END_OF_TOKEN_STREAM);
+            this.currentToken = new Token(this.currentTokenIndex, "", tokenTypes.END_OF_TOKEN_STREAM);
         }
         console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
     }
     getPrimitiveParameter() {
         this.getNextToken();
-        if (this.currentToken.tokenType === token_types.NUMBER) {
+        if (this.currentToken.tokenType === tokenTypes.NUMBER) {
             return parseInt(this.currentToken.text);
-        } else if (this.currentToken.tokenType === token_types.VARIABLE) {        
+        } else if (this.currentToken.tokenType === tokenTypes.VARIABLE) {        
             let value = this.assignVariable(this.currentToken.text);
             return value;
         }
@@ -166,7 +219,7 @@ class Parser {
 
         do {
             this.getNextToken();            
-            if (this.currentToken.tokenType === token_types.PRIMITIVE) {
+            if (this.currentToken.tokenType === tokenTypes.PRIMITIVE) {
                 switch(this.currentToken.primitive) {
                     case primitives.FORWARD:
                         n = this.getPrimitiveParameter();
@@ -198,14 +251,14 @@ class Parser {
                         this.execute_procedure_end();
                         break;
                 }
-            } else if(this.currentToken.tokenType === token_types.DELIMITER) {
+            } else if(this.currentToken.tokenType === tokenTypes.DELIMITER) {
                 if (this.currentToken.text === delimiters.CLOSING_BRACKET) {
                     this.execute_repeat_end();
                 }
-            } else if(this.currentToken.tokenType === token_types.PROCEDURE_NAME) {
+            } else if(this.currentToken.tokenType === tokenTypes.PROCEDURE_NAME) {
                 this.scanProcedure(this.currentToken.text);
             }
-        } while(this.currentToken.tokenType !== token_types.END_OF_TOKEN_STREAM)
+        } while(this.currentToken.tokenType !== tokenTypes.END_OF_TOKEN_STREAM)
         console.log("Finish parsing");
     }
     peekLastProcedureStackItem() {
@@ -259,7 +312,7 @@ class Parser {
 }
 
 class Token {
-    constructor(startIndex = 0, text = "", tokenType = token_types.NONE, primitive = primitives.NONE) {
+    constructor(startIndex = 0, text = "", tokenType = tokenTypes.NONE, primitive = primitives.NONE) {
         this.startIndex = startIndex;
         this.text = text;
         this.endIndex = startIndex + text.length - 1;
@@ -267,7 +320,7 @@ class Token {
         this.primitive = primitive;
     }
     get [Symbol.toStringTag]() {
-        let tokenTypeKey = Object.keys(token_types).find(key => token_types[key] === this.tokenType);
+        let tokenTypeKey = Object.keys(tokenTypes).find(key => tokenTypes[key] === this.tokenType);
         let primitiveKey = Object.keys(primitives).find(key => primitives[key] === this.primitive);
         
         let paddedStartIndex = this.startIndex.toString().padStart(3, '0');
@@ -362,7 +415,7 @@ class Tokenizer {
                 }
                 this.putbackCharacter();
             } else if (this.isDelimiter(this.currentCharacter)) {
-                let token = new Token(this.currentIndex, this.currentCharacter, token_types.DELIMITER);
+                let token = new Token(this.currentIndex, this.currentCharacter, tokenTypes.DELIMITER);
                 this.tokens.push(token);
             } else if (this.isNumber(this.currentCharacter)) {
                 let number = this.currentCharacter;
@@ -372,7 +425,7 @@ class Tokenizer {
                     number += this.currentCharacter;
                     this.getNextCharacter();
                 }
-                let token = new Token(startIndex, number, token_types.NUMBER);
+                let token = new Token(startIndex, number, tokenTypes.NUMBER);
                 this.tokens.push(token);
                 this.putbackCharacter();
             } else if (this.isLetter(this.currentCharacter)) {
@@ -386,10 +439,10 @@ class Tokenizer {
                 this.putbackCharacter();
                 let primitive = this.getPrimitive(word);
                 if (primitive === primitives.NONE) {
-                    let token = new Token(startIndex, word, token_types.PROCEDURE_NAME, primitive);
+                    let token = new Token(startIndex, word, tokenTypes.PROCEDURE_NAME, primitive);
                     this.tokens.push(token);
                 } else {
-                    let token = new Token(startIndex, word, token_types.PRIMITIVE, primitive);
+                    let token = new Token(startIndex, word, tokenTypes.PRIMITIVE, primitive);
                     this.tokens.push(token);
                 }
             } else if (this.isVariablePrefix(this.currentCharacter)) {
@@ -401,7 +454,7 @@ class Tokenizer {
                     this.getNextCharacter();
                 }
                 this.putbackCharacter();
-                let token = new Token(startIndex, variable, token_types.VARIABLE);
+                let token = new Token(startIndex, variable, tokenTypes.VARIABLE);
                 this.tokens.push(token);
             } else {
               console.log(`Unexpected character: "${this.currentCharacter}" ${this.currentCharacter.charCodeAt(0)}`);
