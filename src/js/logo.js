@@ -1,13 +1,132 @@
 
 function run(script) {
-    //parser.parse(script);
     //parser.parse("para cuadrado :lado av 60");
-    //parser.parse("gd 45 av 60");
-    //parser.parse("repite 4 [av 60 gd 90]");
-    //parser.parse("av 120 repite 4 [av 60 gd 90] bp");
-    // repite 4 [av 60 repite 5 [gi 72 re 20] gd 90]
-    console.log(logo);
+    //parser.parse("av 120 repite 4 [av 60 gd 90] bp");    
+    // bp repite 3 [av 60 repite 4 [gi 90 re 20] gd 120]
     interpreter.run(script);
+}
+
+// Totally annoyed with how mocha is running the tests, so for now we do simple ones in the browser itself for the tokenizer
+function runtests() {
+    let tokenizer = new Tokenizer();
+    let assertToken = (expectedToken = {}, actualToken = {}) => {
+            let success = actualToken.startIndex === expectedToken.startIndex &&
+                actualToken.endIndex === expectedToken.endIndex &&
+                actualToken.text === expectedToken.text &&
+                actualToken.tokenType === expectedToken.tokenType &&
+                actualToken.primitive === expectedToken.primitive;
+            if (!success) {
+                console.log(`Expected token: ${expectedToken} - Actual token: ${actualToken}`);
+            }
+            return success;
+    };
+    let assertTokens = (comment = "", expectedTokens = [], actualTokens = []) => {
+        if (expectedTokens.length !== actualTokens.length) {
+            throw `TEST "${comment}": Expected and actual have different number of tokens`;
+        }
+        let success = expectedTokens.every((expectedToken, index) => assertToken(expectedToken, actualTokens[index]) === true);
+        let testResult = success ? "PASSED" : "FAILED";
+        console.log(`TEST "${comment}": ${testResult}`);
+    };
+
+    assertTokens(
+        'One space only',
+        [],
+        tokenizer.tokenize(" ")
+    );
+    assertTokens(
+        'Two spaces only',
+        [],
+        tokenizer.tokenize("  ")
+    );
+    assertTokens(
+        'Three spaces only',
+        [],
+        tokenizer.tokenize("   ")
+    );
+    assertTokens(
+        'Square without REPEAT primitive',
+        [
+            new Token(0, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(3, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(6, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
+            new Token(9, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(12, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(15, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(18, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
+            new Token(21, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(24, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(27, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(30, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
+            new Token(33, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(36, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(39, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(42, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
+            new Token(45, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE)
+        ],
+        tokenizer.tokenize("fd 60 rt 90 fd 60 rt 90 fd 60 rt 90 fd 60 rt 90")
+    );
+    assertTokens(
+        'Square with REPEAT primitive and brackets next to other tokens',
+        [
+            new Token(0, "repeat", logo.tokenTypes.PRIMITIVE, logo.primitives.REPEAT),
+            new Token(7, "4", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(9, "[", logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(10, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(13, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(16, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
+            new Token(19, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(21, "]", logo.tokenTypes.DELIMITER, logo.primitives.NONE)
+        ],
+        tokenizer.tokenize("repeat 4 [fd 60 rt 90]")
+    );
+    assertTokens(
+        'Square with REPEAT primitive and brackets with spaces each side',
+        [
+            new Token(0, "repeat", logo.tokenTypes.PRIMITIVE, logo.primitives.REPEAT),
+            new Token(7, "4", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(9, "[", logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(11, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(14, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(17, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
+            new Token(20, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(23, "]", logo.tokenTypes.DELIMITER, logo.primitives.NONE)
+        ],
+        tokenizer.tokenize("repeat 4 [ fd 60 rt 90 ]")
+    );
+    assertTokens(
+        'Double REPEAT with inside one in the middle of the primitives of the first one',
+        [
+            new Token(0, "repeat", logo.tokenTypes.PRIMITIVE, logo.primitives.REPEAT),
+            new Token(7, "3", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(9, "[", logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(10, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(13, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(16, "repeat", logo.tokenTypes.PRIMITIVE, logo.primitives.REPEAT),
+            new Token(23, "4", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(25, "[", logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(26, "lt", logo.tokenTypes.PRIMITIVE, logo.primitives.LEFT),
+            new Token(29, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(32, "bk", logo.tokenTypes.PRIMITIVE, logo.primitives.BACK),
+            new Token(35, "20", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(37, "]", logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(39, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
+            new Token(42, "120", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(45, "]", logo.tokenTypes.DELIMITER, logo.primitives.NONE)
+        ],
+        tokenizer.tokenize("repeat 3 [fd 60 repeat 4 [lt 90 bk 20] rt 120]")
+    );
+    assertTokens(
+        'PROCEDURE with no parameters in one line',
+        [
+            new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
+            new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(8, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(11, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(14, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END)
+        ],
+        tokenizer.tokenize("to line fd 60 end")
+    );
 }
 
 const logo = {
@@ -100,7 +219,7 @@ class Parser {
     eventName() { return "PARSER_ADD_TO_TURTLE_EXECUTION_QUEUE_EVENT"; }
 
     assignVariable(variableName) {
-        let item = this.peekLastProcedureStackItem();
+        let item = this.peekLastGoToProcedureStackItem();
         let parameters = item.parameters;
         let parameter = parameters.find(p => p.parameterName === variableName);
         let value = parseInt(parameter.parameterValue);
@@ -108,7 +227,7 @@ class Parser {
     }
     execute_procedure_end() {
         console.log("** Execute procedure END");
-        let item = this.procedureStack.pop();
+        let item = this.goToProcedureStack.pop();
         this.setCurrentTokenIndex(item.currentTokenIndexBeforeJumpingToProcedure);
         console.log("** Execute procedure END - move the index to: " + item.currentTokenIndexBeforeJumpingToProcedure);
     }
@@ -151,7 +270,7 @@ class Parser {
     execute_repeat_end() {
         console.log("** REPEAT end");
         let currentLoop = this.loopStack.pop();
-        if (currentLoop?.remainingLoops > 0) {
+        if (currentLoop.remainingLoops > 0) {
             this.setCurrentTokenIndex(currentLoop.firstTokenInsideTheLoopIndex);
             this.loopStack.push({
                 firstTokenInsideTheLoopIndex: currentLoop.firstTokenInsideTheLoopIndex,
@@ -183,7 +302,7 @@ class Parser {
         this.currentTokenIndex = -1; // So when we get the first token, it will be 0, first index in an array.
         this.loopStack = [];
         this.procedures = [];
-        this.procedureStack = [];
+        this.goToProcedureStack = [];
     }
     parse(tokens) {
         this.initialize(tokens);
@@ -234,8 +353,8 @@ class Parser {
         } while(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM)
         console.log("Finish parsing");
     }
-    peekLastProcedureStackItem() {
-        return this.procedureStack[this.procedureStack.length - 1];
+    peekLastGoToProcedureStackItem() {
+        return this.goToProcedureStack[this.goToProcedureStack.length - 1];
     }
     raiseTurtleExecutionQueueEvent(methodname = "", arg = 0) {
         let event = new CustomEvent(this.eventName(), {
@@ -256,8 +375,8 @@ class Parser {
         if (searchProcedureResults.length > 0) {
             let procedure = searchProcedureResults[0];
             
-            let procedureStackItem = {};
-            procedureStackItem["name"] = procedure.name;
+            let goToProcedureStackItem = {};
+            goToProcedureStackItem["name"] = procedure.name;
 
             let values = [];
             procedure.parameters.forEach(p => {
@@ -268,14 +387,14 @@ class Parser {
                 };
                 values.push(value);
             });
-            procedureStackItem["parameters"] = values;
-            procedureStackItem["currentTokenIndexBeforeJumpingToProcedure"] = this.currentTokenIndex;
+            goToProcedureStackItem["parameters"] = values;
+            goToProcedureStackItem["currentTokenIndexBeforeJumpingToProcedure"] = this.currentTokenIndex;
 
-            this.procedureStack.push(procedureStackItem);
+            this.goToProcedureStack.push(goToProcedureStackItem);
             let indexBeforeFirstTokenInsideProcedure = procedure.firstTokenInsideProcedureIndex - 1;
 
             this.setCurrentTokenIndex(indexBeforeFirstTokenInsideProcedure); // So in the next getNextToken we have the first token inside the procedure
-            console.log(`** Index set to: ${procedure.firstTokenInsideProcedureIndex}`, procedureStackItem);
+            console.log(`** Index set to: ${procedure.firstTokenInsideProcedureIndex}`, goToProcedureStackItem);
         }
         
     }
@@ -315,7 +434,7 @@ class Tokenizer {
         } else {
             this.currentCharacter = this.EOF;
         }
-        console.log(`Current character: ${this.currentIndex.toString().padStart(2, '0')} - ${this.currentCharacter}`);
+        //console.log(`Current character: ${this.currentIndex.toString().padStart(2, '0')} - ${this.currentCharacter}`);
     }
     getPrimitive(primitiveAlias = "") {
         let foundPrimitives = logo.primitiveAliases.filter(p =>
@@ -419,9 +538,11 @@ class Tokenizer {
                 let token = new Token(startIndex, variable, logo.tokenTypes.VARIABLE);
                 this.tokens.push(token);
             } else {
-              console.log(`Unexpected character: "${this.currentCharacter}" ${this.currentCharacter.charCodeAt(0)}`);
+                if (!this.isEndOfFile(this.currentCharacter)) {
+                    console.log(`Unexpected character: "${this.currentCharacter}" ${this.currentCharacter.charCodeAt(0)}`);
+                }
             }
-            console.log(`Check last token index with current index  ${this.currentIndex}`)
+            //console.log(`Check last token index with current index  ${this.currentIndex}`)
         } while(!this.isEndOfFile(this.currentCharacter))
 
         return this.tokens;
@@ -556,4 +677,4 @@ class Turtle {
 
 const interpreter = new Interpreter('logocanvas');
 
-//module.exports.tokenizer = Tokenizer;
+module.exports.Tokenizer = Tokenizer;
