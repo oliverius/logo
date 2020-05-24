@@ -1,8 +1,5 @@
 
 function run(script) {
-    //parser.parse("para cuadrado :lado av 60");
-    //parser.parse("av 120 repite 4 [av 60 gd 90] bp");    
-    // bp repite 3 [av 60 repite 4 [gi 90 re 20] gd 120]
     interpreter.run(script);
 }
 
@@ -28,6 +25,7 @@ function runtests() {
         let testResult = success ? "PASSED" : "FAILED";
         console.log(`TEST "${comment}": ${testResult}`);
     };
+    let lines = (arr) => arr.join('\n');
 
     assertTokens(
         'One space only',
@@ -117,7 +115,7 @@ function runtests() {
         tokenizer.tokenize("repeat 3 [fd 60 repeat 4 [lt 90 bk 20] rt 120]")
     );
     assertTokens(
-        'PROCEDURE with no parameters in one line',
+        'PROCEDURE with no parameters in one line and the PROCEDURE is not called',
         [
             new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
             new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
@@ -126,6 +124,93 @@ function runtests() {
             new Token(14, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END)
         ],
         tokenizer.tokenize("to line fd 60 end")
+    );
+    assertTokens(
+        'PROCEDURE with no parameters in multiple lines and the PROCEDURE is not called',
+        [
+            new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
+            new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(8, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(11, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(14, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END)
+        ],
+        tokenizer.tokenize(
+            lines([
+                "to line",
+                "fd 60",
+                "end"
+            ])
+        )
+    );
+    assertTokens(
+        'PROCEDURE with no parameters in one line and the PROCEDURE is called once',
+        [
+            new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
+            new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(8, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(11, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(14, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END),
+            new Token(18, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+        ],
+        tokenizer.tokenize("to line fd 60 end line")
+    );
+    assertTokens(
+        'PROCEDURE with no parameters in multiple lines and the PROCEDURE is called once',
+        [
+            new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
+            new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(8, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(11, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(14, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END),
+            new Token(18, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+        ],
+        tokenizer.tokenize(
+            lines([
+                "to line",
+                "fd 60",
+                "end",
+                "line"
+            ])
+        )
+    );
+    assertTokens(
+        'PROCEDURE with no parameters in one line and the PROCEDURE is called twice',
+        [
+            new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
+            new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(8, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(11, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(14, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END),
+            new Token(18, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(23, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
+            new Token(26, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(29, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE)
+        ],
+        tokenizer.tokenize("to line fd 60 end line rt 90 line")
+    );
+    assertTokens(
+        'PROCEDURE with no parameters in multiple lines and the PROCEDURE is called twice',
+        [
+            new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
+            new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(8, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(11, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(14, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END),
+            new Token(18, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(23, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
+            new Token(26, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(29, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE)
+        ],
+        tokenizer.tokenize(
+            lines([
+                "to line",
+                "fd 60",
+                "end",
+                "line",
+                "rt 90",
+                "line"
+            ])
+        )
     );
 }
 
