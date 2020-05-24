@@ -212,6 +212,51 @@ function runtests() {
             ])
         )
     );
+    assertTokens(
+        'PROCEDURE with one parameter in one line and the PROCEDURE is called twice',
+        [
+            new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
+            new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(8, ":length", logo.tokenTypes.VARIABLE, logo.primitives.NONE),
+            new Token(16, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(19, ":length", logo.tokenTypes.VARIABLE, logo.primitives.NONE),
+            new Token(27, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END),
+            new Token(31, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(36, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(39, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
+            new Token(42, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(45, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(50, "30", logo.tokenTypes.NUMBER, logo.primitives.NONE)
+        ],
+        tokenizer.tokenize("to line :length fd :length end line 60 rt 90 line 30")
+    );
+    assertTokens(
+        'PROCEDURE with one parameter in multiple lines and the PROCEDURE is called twice',
+        [
+            new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
+            new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(8, ":length", logo.tokenTypes.VARIABLE, logo.primitives.NONE),
+            new Token(16, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(19, ":length", logo.tokenTypes.VARIABLE, logo.primitives.NONE),
+            new Token(27, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END),
+            new Token(31, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(36, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(39, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
+            new Token(42, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(45, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(50, "30", logo.tokenTypes.NUMBER, logo.primitives.NONE)
+        ],
+        tokenizer.tokenize(
+            lines([
+                "to line :length",
+                "fd :length",
+                "end",
+                "line 60",
+                "rt 90",
+                "line 30"
+            ])
+        )
+    );
 }
 
 const logo = {
