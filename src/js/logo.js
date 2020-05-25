@@ -365,7 +365,7 @@ class Parser {
     eventName() { return "PARSER_ADD_TO_TURTLE_EXECUTION_QUEUE_EVENT"; }
 
     assignVariable(variableName) {
-        let item = this.peekLastGoToProcedureStackItem();
+        let item = this.peekLastProcedureCallStackItem();
         let parameters = item.parameters;
         let parameter = parameters.find(p => p.parameterName === variableName);
         let value = parseInt(parameter.parameterValue);
@@ -373,7 +373,7 @@ class Parser {
     }
     execute_procedure_end() {
         console.log("** Execute procedure END");
-        let item = this.goToProcedureStack.pop();
+        let item = this.procedureCallStack.pop();
         this.setCurrentTokenIndex(item.currentTokenIndexBeforeJumpingToProcedure);
         console.log("** Execute procedure END - move the index to: " + item.currentTokenIndexBeforeJumpingToProcedure);
     }
@@ -448,7 +448,7 @@ class Parser {
         this.currentTokenIndex = -1; // So when we get the first token, it will be 0, first index in an array.
         this.loopStack = [];
         this.procedures = [];
-        this.goToProcedureStack = [];
+        this.procedureCallStack = [];
     }
     parse(tokens) {
         this.initialize(tokens);
@@ -499,8 +499,8 @@ class Parser {
         } while(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM)
         console.log("Finish parsing");
     }
-    peekLastGoToProcedureStackItem() {
-        return this.goToProcedureStack[this.goToProcedureStack.length - 1];
+    peekLastProcedureCallStackItem() {
+        return this.procedureCallStack[this.procedureCallStack.length - 1];
     }
     raiseTurtleExecutionQueueEvent(methodname = "", arg = 0) {
         let event = new CustomEvent(this.eventName(), {
@@ -521,8 +521,8 @@ class Parser {
         if (searchProcedureResults.length > 0) {
             let procedure = searchProcedureResults[0];
             
-            let goToProcedureStackItem = {};
-            goToProcedureStackItem["name"] = procedure.name;
+            let procedureCallStackItem = {};
+            procedureCallStackItem["name"] = procedure.name;
 
             let values = [];
             procedure.parameters.forEach(p => {
@@ -533,14 +533,14 @@ class Parser {
                 };
                 values.push(value);
             });
-            goToProcedureStackItem["parameters"] = values;
-            goToProcedureStackItem["currentTokenIndexBeforeJumpingToProcedure"] = this.currentTokenIndex;
+            procedureCallStackItem["parameters"] = values;
+            procedureCallStackItem["currentTokenIndexBeforeJumpingToProcedure"] = this.currentTokenIndex;
 
-            this.goToProcedureStack.push(goToProcedureStackItem);
+            this.procedureCallStack.push(procedureCallStackItem);
             let indexBeforeFirstTokenInsideProcedure = procedure.firstTokenInsideProcedureIndex - 1;
 
             this.setCurrentTokenIndex(indexBeforeFirstTokenInsideProcedure); // So in the next getNextToken we have the first token inside the procedure
-            console.log(`** Index set to: ${procedure.firstTokenInsideProcedureIndex}`, goToProcedureStackItem);
+            console.log(`** Index set to: ${procedure.firstTokenInsideProcedureIndex}`, procedureCallStackItem);
         }
         
     }
