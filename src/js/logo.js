@@ -573,10 +573,9 @@ class Parser {
 
             let values = [];
             procedure.parameters.forEach(p => {
-                this.getNextToken();
                 let value = {
                     parameterName: p,
-                    parameterValue: this.currentToken.text
+                    parameterValue: this.getExpression()
                 };
                 values.push(value);
             });
