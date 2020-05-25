@@ -273,12 +273,23 @@ function runtests() {
             ])
         )
     );
+    assertTokens(
+        'Primitive with an expression as parameter',
+        [
+            new Token(0, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(3, "1", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(5, "+", logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(7, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE)            
+        ],
+        tokenizer.tokenize("fd 1 + 60")
+    );
 }
 
 const logo = {
     "delimiters" :{
         "OPENING_BRACKET": "[",
-        "CLOSING_BRACKET": "]"
+        "CLOSING_BRACKET": "]",
+        "PLUS": "+"
     },
     "primitives" : {
         "NONE": 0,
@@ -433,15 +444,51 @@ class Parser {
         }
         console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
     }
-    getPrimitiveParameter() {
+
+
+    getExpression() {
         this.getNextToken();
-        if (this.currentToken.tokenType === logo.tokenTypes.NUMBER) {
-            return parseInt(this.currentToken.text);
-        } else if (this.currentToken.tokenType === logo.tokenTypes.VARIABLE) {        
-            let value = this.assignVariable(this.currentToken.text);
-            return value;
+
+        let result = { value: 0 };
+        this.level2(result);
+        
+        console.log("final expression", result);
+        this.putBackToken();
+        return result.value;
+    }
+    putBackToken() {
+        this.currentTokenIndex--;
+        this.currentToken = this.tokens[this.currentTokenIndex];
+    }
+    level2(result) {
+        let hold = { value: 0 };
+        this.getNumberOrVariableValue(result);
+        while (this.currentToken.text == logo.delimiters.PLUS) {
+            this.getNextToken();
+            this.level2(hold);
+            result.value += hold.value; // TODO check for different operations
         }
     }
+    getNumberOrVariableValue(result) {
+        switch (this.currentToken.tokenType) {
+            case logo.tokenTypes.NUMBER:
+                result.value = parseInt(this.currentToken.text);
+                console.log(result);
+                this.getNextToken();
+                break;
+            case logo.tokenTypes.VARIABLE:
+                result.value = this.assignVariable(this.currentToken.text);
+                this.getNextToken();
+            default:
+                // TODO error
+                break;
+        }
+    }
+
+
+
+
+
     initialize(tokens) {
         this.tokens = tokens;
         this.currentToken = {};
@@ -460,23 +507,23 @@ class Parser {
             if (this.currentToken.tokenType === logo.tokenTypes.PRIMITIVE) {
                 switch(this.currentToken.primitive) {
                     case logo.primitives.FORWARD:
-                        n = this.getPrimitiveParameter();
+                        n = this.getExpression();
                         this.raiseTurtleExecutionQueueEvent("execute_forward", n);
                         break;
                     case logo.primitives.BACK:
-                        n = this.getPrimitiveParameter();
+                        n = this.getExpression();;
                         this.raiseTurtleExecutionQueueEvent("execute_backward", n);
                         break;
                     case logo.primitives.LEFT:
-                        n = this.getPrimitiveParameter();
+                        n = this.getExpression();
                         this.raiseTurtleExecutionQueueEvent("execute_left", n);
                         break;
                     case logo.primitives.RIGHT:
-                        n = this.getPrimitiveParameter();
+                        n = this.getExpression();
                         this.raiseTurtleExecutionQueueEvent("execute_right", n);
                         break;
                     case logo.primitives.REPEAT:
-                        n = this.getPrimitiveParameter();
+                        n = this.getExpression();
                         this.execute_repeat_begin(n);
                         break;
                     case logo.primitives.CLEARSCREEN:
@@ -600,7 +647,7 @@ class Tokenizer {
         this.currentCharacter = '';
     }
     isDelimiter(c) {
-        return `${logo.delimiters.OPENING_BRACKET}${logo.delimiters.CLOSING_BRACKET}`.indexOf(c) !== -1;
+        return `${logo.delimiters.OPENING_BRACKET}${logo.delimiters.CLOSING_BRACKET}${logo.delimiters.PLUS}`.indexOf(c) !== -1;
     }
     isEndOfFile(c) {
         return c === this.EOF;
