@@ -5,6 +5,7 @@ function run(script) {
 
 // Totally annoyed with how mocha is running the tests, so for now we do simple ones in the browser itself for the tokenizer
 function runtests() {
+    const LF = "\n";
     let tokenizer = new Tokenizer();
     let assertToken = (expectedToken = {}, actualToken = {}) => {
             let success = actualToken.startIndex === expectedToken.startIndex &&
@@ -130,8 +131,10 @@ function runtests() {
         [
             new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
             new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(7, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(8, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
             new Token(11, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(13, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(14, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END)
         ],
         tokenizer.tokenize(
@@ -159,9 +162,12 @@ function runtests() {
         [
             new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
             new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(7, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(8, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
             new Token(11, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(13, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(14, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END),
+            new Token(17, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(18, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
         ],
         tokenizer.tokenize(
@@ -193,12 +199,17 @@ function runtests() {
         [
             new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
             new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(7, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(8, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
             new Token(11, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(13, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(14, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END),
+            new Token(17, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(18, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(22, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(23, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
             new Token(26, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(28, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(29, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE)
         ],
         tokenizer.tokenize(
@@ -236,13 +247,18 @@ function runtests() {
             new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
             new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
             new Token(8, ":length", logo.tokenTypes.VARIABLE, logo.primitives.NONE),
+            new Token(15, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(16, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
             new Token(19, ":length", logo.tokenTypes.VARIABLE, logo.primitives.NONE),
+            new Token(26, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(27, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END),
+            new Token(30, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(31, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
             new Token(36, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(38, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(39, "rt", logo.tokenTypes.PRIMITIVE, logo.primitives.RIGHT),
             new Token(42, "90", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(44, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
             new Token(45, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
             new Token(50, "30", logo.tokenTypes.NUMBER, logo.primitives.NONE)
         ],
@@ -553,8 +569,8 @@ class Token {
 }
 
 class Tokenizer {
-    EOF = "\0";
     LF = "\n";
+    EOF = "\0";
     VARIABLE_PREFIX = ":";
 
     getNextCharacter() {
@@ -620,11 +636,8 @@ class Tokenizer {
                 }
                 this.putbackCharacter();
             } else if (this.isNewLine(this.currentCharacter)) {
-                this.getNextCharacter();
-                while(this.isNewLine(this.currentCharacter)) {
-                    this.getNextCharacter();
-                }
-                this.putbackCharacter();
+                let token = new Token(this.currentIndex, this.currentCharacter, logo.tokenTypes.DELIMITER);
+                this.tokens.push(token);
             } else if (this.isDelimiter(this.currentCharacter)) {
                 let token = new Token(this.currentIndex, this.currentCharacter, logo.tokenTypes.DELIMITER);
                 this.tokens.push(token);
@@ -807,4 +820,4 @@ class Turtle {
 
 const interpreter = new Interpreter('logocanvas');
 
-module.exports.Tokenizer = Tokenizer;
+//export { Token, Tokenizer }
