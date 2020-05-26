@@ -425,7 +425,7 @@ class Interpreter {
         }, 1000/this.fps);
     }
     stop() {
-        this.parser.stop();
+        this.turtleExecutionQueue = []; // No more graphic instructions to execute
     }
     run() {
         let script = this.editor.value;
@@ -579,7 +579,6 @@ class Parser {
         this.loopStack = [];
         this.procedures = [];
         this.procedureCallStack = [];
-        this.hasStopBeenRequested = false;
     }
     parse(tokens) {
         this.initialize(tokens);
@@ -627,10 +626,7 @@ class Parser {
             } else if(this.currentToken.tokenType === logo.tokenTypes.PROCEDURE_NAME) {
                 this.scanProcedure(this.currentToken.text);
             }
-            console.log(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM
-                && !this.hasStopBeenRequested);
-        } while(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM
-            && !this.hasStopBeenRequested)
+        } while(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM)
         console.log("Finish parsing");
     }
     peekLastProcedureCallStackItem() {
@@ -683,10 +679,6 @@ class Parser {
     }
     setCurrentTokenIndex(index) {
         this.currentTokenIndex = index;
-    }
-    stop() {
-        this.hasStopBeenRequested = true;
-        console.log("STOP");
     }
 }
 
