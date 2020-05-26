@@ -412,6 +412,9 @@ class Interpreter {
 
         this.executionLoop();
     }
+    clear() {
+        this.editor.value = "";
+    }
     executionLoop() {
         setInterval(() => {
             console.log("*");
@@ -516,7 +519,7 @@ class Parser {
         let result = { value: 0 };
         this.getExpression_AdditionOrSubtraction(result);
         
-        console.log("final expression", result);
+        //console.log("final expression", result);
         this.putBackToken();
         return result.value;
     }
@@ -529,7 +532,6 @@ class Parser {
             operation = this.currentToken.text;
             this.getNextToken();
             this.getExpression_MultiplicationOrDivision(hold);
-            console.log("oliver", this.currentToken.text, result, hold);
             this.applyArithmeticOperation(operation, result, hold);
         }
     }
@@ -558,7 +560,7 @@ class Parser {
         switch (this.currentToken.tokenType) {
             case logo.tokenTypes.NUMBER:
                 result.value = parseInt(this.currentToken.text);
-                console.log(result);
+                //console.log(result);
                 this.getNextToken();
                 break;
             case logo.tokenTypes.VARIABLE:
@@ -625,8 +627,10 @@ class Parser {
             } else if(this.currentToken.tokenType === logo.tokenTypes.PROCEDURE_NAME) {
                 this.scanProcedure(this.currentToken.text);
             }
+            console.log(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM
+                && !this.hasStopBeenRequested);
         } while(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM
-            || this.hasStopBeenRequested)
+            && !this.hasStopBeenRequested)
         console.log("Finish parsing");
     }
     peekLastProcedureCallStackItem() {
@@ -681,6 +685,7 @@ class Parser {
         this.currentTokenIndex = index;
     }
     stop() {
+        this.hasStopBeenRequested = true;
         console.log("STOP");
     }
 }
