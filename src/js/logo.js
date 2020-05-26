@@ -62,10 +62,28 @@ class Interpreter {
         this.tokenizer = new Tokenizer();
         this.parser = new Parser();
         this.fps = 5;
-        this.turtleExecutionQueue = [];
+        this.turtleDrawingQueue = [];
         window.addEventListener(new Parser().eventName(), e => {
-            this.turtleExecutionQueue.push({
-                methodname: e.detail.methodname,
+            let turtleMethodName = "";
+            switch(e.detail.primitive) {
+                case logo.primitives.FORWARD:
+                    turtleMethodName = "execute_forward";
+                    break;
+                case logo.primitives.BACK:
+                    turtleMethodName = "execute_back";
+                    break;
+                case logo.primitives.LEFT:
+                    turtleMethodName = "execute_left";
+                    break;
+                case logo.primitives.RIGHT:
+                    turtleMethodName = "execute_right";
+                    break;
+                case logo.primitives.CLEARSCREEN:
+                    turtleMethodName = "execute_clearscreen";
+                    break;
+            }
+            this.turtleDrawingQueue.push({
+                methodname: turtleMethodName,
                 arg: e.detail.arg
             });
         });
@@ -77,14 +95,14 @@ class Interpreter {
     executionLoop() {
         setInterval(() => {
             console.log("*");
-            if (this.turtleExecutionQueue.length > 0) {
-                let obj = this.turtleExecutionQueue.shift();
+            if (this.turtleDrawingQueue.length > 0) {
+                let obj = this.turtleDrawingQueue.shift();
                 this.turtle[obj.methodname](obj.arg);
             }
         }, 1000/this.fps);
     }
     stop() {
-        this.turtleExecutionQueue = []; // No more graphic instructions to execute
+        this.turtleDrawingQueue = []; // No more graphic instructions to execute
     }
     run() {
         let script = this.editor.value;
@@ -94,7 +112,7 @@ class Interpreter {
 }
 
 class Parser {
-    eventName() { return "PARSER_ADD_TO_TURTLE_EXECUTION_QUEUE_EVENT"; }
+    eventName() { return "PARSER_ADD_TO_TURTLE_DRAWING_QUEUE_EVENT"; }
     applyArithmeticOperation(operation, result, hold) {
         switch(operation) {
             case logo.delimiters.PLUS:
@@ -250,26 +268,26 @@ class Parser {
                 switch(this.currentToken.primitive) {
                     case logo.primitives.FORWARD:
                         n = this.getExpression();
-                        this.raiseTurtleExecutionQueueEvent("execute_forward", n);
+                        this.raiseTurtleDrawingQueueEvent(logo.primitives.FORWARD, n);
                         break;
                     case logo.primitives.BACK:
                         n = this.getExpression();;
-                        this.raiseTurtleExecutionQueueEvent("execute_backward", n);
+                        this.raiseTurtleDrawingQueueEvent(logo.primitives.BACK, n);
                         break;
                     case logo.primitives.LEFT:
                         n = this.getExpression();
-                        this.raiseTurtleExecutionQueueEvent("execute_left", n);
+                        this.raiseTurtleDrawingQueueEvent(logo.primitives.LEFT, n);
                         break;
                     case logo.primitives.RIGHT:
                         n = this.getExpression();
-                        this.raiseTurtleExecutionQueueEvent("execute_right", n);
+                        this.raiseTurtleDrawingQueueEvent(logo.primitives.RIGHT, n);
                         break;
                     case logo.primitives.REPEAT:
                         n = this.getExpression();
                         this.execute_repeat_begin(n);
                         break;
                     case logo.primitives.CLEARSCREEN:
-                        this.raiseTurtleExecutionQueueEvent("execute_clearscreen");
+                        this.raiseTurtleDrawingQueueEvent(logo.primitives.CLEARSCREEN);
                         break;
                     case logo.primitives.PRIMITIVE_TO:
                         this.execute_procedure_to();
@@ -295,12 +313,11 @@ class Parser {
         this.currentTokenIndex--;
         this.currentToken = this.tokens[this.currentTokenIndex];
     }
-    raiseTurtleExecutionQueueEvent(methodname = "", arg = 0) {
+    raiseTurtleDrawingQueueEvent(primitive = logo.primitives.NONE, arg = 0) {
         let event = new CustomEvent(this.eventName(), {
             bubbles: true,
             detail: {
-                objectname: "turtle",
-                methodname: methodname,
+                primitive: primitive,
                 arg: arg
             }
         });
@@ -525,7 +542,7 @@ class Turtle {
         this.turtleCtx.clearRect(0, 0, this.width, this.height);
     }
 
-    execute_backward(n = 0) {
+    execute_back(n = 0) {
         this.execute_forward(-n);
     }
 
