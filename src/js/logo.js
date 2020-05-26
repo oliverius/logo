@@ -293,6 +293,52 @@ function runtests() {
         ],
         tokenizer.tokenize("fd 60 - 50")
     );
+    assertTokens(
+        'Primitive with an expression "a * b" as parameter',
+        [
+            new Token(0, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(3, "10", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(6, "*", logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(8, "5", logo.tokenTypes.NUMBER, logo.primitives.NONE)            
+        ],
+        tokenizer.tokenize("fd 10 * 5")
+    );
+    assertTokens(
+        'Primitive with an expression "a / b" as parameter',
+        [
+            new Token(0, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(3, "100", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(7, "/", logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(9, "5", logo.tokenTypes.NUMBER, logo.primitives.NONE)            
+        ],
+        tokenizer.tokenize("fd 100 / 5")
+    );
+    assertTokens(
+        'PROCEDURE with one parameter in multiple lines and the parameter is an expression "a + b"',
+        [
+            new Token(0, "to", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_TO),
+            new Token(3, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(8, ":length", logo.tokenTypes.VARIABLE, logo.primitives.NONE),
+            new Token(15, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(16, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(19, ":length", logo.tokenTypes.VARIABLE, logo.primitives.NONE),
+            new Token(26, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(27, "end", logo.tokenTypes.PRIMITIVE, logo.primitives.PRIMITIVE_END),
+            new Token(30, LF, logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(31, "line", logo.tokenTypes.PROCEDURE_NAME, logo.primitives.NONE),
+            new Token(36, "10", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(39, "+", logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(41, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE)
+        ],
+        tokenizer.tokenize(
+            lines([
+                "to line :length",
+                "fd :length",
+                "end",
+                "line 10 + 60"
+            ])
+        )
+    );
 }
 
 const logo = {
@@ -300,7 +346,9 @@ const logo = {
         "OPENING_BRACKET": "[",
         "CLOSING_BRACKET": "]",
         "PLUS": "+",
-        "MINUS": "-"
+        "MINUS": "-",
+        "MULTIPLIEDBY": "*",
+        "DIVIDEDBY": "/"
     },
     "primitives" : {
         "NONE": 0,
@@ -471,13 +519,25 @@ class Parser {
     getExpression_AdditionOrSubtraction(result) {
         let hold = { value: 0 };
         let operation = "";
-        this.getNumberOrVariableValue(result);
+        this.getExpression_MultiplicationOrDivision(result);
         while (this.currentToken.text === logo.delimiters.PLUS
             || this.currentToken.text === logo.delimiters.MINUS) {
             operation = this.currentToken.text;
             this.getNextToken();
-            this.getExpression_AdditionOrSubtraction(hold);
+            this.getExpression_MultiplicationOrDivision(hold);
             console.log("oliver", this.currentToken.text, result, hold);
+            this.applyArithmeticOperation(operation, result, hold);
+        }
+    }
+    getExpression_MultiplicationOrDivision(result) {
+        let hold = { value: 0 };
+        let operation = "";
+        this.getNumberOrVariableValue(result);
+        while (this.currentToken.text === logo.delimiters.MULTIPLIEDBY
+            || this.currentToken.text === logo.delimiters.DIVIDEDBY) {
+            operation = this.currentToken.text;
+            this.getNextToken();
+            this.getNumberOrVariableValue(hold);
             this.applyArithmeticOperation(operation, result, hold);
         }
     }
@@ -489,6 +549,11 @@ class Parser {
             case logo.delimiters.MINUS:
                 result.value -= hold.value;
                 break;
+            case logo.delimiters.MULTIPLIEDBY:
+                result.value *= hold.value;
+                break;
+            case logo.delimiters.DIVIDEDBY:
+                result.value /= hold.value;
             default:
                 break; // TODO will be an error
         }
@@ -678,7 +743,9 @@ class Tokenizer {
             logo.delimiters.OPENING_BRACKET,
             logo.delimiters.CLOSING_BRACKET,
             logo.delimiters.PLUS,
-            logo.delimiters.MINUS
+            logo.delimiters.MINUS,
+            logo.delimiters.MULTIPLIEDBY,
+            logo.delimiters.DIVIDEDBY
         ].join('');
         return delimiters.indexOf(c) !== -1;
     }
