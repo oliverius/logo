@@ -274,7 +274,7 @@ function runtests() {
         )
     );
     assertTokens(
-        'Primitive with an expression as parameter',
+        'Primitive with an expression "a + b" as parameter',
         [
             new Token(0, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
             new Token(3, "1", logo.tokenTypes.NUMBER, logo.primitives.NONE),
@@ -283,13 +283,24 @@ function runtests() {
         ],
         tokenizer.tokenize("fd 1 + 60")
     );
+    assertTokens(
+        'Primitive with an expression "a - b" as parameter',
+        [
+            new Token(0, "fd", logo.tokenTypes.PRIMITIVE, logo.primitives.FORWARD),
+            new Token(3, "60", logo.tokenTypes.NUMBER, logo.primitives.NONE),
+            new Token(6, "-", logo.tokenTypes.DELIMITER, logo.primitives.NONE),
+            new Token(8, "50", logo.tokenTypes.NUMBER, logo.primitives.NONE)            
+        ],
+        tokenizer.tokenize("fd 60 - 50")
+    );
 }
 
 const logo = {
     "delimiters" :{
         "OPENING_BRACKET": "[",
         "CLOSING_BRACKET": "]",
-        "PLUS": "+"
+        "PLUS": "+",
+        "MINUS": "-"
     },
     "primitives" : {
         "NONE": 0,
@@ -442,7 +453,7 @@ class Parser {
         } else {
             this.currentToken = new Token(this.currentTokenIndex, "", logo.tokenTypes.END_OF_TOKEN_STREAM);
         }
-        console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
+        //console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
     }
 
 
@@ -450,23 +461,36 @@ class Parser {
         this.getNextToken();
 
         let result = { value: 0 };
-        this.level2(result);
+        this.getExpression_AdditionOrSubtraction(result);
         
         console.log("final expression", result);
         this.putBackToken();
         return result.value;
     }
-    putBackToken() {
-        this.currentTokenIndex--;
-        this.currentToken = this.tokens[this.currentTokenIndex];
-    }
-    level2(result) {
+    
+    getExpression_AdditionOrSubtraction(result) {
         let hold = { value: 0 };
+        let operation = "";
         this.getNumberOrVariableValue(result);
-        while (this.currentToken.text == logo.delimiters.PLUS) {
+        while (this.currentToken.text === logo.delimiters.PLUS
+            || this.currentToken.text === logo.delimiters.MINUS) {
+            operation = this.currentToken.text;
             this.getNextToken();
-            this.level2(hold);
-            result.value += hold.value; // TODO check for different operations
+            this.getExpression_AdditionOrSubtraction(hold);
+            console.log("oliver", this.currentToken.text, result, hold);
+            this.applyArithmeticOperation(operation, result, hold);
+        }
+    }
+    applyArithmeticOperation(operation, result, hold) {
+        switch(operation) {
+            case logo.delimiters.PLUS:
+                result.value += hold.value;
+                break;
+            case logo.delimiters.MINUS:
+                result.value -= hold.value;
+                break;
+            default:
+                break; // TODO will be an error
         }
     }
     getNumberOrVariableValue(result) {
@@ -548,6 +572,10 @@ class Parser {
     }
     peekLastProcedureCallStackItem() {
         return this.procedureCallStack[this.procedureCallStack.length - 1];
+    }
+    putBackToken() {
+        this.currentTokenIndex--;
+        this.currentToken = this.tokens[this.currentTokenIndex];
     }
     raiseTurtleExecutionQueueEvent(methodname = "", arg = 0) {
         let event = new CustomEvent(this.eventName(), {
@@ -646,7 +674,13 @@ class Tokenizer {
         this.currentCharacter = '';
     }
     isDelimiter(c) {
-        return `${logo.delimiters.OPENING_BRACKET}${logo.delimiters.CLOSING_BRACKET}${logo.delimiters.PLUS}`.indexOf(c) !== -1;
+        let delimiters = [
+            logo.delimiters.OPENING_BRACKET,
+            logo.delimiters.CLOSING_BRACKET,
+            logo.delimiters.PLUS,
+            logo.delimiters.MINUS
+        ].join('');
+        return delimiters.indexOf(c) !== -1;
     }
     isEndOfFile(c) {
         return c === this.EOF;
