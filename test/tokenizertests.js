@@ -1,4 +1,4 @@
-runTokenizerTests();
+//runTokenizerTests();
 function runTokenizerTests() {
   const LF = "\n";
   let tokenizer = new Tokenizer();

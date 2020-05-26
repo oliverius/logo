@@ -7,6 +7,10 @@ const logo = {
         "MULTIPLIEDBY": "*",
         "DIVIDEDBY": "/"
     },
+    "parserEvents": {
+        "START_PARSING": 1,
+        "END_PARSING": 2
+    },
     "primitives" : {
         "NONE": 0,
         "FORWARD": 1,
@@ -63,7 +67,7 @@ class Interpreter {
         this.parser = new Parser();
         this.fps = 5;
         this.turtleDrawingQueue = [];
-        window.addEventListener(new Parser().eventName(), e => {
+        window.addEventListener(new Parser().turtleDrawingQueueEventName(), e => {
             let turtleMethodName = "";
             switch(e.detail.primitive) {
                 case logo.primitives.FORWARD:
@@ -112,7 +116,8 @@ class Interpreter {
 }
 
 class Parser {
-    eventName() { return "PARSER_ADD_TO_TURTLE_DRAWING_QUEUE_EVENT"; }
+    turtleDrawingQueueEventName() { return "PARSER_ADD_TO_TURTLE_DRAWING_QUEUE_EVENT"; }
+    parserStatusEventName() { return "PARSER_STATUS_EVENT"; }
     applyArithmeticOperation(operation, result, hold) {
         switch(operation) {
             case logo.delimiters.PLUS:
@@ -256,6 +261,7 @@ class Parser {
         this.loopStack = [];
         this.procedures = [];
         this.procedureCallStack = [];
+        this.raiseParserStatusEventName(logo.parserEvents.START_PARSING);
     }
     parse(tokens) {
         this.initialize(tokens);
@@ -304,6 +310,7 @@ class Parser {
                 this.scanProcedure(this.currentToken.text);
             }
         } while(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM)
+        this.raiseParserStatusEventName(logo.parserEvents.END_PARSING);
         console.log("Finish parsing");
     }
     peekLastProcedureCallStackItem() {
@@ -313,8 +320,17 @@ class Parser {
         this.currentTokenIndex--;
         this.currentToken = this.tokens[this.currentTokenIndex];
     }
+    raiseParserStatusEventName(status = "") {
+        let event = new CustomEvent(this.parserStatusEventName(), {
+            bubbles: true,
+            detail: {
+                status: status
+            }
+        });
+        window.dispatchEvent(event);
+    }
     raiseTurtleDrawingQueueEvent(primitive = logo.primitives.NONE, arg = 0) {
-        let event = new CustomEvent(this.eventName(), {
+        let event = new CustomEvent(this.turtleDrawingQueueEventName(), {
             bubbles: true,
             detail: {
                 primitive: primitive,
