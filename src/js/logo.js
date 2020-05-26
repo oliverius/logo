@@ -1,7 +1,4 @@
 
-function run(script) {
-    interpreter.run(script);
-}
 
 // Totally annoyed with how mocha is running the tests, so for now we do simple ones in the browser itself for the tokenizer
 function runtests() {
@@ -398,13 +395,14 @@ const logo = {
 };
 
 class Interpreter {
-    constructor(canvasId) {
+    constructor(editorId, canvasId) {
+        this.editor = document.getElementById(editorId);
         this.canvas = document.getElementById(canvasId);
         this.turtle = new Turtle(this.canvas);
         this.tokenizer = new Tokenizer();
+        this.parser = new Parser();
         this.fps = 5;
         this.turtleExecutionQueue = [];
-        this.procedures = [];
         window.addEventListener(new Parser().eventName(), e => {
             this.turtleExecutionQueue.push({
                 methodname: e.detail.methodname,
@@ -423,11 +421,13 @@ class Interpreter {
             }
         }, 1000/this.fps);
     }
-    run(script = "") {
+    stop() {
+        this.parser.stop();
+    }
+    run() {
+        let script = this.editor.value;
         let tokens = this.tokenizer.tokenize(script);
-        let parser = new Parser();
-        parser.parse(tokens);
-        //tokens.forEach(x => console.log(x.toString()));
+        this.parser.parse(tokens);
     }
 }
 
@@ -570,19 +570,6 @@ class Parser {
                 break;
         }
     }
-
-
-    
-    
-    
-    
-    
-    
-
-
-
-
-
     initialize(tokens) {
         this.tokens = tokens;
         this.currentToken = {};
@@ -590,6 +577,7 @@ class Parser {
         this.loopStack = [];
         this.procedures = [];
         this.procedureCallStack = [];
+        this.hasStopBeenRequested = false;
     }
     parse(tokens) {
         this.initialize(tokens);
@@ -637,7 +625,8 @@ class Parser {
             } else if(this.currentToken.tokenType === logo.tokenTypes.PROCEDURE_NAME) {
                 this.scanProcedure(this.currentToken.text);
             }
-        } while(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM)
+        } while(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM
+            || this.hasStopBeenRequested)
         console.log("Finish parsing");
     }
     peekLastProcedureCallStackItem() {
@@ -690,6 +679,9 @@ class Parser {
     }
     setCurrentTokenIndex(index) {
         this.currentTokenIndex = index;
+    }
+    stop() {
+        console.log("STOP");
     }
 }
 
@@ -970,6 +962,6 @@ class Turtle {
     }
 }
 
-const interpreter = new Interpreter('logocanvas');
+const interpreter = new Interpreter('scriptarea', 'logocanvas');
 
 //export { Token, Tokenizer }
