@@ -1,13 +1,13 @@
 {
   "name": "logo",
   "version": "1.0.0",
-  "description": "Logo interpreter (turtle graphics)",
-  "main": "logo.html",
+  "description": "Logo interpreter (turtle graphics) in vanilla javascript",
+  "main": "index.html",
   "directories": {
-    "test": "tests"
+    "test": "test"
   },
   "scripts": {
-    "test": "mocha"
+    "test": ""
   },
   "repository": {
     "type": "git",
@@ -17,7 +17,9 @@
     "logo",
     "interpreter",
     "turtle",
-    "graphics"
+    "graphics",
+    "vanilla",
+    "javascript"
   ],
   "author": "Oliver",
   "license": "MIT",
@@ -26,15 +28,11 @@
   },
   "homepage": "https://github.com/oliverius/logo#readme",
   "devDependencies": {
-    "@babel/preset-env": "^7.9.6",
     "eslint": "^7.1.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1"
-  },
-  "dependencies": {
-    "chai": "^4.2.0"
   }
 }
