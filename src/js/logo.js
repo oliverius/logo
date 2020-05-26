@@ -433,7 +433,23 @@ class Interpreter {
 
 class Parser {
     eventName() { return "PARSER_ADD_TO_TURTLE_EXECUTION_QUEUE_EVENT"; }
-
+    applyArithmeticOperation(operation, result, hold) {
+        switch(operation) {
+            case logo.delimiters.PLUS:
+                result.value += hold.value;
+                break;
+            case logo.delimiters.MINUS:
+                result.value -= hold.value;
+                break;
+            case logo.delimiters.MULTIPLIEDBY:
+                result.value *= hold.value;
+                break;
+            case logo.delimiters.DIVIDEDBY:
+                result.value /= hold.value;
+            default:
+                break; // TODO will be an error
+        }
+    }
     assignVariable(variableName) {
         let item = this.peekLastProcedureCallStackItem();
         let parameters = item.parameters;
@@ -494,17 +510,6 @@ class Parser {
             });
         }
     }
-    getNextToken() {
-        this.currentTokenIndex++;
-        if (this.currentTokenIndex < this.tokens.length) {
-            this.currentToken = this.tokens[this.currentTokenIndex];
-        } else {
-            this.currentToken = new Token(this.currentTokenIndex, "", logo.tokenTypes.END_OF_TOKEN_STREAM);
-        }
-        //console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
-    }
-
-
     getExpression() {
         this.getNextToken();
 
@@ -515,7 +520,6 @@ class Parser {
         this.putBackToken();
         return result.value;
     }
-    
     getExpression_AdditionOrSubtraction(result) {
         let hold = { value: 0 };
         let operation = "";
@@ -541,22 +545,14 @@ class Parser {
             this.applyArithmeticOperation(operation, result, hold);
         }
     }
-    applyArithmeticOperation(operation, result, hold) {
-        switch(operation) {
-            case logo.delimiters.PLUS:
-                result.value += hold.value;
-                break;
-            case logo.delimiters.MINUS:
-                result.value -= hold.value;
-                break;
-            case logo.delimiters.MULTIPLIEDBY:
-                result.value *= hold.value;
-                break;
-            case logo.delimiters.DIVIDEDBY:
-                result.value /= hold.value;
-            default:
-                break; // TODO will be an error
+    getNextToken() {
+        this.currentTokenIndex++;
+        if (this.currentTokenIndex < this.tokens.length) {
+            this.currentToken = this.tokens[this.currentTokenIndex];
+        } else {
+            this.currentToken = new Token(this.currentTokenIndex, "", logo.tokenTypes.END_OF_TOKEN_STREAM);
         }
+        //console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
     }
     getNumberOrVariableValue(result) {
         switch (this.currentToken.tokenType) {
@@ -568,11 +564,20 @@ class Parser {
             case logo.tokenTypes.VARIABLE:
                 result.value = this.assignVariable(this.currentToken.text);
                 this.getNextToken();
+                break;
             default:
                 // TODO error
                 break;
         }
     }
+
+
+    
+    
+    
+    
+    
+    
 
 
 
