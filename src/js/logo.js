@@ -245,7 +245,7 @@ class Parser {
         let n = 0;
 
         do {
-            this.getNextToken();            
+            this.getNextToken();
             if (this.currentToken.tokenType === logo.tokenTypes.PRIMITIVE) {
                 switch(this.currentToken.primitive) {
                     case logo.primitives.FORWARD:

@@ -1,0 +1,3 @@
+runParserTests();
+function runParserTests() {
+}
