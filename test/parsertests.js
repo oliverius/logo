@@ -18,6 +18,7 @@ function runParserTests() {
     };
     let assertTurtleEvents = (test = {}) => {
         if (test.expectedTurtleEvents.length !== test.actualTurtleEvents.length) {
+            console.log(test);
             throw "Expected and actual events are different";
         }
         test.expectedTurtleEvents.every(
@@ -56,7 +57,7 @@ function runParserTests() {
             [logo.primitives.RIGHT, 90]
         ]);
     assertScript(
-        "Repeat 4",
+        "Square with REPEAT primitive",
         "repeat 4 [fd 60 rt 90]",
         [
             [logo.primitives.FORWARD, 60],
@@ -68,4 +69,53 @@ function runParserTests() {
             [logo.primitives.FORWARD, 60],
             [logo.primitives.RIGHT, 90]
         ]);
+    assertScript(
+        "Double REPEAT with inside one in the middle of the primitives of the first one",
+        "repeat 3 [fd 60 repeat 4 [lt 90 bk 20] rt 120]",
+        [
+            [logo.primitives.FORWARD, 60],
+
+            [logo.primitives.LEFT, 90],
+            [logo.primitives.BACK, 20],
+            [logo.primitives.LEFT, 90],
+            [logo.primitives.BACK, 20],
+            [logo.primitives.LEFT, 90],
+            [logo.primitives.BACK, 20],
+            [logo.primitives.LEFT, 90],
+            [logo.primitives.BACK, 20],
+
+            [logo.primitives.RIGHT, 120],
+
+            [logo.primitives.FORWARD, 60],
+
+            [logo.primitives.LEFT, 90],
+            [logo.primitives.BACK, 20],
+            [logo.primitives.LEFT, 90],
+            [logo.primitives.BACK, 20],
+            [logo.primitives.LEFT, 90],
+            [logo.primitives.BACK, 20],
+            [logo.primitives.LEFT, 90],
+            [logo.primitives.BACK, 20],
+
+            [logo.primitives.RIGHT, 120],
+
+            [logo.primitives.FORWARD, 60],
+
+            [logo.primitives.LEFT, 90],
+            [logo.primitives.BACK, 20],
+            [logo.primitives.LEFT, 90],
+            [logo.primitives.BACK, 20],
+            [logo.primitives.LEFT, 90],
+            [logo.primitives.BACK, 20],
+            [logo.primitives.LEFT, 90],
+            [logo.primitives.BACK, 20],
+
+            [logo.primitives.RIGHT, 120]
+        ]
+    );
+    assertScript(
+        "PROCEDURE with no parameters in one line and the PROCEDURE is not called",
+        "to line fd 60 end",
+        []
+    );
 }
