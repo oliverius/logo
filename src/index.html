@@ -6,28 +6,32 @@
         <link rel="stylesheet" type="text/css" href="css/logo.css" media="screen" />
     </head>
     <body>
-        <div class="container">
-            <!-- <div class="popup">Popup examples</div>
-            <div class="popup">Popup help</div> -->
-            <div class="logo-script">
-                <textarea id="scriptarea">to line :length
+        <main>
+            <section class="editor">
+                <textarea id="logo-editor">to line :length
 fd :length
 end
 line 10 + 60
-</textarea>
-            </div>
-            <div class="logo-canvas">
-                <canvas id="logocanvas" width="400" height="400"></canvas>
-            </div>
-            <div class="logo-controls">
-                <input type="button" class="button" value="Run ▶️" onclick="interpreter.run()">
-                <input type="button" class="button" value="Stop ⏹" onclick="interpreter.stop()">
-                <input type="button" class="button" value="Clear ❌" onclick="interpreter.clear()">
-                <input type="button" class="button" value="Examples 🐢" onclick="">
-                <input type="button" class="button" value="Help 🆘" onclick="">
-                <input type="button" class="button" value="English ⌨️" onclick="">
-            </div>
-        </div>
+                    </textarea>
+            </section>
+            <section class="graphics">
+                <canvas id="logo-graphics" width="400" height="400"></canvas>
+            </section>
+            <section class="controls">
+                <input type="button" value="Run ▶️" onclick="interpreter.run()">
+                <input type="button" value="Stop ⏹" onclick="interpreter.stop()">
+                <input type="button" value="Clear ❌" onclick="interpreter.clear()">
+                <input type="button" value="Examples 🐢" onclick="">
+                <input type="button" value="Help 🆘" onclick="">
+                <input type="button" value="English ⌨️" onclick="">
+            </section>
+            <section class="output">
+                blah error here and there
+            </section>
+            <footer>
+                copyright and link to project in github
+            </footer>
+        </main>
         <script type="text/javascript" src="js/logo.js"></script>
         <script type="text/javascript" src="../test/tokenizertests.js"></script>
         <script type="text/javascript" src="../test/parsertests.js"></script>

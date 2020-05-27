@@ -1,28 +1,46 @@
+body, html {
+    margin: 0;
+    height: 100%;
+}
 body {
-    background-color:cornflowerblue;
+    display: grid;
+    grid-template-rows: auto;
+    justify-items: center;
+    align-items: center;
+    background: linear-gradient(180deg, rgba(71,152,194,1) 0%, rgba(32,93,153,1) 100%);
 }
-.container {
-    display: grid;  
-    grid-template-columns: 410px 410px;
-    grid-template-rows: 410px 60px;
-    grid-template-areas: "logo-script logo-canvas" "logo-controls logo-controls";
-    gap: 1px 1px;
-    justify-content: center;
-    align-content: center;
+main {
+    display: grid;
+    grid-template-columns: repeat(2, 408px);
+    grid-template-rows: 410px 60px 30px 20px;
+    grid-column-gap: 5px;
+    grid-row-gap: 2px;
+    background: pink;
 }
-.logo-script {
-   grid-area: logo-script;   
-   margin: auto;
+section.editor {
+    grid-area: 1 / 1 / 2 / 2; background-color: red;
 }
-.logo-canvas {
-    grid-area: logo-canvas;
-    margin: auto;
- }
- .logo-controls {
-    grid-area: logo-controls;
-    background-color: darkblue;
- }
-#scriptarea {
+section.graphics {
+    grid-area: 1 / 2 / 2 / 3; background-color: red;
+}
+section.controls {
+    grid-area: 2 / 1 / 3 / 3;
+    display: flex;
+    justify-content: space-between;
+}
+section.output {
+    grid-area: 3 / 1 / 4 / 3; background-color: red;
+}
+footer {
+    grid-area: 4 / 1 / 5 / 3;
+}
+section.controls > input {
+    width: 130px;
+    font-size: 14px;
+    font-weight: bold;
+    border: 2px solid black;
+}
+#logo-editor {
     width: 400px;
     height: 400px;
     font-family: 'Courier New', Courier, monospace;
@@ -30,7 +48,7 @@ body {
     border: 2px solid black;
     resize: none;
 }
-#logocanvas {
+#logo-graphics {
     border: 2px solid black;
     background-color: #E8E8E8;
 }
