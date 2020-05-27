@@ -1,33 +1,36 @@
 runParserTests();
 function runParserTests() {
-    let parserTestEventName = "PARSER_TEST_EVENT";
     const tokenizer = new Tokenizer();
     const parser = new Parser();
-    let events = [];
-    let raiseParserTestEvent = () => {
-        let event = new CustomEvent(parserTestEventName);
-        window.dispatchEvent(event);
-        console.log("dispatch", event);
+    let expectedTurtleEvents = [];
+    let actualTurtleEvents = [];
+    let assertTurtleEvents = () => {
+        if (expectedTurtleEvents.length !== actualTurtleEvents.length) {
+            throw "Expected and actual events are different";
+        }
+
     }
     let parserEventsStream = (event) => {
         switch(event.type) {
-            case parserTestEventName:
-                events = [];
-                break;
             case parser.parserStatusEventName():
-                console.log("get status");
+                switch(event.detail.status) {
+                    case logo.parserEvents.START_PARSING:
+                        actualTurtleEvents = [];
+                        break;
+                    case logo.parserEvents.END_PARSING:
+                        console.log(actualTurtleEvents);
+                        break;
+                }
                 break;
             case parser.turtleDrawingQueueEventName():
-                console.log("turtle");
+                actualTurtleEvents.push(event.detail);
                 break;
         }
-        console.log(event.type,  event.detail);
     }
     window.addEventListener(parser.parserStatusEventName(), parserEventsStream, false);
     window.addEventListener(parser.turtleDrawingQueueEventName(), parserEventsStream, false);
-    window.addEventListener(parserTestEventName, parserEventsStream, false);
-    let assertScript = (script = "") => {
-        raiseParserTestEvent();
+    let assertScript = (comments = "", script = "", expectedTurtleEvents = []) => {
+        this.expectedTurtleEvents = expectedTurtleEvents;
         let tokens = tokenizer.tokenize(script);
         parser.parse(tokens);
     }
@@ -35,6 +38,12 @@ function runParserTests() {
 
 
 
-    assertScript("fd 60");
+    assertScript(
+        "Get it from tokenizer",
+        "fd 60 rt 90",
+        [
+            [logo.primitives.FORWARD, 60],
+            [logo.primitives.RIGHT, 90]
+        ]);
     //assertScript("repeat 4 [fd 60 rt 90]");
 }
