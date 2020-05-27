@@ -2,10 +2,12 @@ runParserTests();
 function runParserTests() {
     const tokenizer = new Tokenizer();
     const parser = new Parser();
-    let testName = "";
-    let expectedTurtleEvents = [];
-    let actualTurtleEvents = [];
-    let assertTurtleEvent = (expectedTurtleEvent = {}, actualTurtleEvent = {}) => {
+    let currentTest = {
+        name: "",
+        expectedTurtleEvents: [],
+        actualTurtleEvents: []
+    };
+    let assertTurtleEvent = (testName = "", expectedTurtleEvent = {}, actualTurtleEvent = {}) => {
         let success = expectedTurtleEvent[0] === actualTurtleEvent.primitive &&
             expectedTurtleEvent[1] === actualTurtleEvent.arg;
         if (success) {
@@ -14,35 +16,35 @@ function runParserTests() {
             throw `TEST ${testName} FAILED`;
         }
     };
-    let assertTurtleEvents = () => {
-        if (expectedTurtleEvents.length !== actualTurtleEvents.length) {
+    let assertTurtleEvents = (test = {}) => {
+        if (test.expectedTurtleEvents.length !== test.actualTurtleEvents.length) {
             throw "Expected and actual events are different";
         }
-        expectedTurtleEvents.every(
-            (expectedTurtleEvent, index) => assertTurtleEvent(expectedTurtleEvent, actualTurtleEvents[index]));
+        test.expectedTurtleEvents.every(
+            (expectedTurtleEvent, index) => assertTurtleEvent(test.name, expectedTurtleEvent, test.actualTurtleEvents[index]));
     }
     let parserEventsStream = (event) => {
         switch(event.type) {
             case parser.parserStatusEventName():
                 switch(event.detail.status) {
                     case logo.parserEvents.START_PARSING:
-                        actualTurtleEvents = [];
+                        currentTest.actualTurtleEvents = [];
                         break;
                     case logo.parserEvents.END_PARSING:
-                        assertTurtleEvents();
+                        assertTurtleEvents(currentTest);
                         break;
                 }
                 break;
             case parser.turtleDrawingQueueEventName():
-                actualTurtleEvents.push(event.detail);
+                currentTest.actualTurtleEvents.push(event.detail);
                 break;
         }
     }
     window.addEventListener(parser.parserStatusEventName(), parserEventsStream, false);
     window.addEventListener(parser.turtleDrawingQueueEventName(), parserEventsStream, false);
-    let assertScript = (testNameParameter = "", script = "", expectedTurtleEventsParameter = []) => {
-        testName = testNameParameter;
-        expectedTurtleEvents = expectedTurtleEventsParameter;
+    let assertScript = (testName = "", script = "", expectedTurtleEvents = []) => {
+        currentTest.name = testName;
+        currentTest.expectedTurtleEvents = expectedTurtleEvents;
         let tokens = tokenizer.tokenize(script);
         parser.parse(tokens);
     }
