@@ -33,12 +33,18 @@ section.output {
 }
 footer {
     grid-area: 4 / 1 / 5 / 3;
+    color: white;
+    background-color: black;
+    font: 700 12px / 1.2 monospace;
 }
-section.controls > input {
+section.controls > button {
     width: 130px;
     font-size: 14px;
     font-weight: bold;
     border: 2px solid black;
+}
+footer img {
+    max-height: 100%;
 }
 #logo-editor {
     width: 400px;
@@ -52,13 +58,10 @@ section.controls > input {
     border: 2px solid black;
     background-color: #E8E8E8;
 }
-.button {
-    width: 100px;
-    height: 60px;
-    font-size: 14px;
-    font-weight: bold;
-    border: 2px solid black;
-}
+
+
+
+
 .popup {
     width: 800px;
     height: 400px;    
