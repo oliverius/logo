@@ -1,11 +1,14 @@
 const logo = {
-    "delimiters" :{
+    "delimiters": {
         "OPENING_BRACKET": "[",
         "CLOSING_BRACKET": "]",
         "PLUS": "+",
         "MINUS": "-",
         "MULTIPLIEDBY": "*",
         "DIVIDEDBY": "/"
+    },
+    "interpreter": {
+        "storageKey": "oliverius_logo"
     },
     "parserEvents": {
         "START_PARSING": 1,
@@ -75,7 +78,8 @@ class Interpreter {
         this.parser = new Parser();
         this.fps = 5;
         this.turtleDrawingQueue = [];
-        window.addEventListener(new Parser().turtleDrawingQueueEventName(), e => {
+        this.editor.value = this.getLatestScriptRun();
+        window.addEventListener(this.parser.turtleDrawingQueueEventName(), e => {
             let turtleMethodName = "";
             switch(e.detail.primitive) {
                 case logo.primitives.FORWARD:
@@ -119,11 +123,18 @@ class Interpreter {
             }
         }, 1000/this.fps);
     }
+    getLatestScriptRun() {
+        return localStorage.getItem(logo.interpreter.storageKey) ?? "";
+    }
+    saveLatestScriptRun(script) {
+        localStorage.setItem(logo.interpreter.storageKey, script);
+    }
     stop() {
         this.turtleDrawingQueue = []; // No more graphic instructions to execute
     }
     run() {
         let script = this.editor.value;
+        this.saveLatestScriptRun(script);
         let tokens = this.tokenizer.tokenize(script);
         this.parser.parse(tokens);
     }
@@ -188,7 +199,6 @@ class Parser {
         }
     }
     execute_repeat_begin(n = 0) {
-        console.log("** REPEAT begin");
         this.getNextToken();
         if (this.currentToken.tokenType === logo.tokenTypes.DELIMITER
             && this.currentToken.text === logo.delimiters.OPENING_BRACKET) {
@@ -199,7 +209,6 @@ class Parser {
         }
     }
     execute_repeat_end() {
-        console.log("** REPEAT end");
         let currentLoop = this.loopStack.pop();
         if (currentLoop.remainingLoops > 0) {
             this.setCurrentTokenIndex(currentLoop.firstTokenInsideTheLoopIndex);
@@ -215,7 +224,6 @@ class Parser {
         let result = { value: 0 };
         this.getExpression_AdditionOrSubtraction(result);
         
-        //console.log("final expression", result);
         this.putBackToken();
         return result.value;
     }
@@ -256,7 +264,6 @@ class Parser {
         switch (this.currentToken.tokenType) {
             case logo.tokenTypes.NUMBER:
                 result.value = parseInt(this.currentToken.text);
-                //console.log(result);
                 this.getNextToken();
                 break;
             case logo.tokenTypes.VARIABLE:
