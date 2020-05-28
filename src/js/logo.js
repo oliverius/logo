@@ -676,5 +676,3 @@ class Turtle {
 }
 
 const interpreter = new Interpreter('logo-editor', 'logo-graphics');
-
-//export { Token, Tokenizer }

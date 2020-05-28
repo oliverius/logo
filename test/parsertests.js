@@ -1,4 +1,4 @@
-runParserTests();
+//runParserTests();
 function runParserTests() {
     const tokenizer = new Tokenizer();
     const parser = new Parser();
