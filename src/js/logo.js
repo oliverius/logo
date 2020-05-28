@@ -17,10 +17,12 @@ const logo = {
         "BACK": 2,
         "LEFT": 3,
         "RIGHT": 4,
-        "REPEAT": 5,
-        "CLEARSCREEN": 6,
-        "PRIMITIVE_TO": 7,
-        "PRIMITIVE_END": 8
+        "PENUP": 5,
+        "PENDOWN": 6,
+        "REPEAT": 7,
+        "CLEARSCREEN": 8,
+        "PRIMITIVE_TO": 9,
+        "PRIMITIVE_END": 10
     },
     "primitiveAliases": [{
         "name": "FORWARD",
@@ -34,6 +36,12 @@ const logo = {
     }, {
         "name": "RIGHT",
         "aliases": [ "right", "rt", "gd" ]
+    }, {
+        "name": "PENUP",
+        "aliases": [ "penup", "pu", "sl" ]
+    }, {
+        "name": "PENDOWN",
+        "aliases": [ "pendown", "pd", "bl" ]
     }, {
         "name": "REPEAT",
         "aliases": [ "repeat", "repite" ]
@@ -81,6 +89,12 @@ class Interpreter {
                     break;
                 case logo.primitives.RIGHT:
                     turtleMethodName = "execute_right";
+                    break;
+                case logo.primitives.PENUP:
+                    turtleMethodName = "execute_penup";
+                    break;
+                case logo.primitives.PENDOWN:
+                    turtleMethodName = "execute_pendown";
                     break;
                 case logo.primitives.CLEARSCREEN:
                     turtleMethodName = "execute_clearscreen";
@@ -287,6 +301,12 @@ class Parser {
                     case logo.primitives.RIGHT:
                         n = this.getExpression();
                         this.raiseTurtleDrawingQueueEvent(logo.primitives.RIGHT, n);
+                        break;
+                    case logo.primitives.PENUP:
+                        this.raiseTurtleDrawingQueueEvent(logo.primitives.PENUP);
+                        break;
+                    case logo.primitives.PENDOWN:
+                        this.raiseTurtleDrawingQueueEvent(logo.primitives.PENDOWN);
                         break;
                     case logo.primitives.REPEAT:
                         n = this.getExpression();
@@ -548,20 +568,17 @@ class Turtle {
         this.drawingCtx = this.virtualDrawingCanvas.getContext('2d');
 
         this.execute_clearscreen();
-    }    
-
+        this.execute_pendown()
+    }
     deleteGraphics() {
         this.drawingCtx.clearRect(0, 0, this.width, this.height);
     }
-
     deleteTurtle() {
         this.turtleCtx.clearRect(0, 0, this.width, this.height);
     }
-
     execute_back(n = 0) {
         this.execute_forward(-n);
     }
-
     execute_clearscreen() {
         this.deleteGraphics();
         this.deleteTurtle();
@@ -572,7 +589,6 @@ class Turtle {
 
         this.renderFrame();
     }
-
     execute_forward(n = 0) {
         let angleFromYaxis = 90 - this.angleInDegrees;
         let angleFromYaxisInRadians = this.toRadians(angleFromYaxis);
@@ -584,19 +600,24 @@ class Turtle {
         this.drawingCtx.beginPath();
         this.drawingCtx.moveTo(this.x, this.y);
         this.drawingCtx.lineTo(newX, newY);
-        this.drawingCtx.stroke();
-
+        if (this.isPenDown) {
+            this.drawingCtx.stroke();
+        }
         this.updateTurtlePosition(newX, newY);
         
         this.deleteTurtle();
         this.drawTurtle();
         this.renderFrame();
     }
-
     execute_left(deg = 0) {
         this.execute_right(-deg);
     }
-
+    execute_pendown() {
+        this.isPenDown = true;
+    }
+    execute_penup() {
+        this.isPenDown = false;
+    }
     execute_right(deg = 0) {
         this.updateTurtleOrientation(deg);
 
@@ -604,7 +625,6 @@ class Turtle {
         this.drawTurtle();
         this.renderFrame();
     }
-
     drawTurtle() {
         let vertexAngleInDeg = 40;
         let alpha = vertexAngleInDeg / 2;
@@ -634,17 +654,14 @@ class Turtle {
         this.turtleCtx.lineTo(x1, y1);
         this.turtleCtx.stroke();
     }
-
     renderFrame() {
         this.ctx.clearRect(0, 0, this.width, this.height);
         this.ctx.drawImage(this.virtualDrawingCanvas, 0, 0, this.width, this.height);
         this.ctx.drawImage(this.virtualTurtleCanvas, 0, 0, this.width, this.height);
     }
-
     updateTurtleOrientation(deg = 0) {
         this.angleInDegrees += deg;
     }
-
     updateTurtlePosition(x = 0, y = 0) {
         this.x = x;
         this.y = y;
