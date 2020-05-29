@@ -133,9 +133,14 @@ class Interpreter {
     openDialog() {
 
     }
-    showExamples() {
+    toggleExamples() {
         let dialog = document.getElementById('dialog-help-english');
-        dialog.classList.remove('hidden');
+        if (dialog.classList.contains('hidden'))
+        {
+            dialog.classList.remove('hidden');
+        } else {
+            dialog.classList.add('hidden');
+        }
         // TODO, maybe it is a toggle
 
     }

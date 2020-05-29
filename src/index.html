@@ -39,13 +39,29 @@
             <button class="dialog_close_button">Close ❌</button>
         </aside>
         <aside role="dialog" aria-modal="true" id="dialog-help-english" class="hidden">
-            Examples:
-            <ul>
-                <li>Square</li>
-                <li>Square using REPEAT</li>
-                <li>Hexagon</li>
-
-            </ul>
+            <h1>Examples:</h1>
+            <div>
+                <h2>Square</h2>
+                <p>fd 60 rt 90 fd 60 rt 90 fd 60 rt 90 fd 60 rt 90</p>
+            </div>
+            <div>
+                <h2>Square using REPEAT</h2>
+                <p>repeat 4 [fd 60 rt 90]</p>
+            </div>
+            <div>
+                <h2>Square using a procedure</h2>
+                <p>to square :side</p>
+                <p>repeat 4 [fd :side rt 90]</p>
+                <p>end</p>
+                <p>square 60</p>
+            </div>
+            <div>
+                <h2>Flower</h2>
+            </div>
+            <div>
+                <h2>Circle of pentagons</h2>
+            </div>
+              
             <button class="dialog_close_button">Close ❌</button>
         </aside>
         <script type="text/javascript" src="js/logo.js"></script>
