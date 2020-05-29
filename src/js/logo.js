@@ -7,6 +7,9 @@ const logo = {
         "MULTIPLIEDBY": "*",
         "DIVIDEDBY": "/"
     },
+    "parser": {
+        "fps": 5
+    },
     "interpreter": {
         "storageKey": "oliverius_logo"
     },
@@ -76,10 +79,8 @@ class Interpreter {
         this.turtle = new Turtle(this.canvas);
         this.tokenizer = new Tokenizer();
         this.parser = new Parser();
-        this.fps = 5;
-        this.turtleDrawingQueue = [];
-        this.editor.value = this.getLatestScriptRun();
-        window.addEventListener(this.parser.turtleDrawingQueueEventName(), e => {
+        this.setEditor(this.getLatestScriptRun());
+        window.addEventListener(this.parser.turtleDrawingEventName(), e => {
             let turtleMethodName = "";
             switch(e.detail.primitive) {
                 case logo.primitives.FORWARD:
@@ -104,30 +105,20 @@ class Interpreter {
                     turtleMethodName = "execute_clearscreen";
                     break;
             }
-            this.turtleDrawingQueue.push({
-                methodname: turtleMethodName,
-                arg: e.detail.arg
-            });
+            this.turtle[turtleMethodName](e.detail.arg);
         });
-        this.executionLoop();
     }
     clear() {
-        this.editor.value = "";
-    }
-    executionLoop() {
-        setInterval(() => {
-            console.log("*");
-            if (this.turtleDrawingQueue.length > 0) {
-                let obj = this.turtleDrawingQueue.shift();
-                this.turtle[obj.methodname](obj.arg);
-            }
-        }, 1000/this.fps);
+        this.setEditor("");
     }
     getLatestScriptRun() {
         return localStorage.getItem(logo.interpreter.storageKey) ?? "";
     }
     saveLatestScriptRun(script) {
         localStorage.setItem(logo.interpreter.storageKey, script);
+    }
+    setEditor(text) {
+        this.editor.value = text;
     }
 
 
@@ -149,7 +140,6 @@ class Interpreter {
 
 
     stop() {
-        this.turtleDrawingQueue = []; // No more graphic instructions to execute
     }
     run() {
         let script = this.editor.value;
@@ -160,8 +150,9 @@ class Interpreter {
 }
 
 class Parser {
-    turtleDrawingQueueEventName() { return "PARSER_ADD_TO_TURTLE_DRAWING_QUEUE_EVENT"; }
+    turtleDrawingEventName() { return "PARSER_TURTLE_DRAWING_EVENT"; } // todo add to Logo.
     parserStatusEventName() { return "PARSER_STATUS_EVENT"; }
+
     applyArithmeticOperation(operation, result, hold) {
         switch(operation) {
             case logo.delimiters.PLUS:
@@ -187,13 +178,10 @@ class Parser {
         return value;
     }
     execute_procedure_end() {
-        console.log("** Execute procedure END");
         let item = this.procedureCallStack.pop();
         this.setCurrentTokenIndex(item.currentTokenIndexBeforeJumpingToProcedure);
-        console.log("** Execute procedure END - move the index to: " + item.currentTokenIndexBeforeJumpingToProcedure);
     }
     execute_procedure_to() {
-        console.log("** Execute procedure TO");
         let procedure = {};
         this.getNextToken();
         if (this.currentToken.tokenType === logo.tokenTypes.PROCEDURE_NAME) {
@@ -214,7 +202,6 @@ class Parser {
             procedure["lastTokenInsideProcedureIndex"] = indexLastTokenNotIncludingEndToken;
 
             this.procedures.push(procedure);
-            //console.log("** Added procedure: ", procedure);
         }
     }
     execute_repeat_begin(n = 0) {
@@ -315,7 +302,7 @@ class Parser {
                 this.raiseParserStatusEventName(logo.parserEvents.END_PARSING);
                 console.log("finish parsing");
             }
-        }, 50);
+        }, 1000/logo.parser.fps);
     }
 
     parsingStep() {
@@ -384,7 +371,7 @@ class Parser {
         window.dispatchEvent(event);
     }
     raiseTurtleDrawingQueueEvent(primitive = logo.primitives.NONE, arg = 0) {
-        let event = new CustomEvent(this.turtleDrawingQueueEventName(), {
+        let event = new CustomEvent(this.turtleDrawingEventName(), {
             bubbles: true,
             detail: {
                 primitive: primitive,
@@ -394,7 +381,6 @@ class Parser {
         window.dispatchEvent(event);
     }
     scanProcedure(name) {
-        console.log(`** Scan procedure: ${name}`);
         let searchProcedureResults = this.procedures.filter(procedure => {
             return procedure.name === name;
         });
