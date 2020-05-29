@@ -315,30 +315,25 @@ class Parser {
                 this.raiseParserStatusEventName(logo.parserEvents.END_PARSING);
                 console.log("finish parsing");
             }
-        }, 1000);
+        }, 50);
     }
 
     parsingStep() {
-        let n=0;
         this.getNextToken();
         console.log(this.currentToken.toString());
         if (this.currentToken.tokenType === logo.tokenTypes.PRIMITIVE) {
             switch(this.currentToken.primitive) {
                 case logo.primitives.FORWARD:
-                    n = this.getExpression();
-                    this.raiseTurtleDrawingQueueEvent(logo.primitives.FORWARD, n);
+                    this.raiseTurtleDrawingQueueEvent(logo.primitives.FORWARD, this.getExpression());
                     break;
                 case logo.primitives.BACK:
-                    n = this.getExpression();;
-                    this.raiseTurtleDrawingQueueEvent(logo.primitives.BACK, n);
+                    this.raiseTurtleDrawingQueueEvent(logo.primitives.BACK, this.getExpression());
                     break;
                 case logo.primitives.LEFT:
-                    n = this.getExpression();
-                    this.raiseTurtleDrawingQueueEvent(logo.primitives.LEFT, n);
+                    this.raiseTurtleDrawingQueueEvent(logo.primitives.LEFT, this.getExpression());
                     break;
                 case logo.primitives.RIGHT:
-                    n = this.getExpression();
-                    this.raiseTurtleDrawingQueueEvent(logo.primitives.RIGHT, n);
+                    this.raiseTurtleDrawingQueueEvent(logo.primitives.RIGHT, this.getExpression());
                     break;
                 case logo.primitives.PENUP:
                     this.raiseTurtleDrawingQueueEvent(logo.primitives.PENUP);
@@ -347,8 +342,7 @@ class Parser {
                     this.raiseTurtleDrawingQueueEvent(logo.primitives.PENDOWN);
                     break;
                 case logo.primitives.REPEAT:
-                    n = this.getExpression();
-                    this.execute_repeat_begin(n);
+                    this.execute_repeat_begin(this.getExpression());
                     break;
                 case logo.primitives.CLEARSCREEN:
                     this.raiseTurtleDrawingQueueEvent(logo.primitives.CLEARSCREEN);
@@ -371,61 +365,7 @@ class Parser {
 
     parse(tokens) {
         this.initialize(tokens);
-
-        let n = 0;
         this.parsingLoop();
-
-        // do {
-        //     this.getNextToken();
-        //     console.log(this.currentToken.toString());
-        //     if (this.currentToken.tokenType === logo.tokenTypes.PRIMITIVE) {
-        //         switch(this.currentToken.primitive) {
-        //             case logo.primitives.FORWARD:
-        //                 n = this.getExpression();
-        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.FORWARD, n);
-        //                 break;
-        //             case logo.primitives.BACK:
-        //                 n = this.getExpression();;
-        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.BACK, n);
-        //                 break;
-        //             case logo.primitives.LEFT:
-        //                 n = this.getExpression();
-        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.LEFT, n);
-        //                 break;
-        //             case logo.primitives.RIGHT:
-        //                 n = this.getExpression();
-        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.RIGHT, n);
-        //                 break;
-        //             case logo.primitives.PENUP:
-        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.PENUP);
-        //                 break;
-        //             case logo.primitives.PENDOWN:
-        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.PENDOWN);
-        //                 break;
-        //             case logo.primitives.REPEAT:
-        //                 n = this.getExpression();
-        //                 this.execute_repeat_begin(n);
-        //                 break;
-        //             case logo.primitives.CLEARSCREEN:
-        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.CLEARSCREEN);
-        //                 break;
-        //             case logo.primitives.PRIMITIVE_TO:
-        //                 this.execute_procedure_to();
-        //                 break;
-        //             case logo.primitives.PRIMITIVE_END:
-        //                 this.execute_procedure_end();
-        //                 break;
-        //         }
-        //     } else if(this.currentToken.tokenType === logo.tokenTypes.DELIMITER) {
-        //         if (this.currentToken.text === logo.delimiters.CLOSING_BRACKET) {
-        //             this.execute_repeat_end();
-        //         }
-        //     } else if(this.currentToken.tokenType === logo.tokenTypes.PROCEDURE_NAME) {
-        //         this.scanProcedure(this.currentToken.text);
-        //     }
-        // } while(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM)
-        // this.raiseParserStatusEventName(logo.parserEvents.END_PARSING);
-        // console.log("Finish parsing");
     }
     peekLastProcedureCallStackItem() {
         return this.procedureCallStack[this.procedureCallStack.length - 1];
