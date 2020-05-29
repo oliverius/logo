@@ -17,8 +17,8 @@
                 <button onclick="interpreter.run()">Run ▶️</button>
                 <button onclick="interpreter.stop()">Stop ⏹</button>
                 <button onclick="interpreter.clear()">Clear ❌</button>
-                <button onclick="">Examples 🐢</button>
-                <button onclick="">Help 🆘</button>
+                <button onclick="interpreter.toggleExamples()">Examples 🐢</button>
+                <button onclick="interpreter.toggleHelp()">Help 🆘</button>
                 <button onclick="">English ⌨️</button>
             </section>
             <section class="output">
@@ -28,8 +28,25 @@
                 <a href="https://github.com/oliverius/logo#readme"><img src="img/GitHub-Mark-Light-32px.png">oliverius/logo</a><!--https://github.com/logos-->
             </footer>
         </main>
-        <aside id="dialog-help-english">
-            This is an aside element
+        <aside role="dialog" aria-modal="true" id="dialog-examples-english" class="hidden">
+            Examples:
+            <ul>
+                <li>Square</li>
+                <li>Square using REPEAT</li>
+                <li>Hexagon</li>
+
+            </ul>
+            <button class="dialog_close_button">Close ❌</button>
+        </aside>
+        <aside role="dialog" aria-modal="true" id="dialog-help-english" class="hidden">
+            Examples:
+            <ul>
+                <li>Square</li>
+                <li>Square using REPEAT</li>
+                <li>Hexagon</li>
+
+            </ul>
+            <button class="dialog_close_button">Close ❌</button>
         </aside>
         <script type="text/javascript" src="js/logo.js"></script>
         <script type="text/javascript" src="../test/tokenizertests.js"></script>

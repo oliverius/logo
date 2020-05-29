@@ -86,20 +86,31 @@ footer a:hover, footer a:active {
     background-color: #E8E8E8;
 }
 
-
-
-
-.popup {
-    width: 800px;
-    height: 400px;    
-
-    position: relative;
-    left: 10px;
-    top: -117%;
-
-    background: red;
-    box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.9);
+[role="dialog"] {
+    box-sizing: border-box;
+    padding: 15px;
+    border: 1px solid black;
+    background-color: peru;
+    min-height: 100vh;
+    position: absolute;
+    top: 2rem;
+    left: 50vw;  /* move to the middle of the screen (assumes relative parent is the body/viewport) */
+    transform: translateX(-50%);  /* move backwards 50% of this element's width */
+    min-width: 760px;
+    min-height: auto;
+    box-shadow: 0 19px 38px rgba(0, 0, 0, 0.12), 0 15px 12px rgba(0, 0, 0, 0.22);
 }
-.closed {
+.hidden {
     display: none;
 }
+.dialog_close_button {
+    float: right;
+    position: absolute;
+    top: 10px;
+    left: 90%;
+    height: 25px;
+  }
+  
+  .dialog_close_button img {
+    border: 0;
+  }

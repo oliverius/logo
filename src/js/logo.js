@@ -129,6 +129,19 @@ class Interpreter {
     saveLatestScriptRun(script) {
         localStorage.setItem(logo.interpreter.storageKey, script);
     }
+
+    openDialog() {
+
+    }
+    showExamples() {
+        let dialog = document.getElementById('dialog-help-english');
+        dialog.classList.remove('hidden');
+        // TODO, maybe it is a toggle
+
+    }
+
+
+
     stop() {
         this.turtleDrawingQueue = []; // No more graphic instructions to execute
     }
