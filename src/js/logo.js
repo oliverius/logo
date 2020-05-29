@@ -130,6 +130,7 @@ class Interpreter {
         localStorage.setItem(logo.interpreter.storageKey, script);
     }
 
+
     openDialog() {
 
     }
@@ -213,7 +214,7 @@ class Parser {
             procedure["lastTokenInsideProcedureIndex"] = indexLastTokenNotIncludingEndToken;
 
             this.procedures.push(procedure);
-            console.log("** Added procedure: ", procedure);
+            //console.log("** Added procedure: ", procedure);
         }
     }
     execute_repeat_begin(n = 0) {
@@ -302,61 +303,129 @@ class Parser {
         this.procedureCallStack = [];
         this.raiseParserStatusEventName(logo.parserEvents.START_PARSING);
     }
+
+// TODO
+    parsingLoop() {
+        this.interval = setInterval(() => {
+            console.log("p");
+            if (this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM) {
+                this.parsingStep();
+            } else {
+                clearInterval(this.interval);
+                this.raiseParserStatusEventName(logo.parserEvents.END_PARSING);
+                console.log("finish parsing");
+            }
+        }, 1000);
+    }
+
+    parsingStep() {
+        let n=0;
+        this.getNextToken();
+        console.log(this.currentToken.toString());
+        if (this.currentToken.tokenType === logo.tokenTypes.PRIMITIVE) {
+            switch(this.currentToken.primitive) {
+                case logo.primitives.FORWARD:
+                    n = this.getExpression();
+                    this.raiseTurtleDrawingQueueEvent(logo.primitives.FORWARD, n);
+                    break;
+                case logo.primitives.BACK:
+                    n = this.getExpression();;
+                    this.raiseTurtleDrawingQueueEvent(logo.primitives.BACK, n);
+                    break;
+                case logo.primitives.LEFT:
+                    n = this.getExpression();
+                    this.raiseTurtleDrawingQueueEvent(logo.primitives.LEFT, n);
+                    break;
+                case logo.primitives.RIGHT:
+                    n = this.getExpression();
+                    this.raiseTurtleDrawingQueueEvent(logo.primitives.RIGHT, n);
+                    break;
+                case logo.primitives.PENUP:
+                    this.raiseTurtleDrawingQueueEvent(logo.primitives.PENUP);
+                    break;
+                case logo.primitives.PENDOWN:
+                    this.raiseTurtleDrawingQueueEvent(logo.primitives.PENDOWN);
+                    break;
+                case logo.primitives.REPEAT:
+                    n = this.getExpression();
+                    this.execute_repeat_begin(n);
+                    break;
+                case logo.primitives.CLEARSCREEN:
+                    this.raiseTurtleDrawingQueueEvent(logo.primitives.CLEARSCREEN);
+                    break;
+                case logo.primitives.PRIMITIVE_TO:
+                    this.execute_procedure_to();
+                    break;
+                case logo.primitives.PRIMITIVE_END:
+                    this.execute_procedure_end();
+                    break;
+            }
+        } else if(this.currentToken.tokenType === logo.tokenTypes.DELIMITER) {
+            if (this.currentToken.text === logo.delimiters.CLOSING_BRACKET) {
+                this.execute_repeat_end();
+            }
+        } else if(this.currentToken.tokenType === logo.tokenTypes.PROCEDURE_NAME) {
+            this.scanProcedure(this.currentToken.text);
+        }
+    }
+
     parse(tokens) {
         this.initialize(tokens);
 
         let n = 0;
+        this.parsingLoop();
 
-        do {
-            this.getNextToken();
-            if (this.currentToken.tokenType === logo.tokenTypes.PRIMITIVE) {
-                switch(this.currentToken.primitive) {
-                    case logo.primitives.FORWARD:
-                        n = this.getExpression();
-                        this.raiseTurtleDrawingQueueEvent(logo.primitives.FORWARD, n);
-                        break;
-                    case logo.primitives.BACK:
-                        n = this.getExpression();;
-                        this.raiseTurtleDrawingQueueEvent(logo.primitives.BACK, n);
-                        break;
-                    case logo.primitives.LEFT:
-                        n = this.getExpression();
-                        this.raiseTurtleDrawingQueueEvent(logo.primitives.LEFT, n);
-                        break;
-                    case logo.primitives.RIGHT:
-                        n = this.getExpression();
-                        this.raiseTurtleDrawingQueueEvent(logo.primitives.RIGHT, n);
-                        break;
-                    case logo.primitives.PENUP:
-                        this.raiseTurtleDrawingQueueEvent(logo.primitives.PENUP);
-                        break;
-                    case logo.primitives.PENDOWN:
-                        this.raiseTurtleDrawingQueueEvent(logo.primitives.PENDOWN);
-                        break;
-                    case logo.primitives.REPEAT:
-                        n = this.getExpression();
-                        this.execute_repeat_begin(n);
-                        break;
-                    case logo.primitives.CLEARSCREEN:
-                        this.raiseTurtleDrawingQueueEvent(logo.primitives.CLEARSCREEN);
-                        break;
-                    case logo.primitives.PRIMITIVE_TO:
-                        this.execute_procedure_to();
-                        break;
-                    case logo.primitives.PRIMITIVE_END:
-                        this.execute_procedure_end();
-                        break;
-                }
-            } else if(this.currentToken.tokenType === logo.tokenTypes.DELIMITER) {
-                if (this.currentToken.text === logo.delimiters.CLOSING_BRACKET) {
-                    this.execute_repeat_end();
-                }
-            } else if(this.currentToken.tokenType === logo.tokenTypes.PROCEDURE_NAME) {
-                this.scanProcedure(this.currentToken.text);
-            }
-        } while(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM)
-        this.raiseParserStatusEventName(logo.parserEvents.END_PARSING);
-        console.log("Finish parsing");
+        // do {
+        //     this.getNextToken();
+        //     console.log(this.currentToken.toString());
+        //     if (this.currentToken.tokenType === logo.tokenTypes.PRIMITIVE) {
+        //         switch(this.currentToken.primitive) {
+        //             case logo.primitives.FORWARD:
+        //                 n = this.getExpression();
+        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.FORWARD, n);
+        //                 break;
+        //             case logo.primitives.BACK:
+        //                 n = this.getExpression();;
+        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.BACK, n);
+        //                 break;
+        //             case logo.primitives.LEFT:
+        //                 n = this.getExpression();
+        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.LEFT, n);
+        //                 break;
+        //             case logo.primitives.RIGHT:
+        //                 n = this.getExpression();
+        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.RIGHT, n);
+        //                 break;
+        //             case logo.primitives.PENUP:
+        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.PENUP);
+        //                 break;
+        //             case logo.primitives.PENDOWN:
+        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.PENDOWN);
+        //                 break;
+        //             case logo.primitives.REPEAT:
+        //                 n = this.getExpression();
+        //                 this.execute_repeat_begin(n);
+        //                 break;
+        //             case logo.primitives.CLEARSCREEN:
+        //                 this.raiseTurtleDrawingQueueEvent(logo.primitives.CLEARSCREEN);
+        //                 break;
+        //             case logo.primitives.PRIMITIVE_TO:
+        //                 this.execute_procedure_to();
+        //                 break;
+        //             case logo.primitives.PRIMITIVE_END:
+        //                 this.execute_procedure_end();
+        //                 break;
+        //         }
+        //     } else if(this.currentToken.tokenType === logo.tokenTypes.DELIMITER) {
+        //         if (this.currentToken.text === logo.delimiters.CLOSING_BRACKET) {
+        //             this.execute_repeat_end();
+        //         }
+        //     } else if(this.currentToken.tokenType === logo.tokenTypes.PROCEDURE_NAME) {
+        //         this.scanProcedure(this.currentToken.text);
+        //     }
+        // } while(this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM)
+        // this.raiseParserStatusEventName(logo.parserEvents.END_PARSING);
+        // console.log("Finish parsing");
     }
     peekLastProcedureCallStackItem() {
         return this.procedureCallStack[this.procedureCallStack.length - 1];
