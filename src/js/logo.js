@@ -146,6 +146,7 @@ class Interpreter {
 
 
     stop() {
+        this.parser.stopParsing();
     }
     run() {
         let script = this.editor.value;
@@ -284,30 +285,28 @@ class Parser {
                 break;
         }
     }
-    initialize(tokens) {
+    parse(tokens) {
         this.tokens = tokens;
         this.currentToken = {};
         this.currentTokenIndex = -1; // So when we get the first token, it will be 0, first index in an array.
         this.loopStack = [];
         this.procedures = [];
         this.procedureCallStack = [];
-        this.raiseParserStatusEvent(logo.parser.statusEvent.values.START_PARSING);
-    }
+        this.stopParsingRequested = false;
 
-// TODO
-    parsingLoop() {
-        this.interval = setInterval(() => {
-            console.log("p");
-            if (this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM) {
+        this.raiseParserStatusEvent(logo.parser.statusEvent.values.START_PARSING);
+
+        this.parsingLoop = setInterval(() => {
+            console.log("⌛️💓");
+            if (this.currentToken.tokenType !== logo.tokenTypes.END_OF_TOKEN_STREAM
+                && !this.stopParsingRequested) {
                 this.parsingStep();
             } else {
-                clearInterval(this.interval);
+                clearInterval(this.parsingLoop);
                 this.raiseParserStatusEvent(logo.parser.statusEvent.values.END_PARSING);
-                console.log("finish parsing");
             }
         }, 1000/logo.parser.fps);
     }
-
     parsingStep() {
         this.getNextToken();
         console.log(this.currentToken.toString());
@@ -351,11 +350,6 @@ class Parser {
         } else if(this.currentToken.tokenType === logo.tokenTypes.PROCEDURE_NAME) {
             this.scanProcedure(this.currentToken.text);
         }
-    }
-
-    parse(tokens) {
-        this.initialize(tokens);
-        this.parsingLoop();
     }
     peekLastProcedureCallStackItem() {
         return this.procedureCallStack[this.procedureCallStack.length - 1];
@@ -414,6 +408,9 @@ class Parser {
     }
     setCurrentTokenIndex(index) {
         this.currentTokenIndex = index;
+    }
+    stopParsing() {
+        this.stopParsingRequested = true;
     }
 }
 
