@@ -8,14 +8,20 @@ const logo = {
         "DIVIDEDBY": "/"
     },
     "parser": {
-        "fps": 5
+        "fps": 10,
+        "statusEvent": {
+            "name": "PARSER_STATUS_EVENT",
+            "values": {
+                "START_PARSING": 1,
+                "END_PARSING": 2
+            }
+        },
+        "turtleDrawingEvent": {
+            "name": "PARSER_TURTLE_DRAWING_EVENT"
+        }
     },
     "interpreter": {
         "storageKey": "oliverius_logo"
-    },
-    "parserEvents": {
-        "START_PARSING": 1,
-        "END_PARSING": 2
     },
     "primitives" : {
         "NONE": 0,
@@ -80,7 +86,7 @@ class Interpreter {
         this.tokenizer = new Tokenizer();
         this.parser = new Parser();
         this.setEditor(this.getLatestScriptRun());
-        window.addEventListener(this.parser.turtleDrawingEventName(), e => {
+        window.addEventListener(logo.parser.turtleDrawingEvent.name, e => {
             let turtleMethodName = "";
             switch(e.detail.primitive) {
                 case logo.primitives.FORWARD:
@@ -150,9 +156,6 @@ class Interpreter {
 }
 
 class Parser {
-    turtleDrawingEventName() { return "PARSER_TURTLE_DRAWING_EVENT"; } // todo add to Logo.
-    parserStatusEventName() { return "PARSER_STATUS_EVENT"; }
-
     applyArithmeticOperation(operation, result, hold) {
         switch(operation) {
             case logo.delimiters.PLUS:
@@ -288,7 +291,7 @@ class Parser {
         this.loopStack = [];
         this.procedures = [];
         this.procedureCallStack = [];
-        this.raiseParserStatusEventName(logo.parserEvents.START_PARSING);
+        this.raiseParserStatusEvent(logo.parser.statusEvent.values.START_PARSING);
     }
 
 // TODO
@@ -299,7 +302,7 @@ class Parser {
                 this.parsingStep();
             } else {
                 clearInterval(this.interval);
-                this.raiseParserStatusEventName(logo.parserEvents.END_PARSING);
+                this.raiseParserStatusEvent(logo.parser.statusEvent.values.END_PARSING);
                 console.log("finish parsing");
             }
         }, 1000/logo.parser.fps);
@@ -311,28 +314,28 @@ class Parser {
         if (this.currentToken.tokenType === logo.tokenTypes.PRIMITIVE) {
             switch(this.currentToken.primitive) {
                 case logo.primitives.FORWARD:
-                    this.raiseTurtleDrawingQueueEvent(logo.primitives.FORWARD, this.getExpression());
+                    this.raiseTurtleDrawingEvent(logo.primitives.FORWARD, this.getExpression());
                     break;
                 case logo.primitives.BACK:
-                    this.raiseTurtleDrawingQueueEvent(logo.primitives.BACK, this.getExpression());
+                    this.raiseTurtleDrawingEvent(logo.primitives.BACK, this.getExpression());
                     break;
                 case logo.primitives.LEFT:
-                    this.raiseTurtleDrawingQueueEvent(logo.primitives.LEFT, this.getExpression());
+                    this.raiseTurtleDrawingEvent(logo.primitives.LEFT, this.getExpression());
                     break;
                 case logo.primitives.RIGHT:
-                    this.raiseTurtleDrawingQueueEvent(logo.primitives.RIGHT, this.getExpression());
+                    this.raiseTurtleDrawingEvent(logo.primitives.RIGHT, this.getExpression());
                     break;
                 case logo.primitives.PENUP:
-                    this.raiseTurtleDrawingQueueEvent(logo.primitives.PENUP);
+                    this.raiseTurtleDrawingEvent(logo.primitives.PENUP);
                     break;
                 case logo.primitives.PENDOWN:
-                    this.raiseTurtleDrawingQueueEvent(logo.primitives.PENDOWN);
+                    this.raiseTurtleDrawingEvent(logo.primitives.PENDOWN);
                     break;
                 case logo.primitives.REPEAT:
                     this.execute_repeat_begin(this.getExpression());
                     break;
                 case logo.primitives.CLEARSCREEN:
-                    this.raiseTurtleDrawingQueueEvent(logo.primitives.CLEARSCREEN);
+                    this.raiseTurtleDrawingEvent(logo.primitives.CLEARSCREEN);
                     break;
                 case logo.primitives.PRIMITIVE_TO:
                     this.execute_procedure_to();
@@ -361,8 +364,8 @@ class Parser {
         this.currentTokenIndex--;
         this.currentToken = this.tokens[this.currentTokenIndex];
     }
-    raiseParserStatusEventName(status = "") {
-        let event = new CustomEvent(this.parserStatusEventName(), {
+    raiseParserStatusEvent(status = "") {
+        let event = new CustomEvent(logo.parser.statusEvent.name, {
             bubbles: true,
             detail: {
                 status: status
@@ -370,8 +373,8 @@ class Parser {
         });
         window.dispatchEvent(event);
     }
-    raiseTurtleDrawingQueueEvent(primitive = logo.primitives.NONE, arg = 0) {
-        let event = new CustomEvent(this.turtleDrawingEventName(), {
+    raiseTurtleDrawingEvent(primitive = logo.primitives.NONE, arg = 0) {
+        let event = new CustomEvent(logo.parser.turtleDrawingEvent.name, {
             bubbles: true,
             detail: {
                 primitive: primitive,

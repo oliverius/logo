@@ -26,12 +26,12 @@ function runParserTests() {
     }
     let parserEventsStream = (event) => {
         switch(event.type) {
-            case parser.parserStatusEventName():
+            case logo.parser.statusEvent.name:
                 switch(event.detail.status) {
-                    case logo.parserEvents.START_PARSING:
+                    case logo.parser.statusEvent.values.START_PARSING:
                         currentTest.actualTurtleEvents = [];
                         break;
-                    case logo.parserEvents.END_PARSING:
+                    case logo.parser.statusEvent.values.END_PARSING:
                         assertTurtleEvents(currentTest);
                         break;
                 }
@@ -41,7 +41,7 @@ function runParserTests() {
                 break;
         }
     }
-    window.addEventListener(parser.parserStatusEventName(), parserEventsStream, false);
+    window.addEventListener(logo.parser.statusEvent.name, parserEventsStream, false);
     window.addEventListener(parser.turtleDrawingQueueEventName(), parserEventsStream, false);
     let assertScript = (testName = "", script = "", expectedTurtleEvents = []) => {
         currentTest.name = testName;
