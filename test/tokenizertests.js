@@ -9,7 +9,7 @@ function runTokenizerTests() {
               actualToken.tokenType === expectedToken.tokenType &&
               actualToken.primitive === expectedToken.primitive;
           if (!success) {
-              console.log(`Expected token: ${expectedToken} - Actual token: ${actualToken}`);
+              throw `Expected token: ${expectedToken} - Actual token: ${actualToken}`;
           }
           return success;
   };
@@ -18,7 +18,7 @@ function runTokenizerTests() {
           throw `TEST "${comment}": Expected and actual have different number of tokens`;
       }
       let success = expectedTokens.every((expectedToken, index) => assertToken(expectedToken, actualTokens[index]) === true);
-      let testResult = success ? "PASSED" : "FAILED";
+      let testResult = success ? "PASSED" : "FAILED";      
       console.log(`TEST "${comment}": ${testResult}`);
   };
   let lines = (arr) => arr.join('\n');
@@ -113,24 +113,24 @@ function runTokenizerTests() {
   assertTokens(
       'PROCEDURE with no parameters in one line and the PROCEDURE is not called',
       [
-          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_TO),
+          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
           new Token(3, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(8, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
           new Token(11, "60", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
-          new Token(14, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_END)
+          new Token(14, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END)
       ],
       tokenizer.tokenize("to line fd 60 end")
   );
   assertTokens(
       'PROCEDURE with no parameters in multiple lines and the PROCEDURE is not called',
       [
-          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_TO),
+          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
           new Token(3, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(7, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
           new Token(8, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
           new Token(11, "60", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
           new Token(13, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-          new Token(14, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_END)
+          new Token(14, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END)
       ],
       tokenizer.tokenize(
           lines([
@@ -143,11 +143,11 @@ function runTokenizerTests() {
   assertTokens(
       'PROCEDURE with no parameters in one line and the PROCEDURE is called once',
       [
-          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_TO),
+          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
           new Token(3, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(8, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
           new Token(11, "60", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
-          new Token(14, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_END),
+          new Token(14, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END),
           new Token(18, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
       ],
       tokenizer.tokenize("to line fd 60 end line")
@@ -155,13 +155,13 @@ function runTokenizerTests() {
   assertTokens(
       'PROCEDURE with no parameters in multiple lines and the PROCEDURE is called once',
       [
-          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_TO),
+          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
           new Token(3, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(7, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
           new Token(8, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
           new Token(11, "60", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
           new Token(13, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-          new Token(14, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_END),
+          new Token(14, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END),
           new Token(17, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
           new Token(18, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
       ],
@@ -177,11 +177,11 @@ function runTokenizerTests() {
   assertTokens(
       'PROCEDURE with no parameters in one line and the PROCEDURE is called twice',
       [
-          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_TO),
+          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
           new Token(3, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(8, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
           new Token(11, "60", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
-          new Token(14, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_END),
+          new Token(14, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END),
           new Token(18, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(23, "rt", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.RIGHT),
           new Token(26, "90", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
@@ -192,13 +192,13 @@ function runTokenizerTests() {
   assertTokens(
       'PROCEDURE with no parameters in multiple lines and the PROCEDURE is called twice',
       [
-          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_TO),
+          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
           new Token(3, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(7, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
           new Token(8, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
           new Token(11, "60", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
           new Token(13, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-          new Token(14, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_END),
+          new Token(14, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END),
           new Token(17, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
           new Token(18, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(22, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
@@ -221,12 +221,12 @@ function runTokenizerTests() {
   assertTokens(
       'PROCEDURE with one parameter in one line and the PROCEDURE is called twice',
       [
-          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_TO),
+          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
           new Token(3, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(8, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
           new Token(16, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
           new Token(19, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
-          new Token(27, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_END),
+          new Token(27, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END),
           new Token(31, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(36, "60", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
           new Token(39, "rt", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.RIGHT),
@@ -239,14 +239,14 @@ function runTokenizerTests() {
   assertTokens(
       'PROCEDURE with one parameter in multiple lines and the PROCEDURE is called twice',
       [
-          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_TO),
+          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
           new Token(3, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(8, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
           new Token(15, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
           new Token(16, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
           new Token(19, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
           new Token(26, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-          new Token(27, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_END),
+          new Token(27, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END),
           new Token(30, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
           new Token(31, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(36, "60", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
@@ -311,14 +311,14 @@ function runTokenizerTests() {
   assertTokens(
       'PROCEDURE with one parameter in multiple lines and the parameter is an expression "a + b"',
       [
-          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_TO),
+          new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
           new Token(3, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(8, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
           new Token(15, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
           new Token(16, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
           new Token(19, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
           new Token(26, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-          new Token(27, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.PRIMITIVE_END),
+          new Token(27, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END),
           new Token(30, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
           new Token(31, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
           new Token(36, "10", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
@@ -334,4 +334,49 @@ function runTokenizerTests() {
           ])
       )
   );
+  assertTokens(
+    'PROCEDURE with one parameter in multiple lines called recursively with IF and STOP',
+    [
+        new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
+        new Token(3, "hook", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
+        new Token(8, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
+
+        new Token(15, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+        new Token(16, "if", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.IF),
+        new Token(19, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
+        new Token(27, "<", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+        new Token(29, "20", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
+        new Token(32, "[", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+        new Token(34, "stop", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.STOP),
+        new Token(39, "]", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+
+        new Token(40, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+        new Token(41, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
+        new Token(44, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
+        new Token(51, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+        new Token(52, "rt", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.RIGHT),
+        new Token(55, "45", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
+        new Token(57, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+        new Token(58, "hook", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
+        new Token(63, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
+        new Token(70, "/", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+        new Token(71, "2", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
+        new Token(72, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+        new Token(73, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END),
+        new Token(76, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+        new Token(77, "hook", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
+        new Token(82, "100", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE)
+    ],
+    tokenizer.tokenize(
+        lines([
+            "to hook :length",
+            "if :length < 20 [ stop ]",
+            "fd :length",
+            "rt 45",
+            "hook :length/2",
+            "end",
+            "hook 100"
+        ])
+    )
+);
 }

@@ -6,7 +6,8 @@ const logo = {
             "PLUS": "+",
             "MINUS": "-",
             "MULTIPLIEDBY": "*",
-            "DIVIDEDBY": "/"
+            "DIVIDEDBY": "/",
+            "LESSERTHAN": "<"
         },
         "primitives" : {
             "NONE": 0,
@@ -18,8 +19,10 @@ const logo = {
             "PENDOWN": 6,
             "REPEAT": 7,
             "CLEARSCREEN": 8,
-            "PRIMITIVE_TO": 9,
-            "PRIMITIVE_END": 10
+            "TO": 9,
+            "END": 10,
+            "IF": 11,
+            "STOP": 12
         },
         "tokenTypes" : {
             "NONE": 0,
@@ -72,11 +75,17 @@ const logo = {
         "name": "CLEARSCREEN",
         "aliases": [ "clearscreen", "cs", "bp" ]
     }, {
-        "name": "PRIMITIVE_TO",
+        "name": "TO",
         "aliases": ["to", "para"]
     }, {
-        "name": "PRIMITIVE_END",
+        "name": "END",
         "aliases": [ "end", "fin" ]
+    }, {
+        "name": "IF",
+        "aliases": [ "if", "si" ]
+    }, {
+        "name": "STOP",
+        "aliases": [ "stop", "alto" ]
     }]
 };
 
@@ -201,7 +210,7 @@ class Parser {
             }
             procedure["firstTokenInsideProcedureIndex"] = this.currentTokenIndex;
             
-            while(this.currentToken.primitive !== logo.tokenizer.primitives.PRIMITIVE_END) {
+            while(this.currentToken.primitive !== logo.tokenizer.primitives.END) {
                 this.getNextToken();
             }
             let indexLastTokenNotIncludingEndToken = this.currentTokenIndex - 1;
@@ -338,10 +347,10 @@ class Parser {
                 case logo.tokenizer.primitives.CLEARSCREEN:
                     this.raiseTurtleDrawingEvent(logo.tokenizer.primitives.CLEARSCREEN);
                     break;
-                case logo.tokenizer.primitives.PRIMITIVE_TO:
+                case logo.tokenizer.primitives.TO:
                     this.execute_procedure_to();
                     break;
-                case logo.tokenizer.primitives.PRIMITIVE_END:
+                case logo.tokenizer.primitives.END:
                     this.execute_procedure_end();
                     break;
             }
@@ -471,7 +480,8 @@ class Tokenizer {
             logo.tokenizer.delimiters.PLUS,
             logo.tokenizer.delimiters.MINUS,
             logo.tokenizer.delimiters.MULTIPLIEDBY,
-            logo.tokenizer.delimiters.DIVIDEDBY
+            logo.tokenizer.delimiters.DIVIDEDBY,
+            logo.tokenizer.delimiters.LESSERTHAN
         ].join('');
     }
     isDelimiter(c) {
