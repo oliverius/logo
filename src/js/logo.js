@@ -262,6 +262,11 @@ class Parser {
             throw "malformed code block";
         }
     }
+    skipUntilEndOfProcedure() {
+        while(this.currentToken.primitive !== logo.tokenizer.primitives.END) {
+            this.getNextToken();
+        }
+    }
     execute_procedure_end() {
         let item = this.procedureCallStack.pop();
         this.setCurrentTokenIndex(item.currentTokenIndexBeforeJumpingToProcedure);
@@ -280,9 +285,8 @@ class Parser {
             }
             procedure["firstTokenInsideProcedureIndex"] = this.currentTokenIndex;
             
-            while(this.currentToken.primitive !== logo.tokenizer.primitives.END) {
-                this.getNextToken();
-            }
+            this.skipUntilEndOfProcedure();
+
             let indexLastTokenNotIncludingEndToken = this.currentTokenIndex - 1;
             procedure["lastTokenInsideProcedureIndex"] = indexLastTokenNotIncludingEndToken;
 
@@ -291,6 +295,10 @@ class Parser {
     }
     execute_repeat(n = 0) {
         this.beginCodeBlock(logo.tokenizer.primitives.REPEAT, n);
+    }
+    execute_stop() {
+        this.skipUntilEndOfProcedure(); // The STOP will be inside a procedure, so we don't do anything until we reach the end
+        this.putBackToken(); // So the END primitive will be the next one read in the next parsing step and we execute the END primitive code.
     }
     getExpression() {
         this.getNextToken();
@@ -409,8 +417,8 @@ class Parser {
                     this.execute_if()
                     break;
                 case logo.tokenizer.primitives.STOP:
-                    this.stopParsing();
-                    break; // TODO
+                    this.execute_stop();
+                    break;
             }
         } else if(this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER) {
             if (this.currentToken.text === logo.tokenizer.delimiters.CLOSING_BRACKET) {
