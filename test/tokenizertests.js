@@ -1,4 +1,4 @@
-runTokenizerTests();
+//runTokenizerTests();
 function runTokenizerTests() {
   const LF = "\n";
   let tokenizer = new Tokenizer();
@@ -335,48 +335,91 @@ function runTokenizerTests() {
       )
   );
   assertTokens(
-    'PROCEDURE with one parameter in multiple lines called recursively with IF and STOP',
-    [
-        new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
-        new Token(3, "hook", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
-        new Token(8, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
-
-        new Token(15, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-        new Token(16, "if", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.IF),
-        new Token(19, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
-        new Token(27, "<", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-        new Token(29, "20", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
-        new Token(32, "[", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-        new Token(34, "stop", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.STOP),
-        new Token(39, "]", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-
-        new Token(40, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-        new Token(41, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
-        new Token(44, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
-        new Token(51, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-        new Token(52, "rt", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.RIGHT),
-        new Token(55, "45", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
-        new Token(57, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-        new Token(58, "hook", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
-        new Token(63, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
-        new Token(70, "/", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-        new Token(71, "2", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
-        new Token(72, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-        new Token(73, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END),
-        new Token(76, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-        new Token(77, "hook", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
-        new Token(82, "100", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE)
-    ],
-    tokenizer.tokenize(
-        lines([
-            "to hook :length",
-            "if :length < 20 [ stop ]",
-            "fd :length",
-            "rt 45",
-            "hook :length/2",
-            "end",
-            "hook 100"
-        ])
-    )
-);
+        'PROCEDURE with one parameter in multiple lines move FORWARD only if condition is met', // TODO Test
+        [
+            new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
+            new Token(3, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
+            new Token(8, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
+            new Token(15, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(16, "if", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.IF),
+            new Token(19, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
+            new Token(27, "<", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(29, "50", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
+            new Token(32, "[", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(34, "stop", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.STOP),
+            new Token(39, "]", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(40, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(41, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
+            new Token(44, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
+            new Token(51, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(52, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END),
+            new Token(55, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(56, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
+            new Token(61, "100", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
+            new Token(64, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(65, "rt", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.RIGHT),
+            new Token(68, "90", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
+            new Token(70, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(71, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
+            new Token(76, "30", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
+            new Token(78, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(79, "rt", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.RIGHT),
+            new Token(82, "90", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE)
+        ],
+        tokenizer.tokenize(
+            lines([
+                "to line :length",
+                "if :length < 50 [ stop ]",
+                "fd :length",
+                "end",
+                "line 100",
+                "rt 90",
+                "line 30",
+                "rt 90"
+            ])
+        )
+    );
+  assertTokens(
+        'PROCEDURE with one parameter in multiple lines called recursively with IF and STOP', // TODO Test
+        [
+            new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
+            new Token(3, "hook", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
+            new Token(8, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
+            new Token(15, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(16, "if", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.IF),
+            new Token(19, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
+            new Token(27, "<", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(29, "20", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
+            new Token(32, "[", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(34, "stop", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.STOP),
+            new Token(39, "]", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(40, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(41, "fd", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.FORWARD),
+            new Token(44, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
+            new Token(51, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(52, "rt", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.RIGHT),
+            new Token(55, "45", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
+            new Token(57, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(58, "hook", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
+            new Token(63, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
+            new Token(70, "/", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(71, "2", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
+            new Token(72, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(73, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END),
+            new Token(76, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
+            new Token(77, "hook", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
+            new Token(82, "100", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE)
+        ],
+        tokenizer.tokenize(
+            lines([
+                "to hook :length",
+                "if :length < 20 [ stop ]",
+                "fd :length",
+                "rt 45",
+                "hook :length/2",
+                "end",
+                "hook 100"
+            ])
+        )
+    );
 }

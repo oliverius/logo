@@ -192,6 +192,64 @@ class Parser {
         let value = parseInt(parameter.parameterValue);
         return value;
     }
+    beginCodeBlock(primitive = logo.tokenizer.primitives.NONE, arg = 0) {
+        this.getNextToken();
+        if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER
+            && this.currentToken.text === logo.tokenizer.delimiters.OPENING_BRACKET) {
+            let firstTokenInsideCodeBlockIndex = this.currentTokenIndex;
+            switch(primitive) {
+                case logo.tokenizer.primitives.IF:
+                    this.codeBlockStack.push({
+                        primitive: primitive,
+                        firstTokenInsideCodeBlockIndex: firstTokenInsideCodeBlockIndex
+                    });
+                    break;
+                case logo.tokenizer.primitives.REPEAT:
+                    this.codeBlockStack.push({
+                        primitive: primitive,
+                        firstTokenInsideCodeBlockIndex: firstTokenInsideCodeBlockIndex,
+                        remainingLoops: arg - 1
+                    });
+                    break;
+            }
+        } else {
+            console.log("this should be an error");
+        }
+    }
+    endCodeBlock() {
+        let currentCodeBlock = this.codeBlockStack.pop();
+        switch(currentCodeBlock.primitive) {
+            case logo.tokenizer.primitives.IF:
+                this.setCurrentTokenIndex(currentCodeBlock.firstTokenInsideCodeBlockIndex);
+                break;
+            case logo.tokenizer.primitives.REPEAT:
+                if (currentCodeBlock.remainingLoops > 0) {
+                    currentCodeBlock.remainingLoops--;
+                    this.setCurrentTokenIndex(currentCodeBlock.firstTokenInsideCodeBlockIndex);
+                    this.codeBlockStack.push(currentCodeBlock);
+                }
+                break;
+        }
+    }
+    execute_if() {
+        let left = this.getExpression();
+        this.getNextToken();
+        let operator = this.currentToken.text;
+        let right = this.getExpression();        
+        
+        let condition = false;
+        switch(operator) {
+            case logo.tokenizer.delimiters.LESSERTHAN:
+                condition = left < right;
+                break;
+        }
+        if (condition) {            
+            console.log("do what's in the brackets");
+            this.beginCodeBlock(logo.tokenizer.primitives.IF);
+        } else {
+            // TODO move until the end of the "]";
+        }
+    }
     execute_procedure_end() {
         let item = this.procedureCallStack.pop();
         this.setCurrentTokenIndex(item.currentTokenIndexBeforeJumpingToProcedure);
@@ -219,25 +277,8 @@ class Parser {
             this.procedures.push(procedure);
         }
     }
-    execute_repeat_begin(n = 0) {
-        this.getNextToken();
-        if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER
-            && this.currentToken.text === logo.tokenizer.delimiters.OPENING_BRACKET) {
-            let firstTokenInsideTheLoopIndex = this.currentTokenIndex;
-            this.loopStack.push({
-                firstTokenInsideTheLoopIndex: firstTokenInsideTheLoopIndex,
-                remainingLoops: n - 1});
-        }
-    }
-    execute_repeat_end() {
-        let currentLoop = this.loopStack.pop();
-        if (currentLoop.remainingLoops > 0) {
-            this.setCurrentTokenIndex(currentLoop.firstTokenInsideTheLoopIndex);
-            this.loopStack.push({
-                firstTokenInsideTheLoopIndex: currentLoop.firstTokenInsideTheLoopIndex,
-                remainingLoops: currentLoop.remainingLoops - 1
-            });
-        }
+    execute_repeat(n = 0) {
+        this.beginCodeBlock(logo.tokenizer.primitives.REPEAT, n);
     }
     getExpression() {
         this.getNextToken();
@@ -276,10 +317,10 @@ class Parser {
         this.currentTokenIndex++;
         if (this.currentTokenIndex < this.tokens.length) {
             this.currentToken = this.tokens[this.currentTokenIndex];
+            console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
         } else {
             this.currentToken = new Token(this.currentTokenIndex, "", logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM);
         }
-        //console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
     }
     getNumberOrVariableValue(result) {
         switch (this.currentToken.tokenType) {
@@ -300,7 +341,7 @@ class Parser {
         this.tokens = tokens;
         this.currentToken = {};
         this.currentTokenIndex = -1; // So when we get the first token, it will be 0, first index in an array.
-        this.loopStack = [];
+        this.codeBlockStack = [];
         this.procedures = [];
         this.procedureCallStack = [];
         this.stopParsingRequested = false;
@@ -308,7 +349,7 @@ class Parser {
         this.raiseParserStatusEvent(logo.parser.statusEvent.values.START_PARSING);
 
         this.parsingLoop = setInterval(() => {
-            console.log("⌛️💓");
+            console.log("⌛️💓");       
             if (this.currentToken.tokenType !== logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM
                 && !this.stopParsingRequested) {
                 this.parsingStep();
@@ -320,7 +361,6 @@ class Parser {
     }
     parsingStep() {
         this.getNextToken();
-        console.log(this.currentToken.toString());
         if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.PRIMITIVE) {
             switch(this.currentToken.primitive) {
                 case logo.tokenizer.primitives.FORWARD:
@@ -342,7 +382,7 @@ class Parser {
                     this.raiseTurtleDrawingEvent(logo.tokenizer.primitives.PENDOWN);
                     break;
                 case logo.tokenizer.primitives.REPEAT:
-                    this.execute_repeat_begin(this.getExpression());
+                    this.execute_repeat(this.getExpression());
                     break;
                 case logo.tokenizer.primitives.CLEARSCREEN:
                     this.raiseTurtleDrawingEvent(logo.tokenizer.primitives.CLEARSCREEN);
@@ -353,10 +393,15 @@ class Parser {
                 case logo.tokenizer.primitives.END:
                     this.execute_procedure_end();
                     break;
+                case logo.tokenizer.primitives.IF:
+                    this.execute_if()
+                    break; // TODO
+                case logo.tokenizer.primitives.STOP:
+                    break; // TODO
             }
         } else if(this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER) {
             if (this.currentToken.text === logo.tokenizer.delimiters.CLOSING_BRACKET) {
-                this.execute_repeat_end();
+                this.endCodeBlock();
             }
         } else if(this.currentToken.tokenType === logo.tokenizer.tokenTypes.PROCEDURE_NAME) {
             this.scanProcedure(this.currentToken.text);
@@ -413,7 +458,6 @@ class Parser {
             let indexBeforeFirstTokenInsideProcedure = procedure.firstTokenInsideProcedureIndex - 1;
 
             this.setCurrentTokenIndex(indexBeforeFirstTokenInsideProcedure); // So in the next getNextToken we have the first token inside the procedure
-            console.log(`** Index set to: ${procedure.firstTokenInsideProcedureIndex}`, procedureCallStackItem);
         }
         
     }
@@ -439,8 +483,10 @@ class Token {
         
         let paddedStartIndex = this.startIndex.toString().padStart(3, '0');
         let paddedEndIndex = this.endIndex.toString().padStart(3, '0');
+
+        let tokenWithEscapedCharacters = this.text !== "\n" ? this.text : "\\n";
         
-        return `Token (${paddedStartIndex}-${paddedEndIndex}) "${this.text}" ${tokenTypeKey} {${primitiveKey}}`;
+        return `Token (${paddedStartIndex}-${paddedEndIndex}) "${tokenWithEscapedCharacters}" ${tokenTypeKey} {${primitiveKey}}`;
     }
 }
 
