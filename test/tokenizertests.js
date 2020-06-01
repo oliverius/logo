@@ -1,4 +1,4 @@
-//runTokenizerTests();
+runTokenizerTests();
 function runTokenizerTests() {
   const LF = "\n";
   let tokenizer = new Tokenizer();
@@ -335,7 +335,7 @@ function runTokenizerTests() {
       )
   );
   assertTokens(
-        'PROCEDURE with one parameter in multiple lines move FORWARD only if condition is met', // TODO Test
+        'PROCEDURE with one parameter in multiple lines move FORWARD only if condition is met',
         [
             new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
             new Token(3, "line", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
@@ -380,7 +380,7 @@ function runTokenizerTests() {
         )
     );
   assertTokens(
-        'PROCEDURE with one parameter in multiple lines called recursively with IF and STOP', // TODO Test
+        'PROCEDURE with one parameter in multiple lines called recursively with IF and STOP',
         [
             new Token(0, "to", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.TO),
             new Token(3, "hook", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
@@ -389,7 +389,7 @@ function runTokenizerTests() {
             new Token(16, "if", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.IF),
             new Token(19, ":length", logo.tokenizer.tokenTypes.VARIABLE, logo.tokenizer.primitives.NONE),
             new Token(27, "<", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
-            new Token(29, "20", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
+            new Token(29, "10", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE),
             new Token(32, "[", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
             new Token(34, "stop", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.STOP),
             new Token(39, "]", logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
@@ -408,17 +408,17 @@ function runTokenizerTests() {
             new Token(73, "end", logo.tokenizer.tokenTypes.PRIMITIVE, logo.tokenizer.primitives.END),
             new Token(76, LF, logo.tokenizer.tokenTypes.DELIMITER, logo.tokenizer.primitives.NONE),
             new Token(77, "hook", logo.tokenizer.tokenTypes.PROCEDURE_NAME, logo.tokenizer.primitives.NONE),
-            new Token(82, "100", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE)
+            new Token(82, "120", logo.tokenizer.tokenTypes.NUMBER, logo.tokenizer.primitives.NONE)
         ],
         tokenizer.tokenize(
             lines([
                 "to hook :length",
-                "if :length < 20 [ stop ]",
+                "if :length < 10 [ stop ]",
                 "fd :length",
                 "rt 45",
                 "hook :length/2",
                 "end",
-                "hook 100"
+                "hook 120"
             ])
         )
     );
