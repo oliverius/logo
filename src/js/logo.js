@@ -247,17 +247,19 @@ class Parser {
                 break;
         }
         if (condition) {          
-            console.log("do what's in the brackets");
             this.beginCodeBlock(logo.tokenizer.primitives.IF);
         } else {
-            // tODO skipCodeBlock();
-            this.getNextToken(); // This should be a [
-            console.log("skip until ]");
+            this.skipCodeBlock();
+        }
+    }
+    skipCodeBlock() {
+        this.getNextToken();
+        if (this.currentToken.text === logo.tokenizer.delimiters.OPENING_BRACKET) {
             while(this.currentToken.text !== logo.tokenizer.delimiters.CLOSING_BRACKET) {
-                console.log("skipping");
                 this.getNextToken();
             }
-            console.log("stop skipping");
+        } else {
+            throw "malformed code block";
         }
     }
     execute_procedure_end() {
