@@ -217,18 +217,21 @@ class Parser {
         }
     }
     endCodeBlock() {
-        let currentCodeBlock = this.codeBlockStack.pop();
-        switch(currentCodeBlock.primitive) {
-            case logo.tokenizer.primitives.IF:
-                this.setCurrentTokenIndex(currentCodeBlock.firstTokenInsideCodeBlockIndex);
-                break;
-            case logo.tokenizer.primitives.REPEAT:
-                if (currentCodeBlock.remainingLoops > 0) {
-                    currentCodeBlock.remainingLoops--;
-                    this.setCurrentTokenIndex(currentCodeBlock.firstTokenInsideCodeBlockIndex);
-                    this.codeBlockStack.push(currentCodeBlock);
-                }
-                break;
+        if (this.codeBlockStack.length > 0) {
+            let currentCodeBlock = this.codeBlockStack.pop();
+            switch(currentCodeBlock.primitive) {
+                case logo.tokenizer.primitives.IF:                    
+                    break;
+                case logo.tokenizer.primitives.REPEAT:
+                    if (currentCodeBlock.remainingLoops > 0) {
+                        currentCodeBlock.remainingLoops--;
+                        this.setCurrentTokenIndex(currentCodeBlock.firstTokenInsideCodeBlockIndex);
+                        this.codeBlockStack.push(currentCodeBlock);
+                    }
+                    break;
+            }
+        } else {
+            throw "found a ] without being part of a IF or REPEAT";
         }
     }
     execute_if() {
@@ -243,11 +246,18 @@ class Parser {
                 condition = left < right;
                 break;
         }
-        if (condition) {            
+        if (condition) {          
             console.log("do what's in the brackets");
             this.beginCodeBlock(logo.tokenizer.primitives.IF);
         } else {
-            // TODO move until the end of the "]";
+            // tODO skipCodeBlock();
+            this.getNextToken(); // This should be a [
+            console.log("skip until ]");
+            while(this.currentToken.text !== logo.tokenizer.delimiters.CLOSING_BRACKET) {
+                console.log("skipping");
+                this.getNextToken();
+            }
+            console.log("stop skipping");
         }
     }
     execute_procedure_end() {
@@ -395,8 +405,9 @@ class Parser {
                     break;
                 case logo.tokenizer.primitives.IF:
                     this.execute_if()
-                    break; // TODO
+                    break;
                 case logo.tokenizer.primitives.STOP:
+                    this.stopParsing();
                     break; // TODO
             }
         } else if(this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER) {
@@ -459,7 +470,6 @@ class Parser {
 
             this.setCurrentTokenIndex(indexBeforeFirstTokenInsideProcedure); // So in the next getNextToken we have the first token inside the procedure
         }
-        
     }
     setCurrentTokenIndex(index) {
         this.currentTokenIndex = index;
