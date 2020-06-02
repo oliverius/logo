@@ -36,6 +36,7 @@ const logo = {
     },
     "parser": {
         "fps": 10,
+        "maxProcedureCallStack": 10,
         "statusEvent": {
             "name": "PARSER_STATUS_EVENT",
             "values": {
@@ -45,10 +46,22 @@ const logo = {
         },
         "turtleDrawingEvent": {
             "name": "PARSER_TURTLE_DRAWING_EVENT"
+        },
+        "errorEvent": {
+            "name": "PARSER_ERROR_EVENT",
+            "values": {
+                "NONE": 0,
+                "PROCEDURE_CALL_STACK_OVERFLOW": 1
+            }
         }
     },
     "interpreter": {
-        "storageKey": "oliverius_logo"
+        "storageKey": "oliverius_logo",
+        "localization": {
+            "parserErrors" : {
+                "PROCEDURE_CALL_STACK_OVERFLOW": "You have called a procedure more than {0} times and we stop the program"
+            }
+        }
     },
     "primitiveAliases": [{
         "name": "FORWARD",
@@ -90,13 +103,29 @@ const logo = {
 };
 
 class Interpreter {
-    constructor(editorId, canvasId) {
+    constructor(editorId, canvasId, statusBarId) {
         this.editor = document.getElementById(editorId);
         this.canvas = document.getElementById(canvasId);
+        this.statusbar = document.getElementById(statusBarId);
         this.turtle = new Turtle(this.canvas);
         this.tokenizer = new Tokenizer();
         this.parser = new Parser();
         this.setEditor(this.getLatestScriptRun());
+        window.addEventListener(logo.parser.errorEvent.name, e => {
+            let message = "";
+            switch(e.detail.errorCode) {
+                case logo.parser.errorEvent.values.PROCEDURE_CALL_STACK_OVERFLOW:
+                    message = logo.interpreter.localization.parserErrors.PROCEDURE_CALL_STACK_OVERFLOW;
+                    message = message.replace("{0}", e.detail.args[0]);
+                    break;
+            }
+            this.setStatusBar(message);
+        });
+        window.addEventListener(logo.parser.statusEvent.name, e => {
+            if (e.detail.status === logo.parser.statusEvent.values.END_PARSING) {
+                this.editor.focus();
+            }
+        });
         window.addEventListener(logo.parser.turtleDrawingEvent.name, e => {
             let turtleMethodName = "";
             switch(e.detail.primitive) {
@@ -136,6 +165,10 @@ class Interpreter {
     }
     setEditor(text) {
         this.editor.value = text;
+        this.editor.focus();
+    }
+    setStatusBar(message) {
+        this.statusbar.innerText = message;
     }
 
 
@@ -337,7 +370,7 @@ class Parser {
         this.currentTokenIndex++;
         if (this.currentTokenIndex < this.tokens.length) {
             this.currentToken = this.tokens[this.currentTokenIndex];
-            console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
+            console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken} -${this.procedureCallStack.length}`);
         } else {
             this.currentToken = new Token(this.currentTokenIndex, "", logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM);
         }
@@ -366,7 +399,7 @@ class Parser {
         this.procedureCallStack = [];
         this.stopParsingRequested = false;
 
-        this.raiseParserStatusEvent(logo.parser.statusEvent.values.START_PARSING);
+        this.raiseStatusEvent(logo.parser.statusEvent.values.START_PARSING);
 
         this.parsingLoop = setInterval(() => {
             console.log("⌛️💓");       
@@ -375,7 +408,7 @@ class Parser {
                 this.parsingStep();
             } else {
                 clearInterval(this.parsingLoop);
-                this.raiseParserStatusEvent(logo.parser.statusEvent.values.END_PARSING);
+                this.raiseStatusEvent(logo.parser.statusEvent.values.END_PARSING);
             }
         }, 1000/logo.parser.fps);
     }
@@ -435,7 +468,17 @@ class Parser {
         this.currentTokenIndex--;
         this.currentToken = this.tokens[this.currentTokenIndex];
     }
-    raiseParserStatusEvent(status = "") {
+    raiseErrorEvent(errorCode = logo.parser.errorEvent.values.NONE, args = []) {
+        let event = new CustomEvent(logo.parser.errorEvent.name, {
+            bubbles: true,
+            detail: {
+                errorCode: errorCode,
+                args: args
+            }
+        });
+        window.dispatchEvent(event);
+    }
+    raiseStatusEvent(status = "") {
         let event = new CustomEvent(logo.parser.statusEvent.name, {
             bubbles: true,
             detail: {
@@ -459,6 +502,16 @@ class Parser {
             return procedure.name === name;
         });
         if (searchProcedureResults.length > 0) {
+            if (this.procedureCallStack.length + 1 > logo.parser.maxProcedureCallStack) {
+                this.stopParsing();
+                this.raiseErrorEvent(
+                    logo.parser.errorEvent.values.PROCEDURE_CALL_STACK_OVERFLOW,
+                    [
+                        logo.parser.maxProcedureCallStack
+                    ]);
+                return;
+            }
+            
             let procedure = searchProcedureResults[0];
             
             let procedureCallStackItem = {};
@@ -766,4 +819,4 @@ class Turtle {
     }
 }
 
-const interpreter = new Interpreter('logo-editor', 'logo-graphics');
+const interpreter = new Interpreter('logo-editor', 'logo-graphics', 'logo-statusbar');
