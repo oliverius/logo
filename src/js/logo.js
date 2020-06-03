@@ -36,10 +36,11 @@ const logo = {
     },
     "parser": {
         "fps": 10,
-        "maxProcedureCallStack": 10,
+        "maxProcedureCallStack": 100,
         "statusEvent": {
             "name": "PARSER_STATUS_EVENT",
             "values": {
+                "NONE": 0,
                 "START_PARSING": 1,
                 "END_PARSING": 2
             }
@@ -194,6 +195,7 @@ class Interpreter {
     }
     run() {
         let script = this.editor.value;
+        this.setStatusBar("");
         this.saveLatestScriptRun(script);
         let tokens = this.tokenizer.tokenize(script);
         this.parser.parse(tokens);
@@ -478,7 +480,7 @@ class Parser {
         });
         window.dispatchEvent(event);
     }
-    raiseStatusEvent(status = "") {
+    raiseStatusEvent(status = logo.parser.statusEvent.values.NONE) {
         let event = new CustomEvent(logo.parser.statusEvent.name, {
             bubbles: true,
             detail: {

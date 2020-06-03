@@ -1,14 +1,17 @@
-body, html {
+body,
+html {
     margin: 0;
     height: 100%;
 }
+
 body {
     display: grid;
     grid-template-rows: auto;
     justify-items: center;
     align-items: center;
-    background: linear-gradient(180deg, rgba(71,152,194,1) 0%, rgba(32,93,153,1) 100%);
+    background: linear-gradient(180deg, rgba(71, 152, 194, 1) 0%, rgba(32, 93, 153, 1) 100%);
 }
+
 main {
     display: grid;
     grid-template-columns: repeat(2, 408px);
@@ -17,17 +20,21 @@ main {
     grid-row-gap: 3px;
     font-family: 'Courier New', Courier, monospace;
 }
+
 section.editor {
     grid-area: 1 / 1 / 2 / 2;
 }
+
 section.graphics {
     grid-area: 1 / 2 / 2 / 3;
 }
+
 section.controls {
     grid-area: 2 / 1 / 3 / 3;
     display: flex;
     justify-content: space-between;
 }
+
 section.output {
     grid-area: 3 / 1 / 4 / 3;
     background-color: rgb(9, 136, 62);
@@ -39,6 +46,7 @@ section.output {
     padding-right: 1em;
     border: 1px solid black;
 }
+
 footer {
     grid-area: 4 / 1 / 5 / 3;
     color: white;
@@ -47,32 +55,42 @@ footer {
     font: 700 12px monospace;
     padding: 3px 5px 3px 0px;
 }
-section.controls > button {
+
+section.controls>button {
     width: 133px;
     font-size: 14px;
     font-weight: bold;
     border: 2px solid black;
     font-family: Arial, Arial, Helvetica, sans-serif;
 }
-section.controls > button:active {
-    background: rgba(71,152,194,1);
+
+section.controls>button:active {
+    background: rgba(71, 152, 194, 1);
 }
-section.controls > button:focus {
+
+section.controls>button:focus {
     outline: 1px solid orange;
 }
+
 footer img {
     max-height: 100%;
     padding-right: 3px;
 }
+
 footer a {
     color: white;
 }
-footer a:link, footer a:visited {
+
+footer a:link,
+footer a:visited {
     text-decoration: none;
 }
-footer a:hover, footer a:active {
+
+footer a:hover,
+footer a:active {
     text-decoration: underline;
 }
+
 #logo-editor {
     width: 399px;
     height: 396px;
@@ -81,6 +99,7 @@ footer a:hover, footer a:active {
     border: 2px solid black;
     resize: none;
 }
+
 #logo-graphics {
     border: 2px solid black;
     background-color: #E8E8E8;
@@ -94,25 +113,29 @@ footer a:hover, footer a:active {
     min-height: 100vh;
     position: absolute;
     top: 2rem;
-    left: 50vw;  /* move to the middle of the screen (assumes relative parent is the body/viewport) */
-    transform: translateX(-50%);  /* move backwards 50% of this element's width */
+    left: 50vw;
+    /* move to the middle of the screen (assumes relative parent is the body/viewport) */
+    transform: translateX(-50%);
+    /* move backwards 50% of this element's width */
     min-width: 760px;
     min-height: auto;
     box-shadow: 0 19px 38px rgba(0, 0, 0, 0.12), 0 15px 12px rgba(0, 0, 0, 0.22);
     font-family: 'Courier New', Courier, monospace;
     font-size: 10px;
 }
+
 .hidden {
     display: none;
 }
+
 .dialog_close_button {
     float: right;
     position: absolute;
     top: 10px;
     left: 90%;
     height: 25px;
-  }
-  
-  .dialog_close_button img {
+}
+
+.dialog_close_button img {
     border: 0;
-  }
+}
