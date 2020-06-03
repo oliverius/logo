@@ -9,7 +9,7 @@ const logo = {
             "DIVIDEDBY": "/",
             "LESSERTHAN": "<"
         },
-        "primitives" : {
+        "primitives": {
             "NONE": 0,
             "FORWARD": 1,
             "BACK": 2,
@@ -24,14 +24,14 @@ const logo = {
             "IF": 11,
             "STOP": 12
         },
-        "tokenTypes" : {
+        "tokenTypes": {
             "NONE": 0,
             "DELIMITER": 1,
             "NUMBER": 2,
             "PRIMITIVE": 3,
             "VARIABLE": 4,
             "PROCEDURE_NAME": 5,
-            "END_OF_TOKEN_STREAM" : 6
+            "END_OF_TOKEN_STREAM": 6
         }
     },
     "parser": {
@@ -59,47 +59,47 @@ const logo = {
     "interpreter": {
         "storageKey": "oliverius_logo",
         "localization": {
-            "parserErrors" : {
+            "parserErrors": {
                 "PROCEDURE_CALL_STACK_OVERFLOW": "You have called a procedure more than {0} times and we stop the program"
             }
         }
     },
     "primitiveAliases": [{
         "name": "FORWARD",
-        "aliases": [ "forward", "fd", "av" ]
+        "aliases": ["forward", "fd", "av"]
     }, {
         "name": "BACK",
-        "aliases": [ "back", "bk", "re"]
+        "aliases": ["back", "bk", "re"]
     }, {
         "name": "LEFT",
-        "aliases": [ "left", "lt", "gi" ]
+        "aliases": ["left", "lt", "gi"]
     }, {
         "name": "RIGHT",
-        "aliases": [ "right", "rt", "gd" ]
+        "aliases": ["right", "rt", "gd"]
     }, {
         "name": "PENUP",
-        "aliases": [ "penup", "pu", "sl" ]
+        "aliases": ["penup", "pu", "sl"]
     }, {
         "name": "PENDOWN",
-        "aliases": [ "pendown", "pd", "bl" ]
+        "aliases": ["pendown", "pd", "bl"]
     }, {
         "name": "REPEAT",
-        "aliases": [ "repeat", "repite" ]
+        "aliases": ["repeat", "repite"]
     }, {
         "name": "CLEARSCREEN",
-        "aliases": [ "clearscreen", "cs", "bp" ]
+        "aliases": ["clearscreen", "cs", "bp"]
     }, {
         "name": "TO",
         "aliases": ["to", "para"]
     }, {
         "name": "END",
-        "aliases": [ "end", "fin" ]
+        "aliases": ["end", "fin"]
     }, {
         "name": "IF",
-        "aliases": [ "if", "si" ]
+        "aliases": ["if", "si"]
     }, {
         "name": "STOP",
-        "aliases": [ "stop", "alto" ]
+        "aliases": ["stop", "alto"]
     }]
 };
 
@@ -114,7 +114,7 @@ class Interpreter {
         this.setEditor(this.getLatestScriptRun());
         window.addEventListener(logo.parser.errorEvent.name, e => {
             let message = "";
-            switch(e.detail.errorCode) {
+            switch (e.detail.errorCode) {
                 case logo.parser.errorEvent.values.PROCEDURE_CALL_STACK_OVERFLOW:
                     message = logo.interpreter.localization.parserErrors.PROCEDURE_CALL_STACK_OVERFLOW;
                     message = message.replace("{0}", e.detail.args[0]);
@@ -129,7 +129,7 @@ class Interpreter {
         });
         window.addEventListener(logo.parser.turtleDrawingEvent.name, e => {
             let turtleMethodName = "";
-            switch(e.detail.primitive) {
+            switch (e.detail.primitive) {
                 case logo.tokenizer.primitives.FORWARD:
                     turtleMethodName = "execute_forward";
                     break;
@@ -178,8 +178,7 @@ class Interpreter {
     }
     toggleExamples() {
         let dialog = document.getElementById('dialog-help-english');
-        if (dialog.classList.contains('hidden'))
-        {
+        if (dialog.classList.contains('hidden')) {
             dialog.classList.remove('hidden');
         } else {
             dialog.classList.add('hidden');
@@ -204,7 +203,7 @@ class Interpreter {
 
 class Parser {
     applyArithmeticOperation(operation, result, hold) {
-        switch(operation) {
+        switch (operation) {
             case logo.tokenizer.delimiters.PLUS:
                 result.value += hold.value;
                 break;
@@ -229,10 +228,10 @@ class Parser {
     }
     beginCodeBlock(primitive = logo.tokenizer.primitives.NONE, arg = 0) {
         this.getNextToken();
-        if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER
-            && this.currentToken.text === logo.tokenizer.delimiters.OPENING_BRACKET) {
+        if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER &&
+            this.currentToken.text === logo.tokenizer.delimiters.OPENING_BRACKET) {
             let firstTokenInsideCodeBlockIndex = this.currentTokenIndex;
-            switch(primitive) {
+            switch (primitive) {
                 case logo.tokenizer.primitives.IF:
                     this.codeBlockStack.push({
                         primitive: primitive,
@@ -254,8 +253,8 @@ class Parser {
     endCodeBlock() {
         if (this.codeBlockStack.length > 0) {
             let currentCodeBlock = this.codeBlockStack.pop();
-            switch(currentCodeBlock.primitive) {
-                case logo.tokenizer.primitives.IF:                    
+            switch (currentCodeBlock.primitive) {
+                case logo.tokenizer.primitives.IF:
                     break;
                 case logo.tokenizer.primitives.REPEAT:
                     if (currentCodeBlock.remainingLoops > 0) {
@@ -273,15 +272,15 @@ class Parser {
         let left = this.getExpression();
         this.getNextToken();
         let operator = this.currentToken.text;
-        let right = this.getExpression();        
-        
+        let right = this.getExpression();
+
         let condition = false;
-        switch(operator) {
+        switch (operator) {
             case logo.tokenizer.delimiters.LESSERTHAN:
                 condition = left < right;
                 break;
         }
-        if (condition) {          
+        if (condition) {
             this.beginCodeBlock(logo.tokenizer.primitives.IF);
         } else {
             this.skipCodeBlock();
@@ -290,7 +289,7 @@ class Parser {
     skipCodeBlock() {
         this.getNextToken();
         if (this.currentToken.text === logo.tokenizer.delimiters.OPENING_BRACKET) {
-            while(this.currentToken.text !== logo.tokenizer.delimiters.CLOSING_BRACKET) {
+            while (this.currentToken.text !== logo.tokenizer.delimiters.CLOSING_BRACKET) {
                 this.getNextToken();
             }
         } else {
@@ -298,7 +297,7 @@ class Parser {
         }
     }
     skipUntilEndOfProcedure() {
-        while(this.currentToken.primitive !== logo.tokenizer.primitives.END) {
+        while (this.currentToken.primitive !== logo.tokenizer.primitives.END) {
             this.getNextToken();
         }
     }
@@ -312,14 +311,14 @@ class Parser {
         if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.PROCEDURE_NAME) {
             procedure["name"] = this.currentToken.text;
             procedure["parameters"] = [];
-            
+
             this.getNextToken();
-            while(this.currentToken.tokenType === logo.tokenizer.tokenTypes.VARIABLE) {
+            while (this.currentToken.tokenType === logo.tokenizer.tokenTypes.VARIABLE) {
                 procedure["parameters"].push(this.currentToken.text);
                 this.getNextToken();
             }
             procedure["firstTokenInsideProcedureIndex"] = this.currentTokenIndex;
-            
+
             this.skipUntilEndOfProcedure();
 
             let indexLastTokenNotIncludingEndToken = this.currentTokenIndex - 1;
@@ -338,18 +337,22 @@ class Parser {
     getExpression() {
         this.getNextToken();
 
-        let result = { value: 0 };
+        let result = {
+            value: 0
+        };
         this.getExpression_AdditionOrSubtraction(result);
-        
+
         this.putBackToken();
         return result.value;
     }
     getExpression_AdditionOrSubtraction(result) {
-        let hold = { value: 0 };
+        let hold = {
+            value: 0
+        };
         let operation = "";
         this.getExpression_MultiplicationOrDivision(result);
-        while (this.currentToken.text === logo.tokenizer.delimiters.PLUS
-            || this.currentToken.text === logo.tokenizer.delimiters.MINUS) {
+        while (this.currentToken.text === logo.tokenizer.delimiters.PLUS ||
+            this.currentToken.text === logo.tokenizer.delimiters.MINUS) {
             operation = this.currentToken.text;
             this.getNextToken();
             this.getExpression_MultiplicationOrDivision(hold);
@@ -357,11 +360,13 @@ class Parser {
         }
     }
     getExpression_MultiplicationOrDivision(result) {
-        let hold = { value: 0 };
+        let hold = {
+            value: 0
+        };
         let operation = "";
         this.getNumberOrVariableValue(result);
-        while (this.currentToken.text === logo.tokenizer.delimiters.MULTIPLIEDBY
-            || this.currentToken.text === logo.tokenizer.delimiters.DIVIDEDBY) {
+        while (this.currentToken.text === logo.tokenizer.delimiters.MULTIPLIEDBY ||
+            this.currentToken.text === logo.tokenizer.delimiters.DIVIDEDBY) {
             operation = this.currentToken.text;
             this.getNextToken();
             this.getNumberOrVariableValue(hold);
@@ -404,20 +409,20 @@ class Parser {
         this.raiseStatusEvent(logo.parser.statusEvent.values.START_PARSING);
 
         this.parsingLoop = setInterval(() => {
-            console.log("⌛️💓");       
-            if (this.currentToken.tokenType !== logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM
-                && !this.stopParsingRequested) {
+            console.log("⌛️💓");
+            if (this.currentToken.tokenType !== logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM &&
+                !this.stopParsingRequested) {
                 this.parsingStep();
             } else {
                 clearInterval(this.parsingLoop);
                 this.raiseStatusEvent(logo.parser.statusEvent.values.END_PARSING);
             }
-        }, 1000/logo.parser.fps);
+        }, 1000 / logo.parser.fps);
     }
     parsingStep() {
         this.getNextToken();
         if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.PRIMITIVE) {
-            switch(this.currentToken.primitive) {
+            switch (this.currentToken.primitive) {
                 case logo.tokenizer.primitives.FORWARD:
                     this.raiseTurtleDrawingEvent(logo.tokenizer.primitives.FORWARD, this.getExpression());
                     break;
@@ -455,11 +460,11 @@ class Parser {
                     this.execute_stop();
                     break;
             }
-        } else if(this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER) {
+        } else if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER) {
             if (this.currentToken.text === logo.tokenizer.delimiters.CLOSING_BRACKET) {
                 this.endCodeBlock();
             }
-        } else if(this.currentToken.tokenType === logo.tokenizer.tokenTypes.PROCEDURE_NAME) {
+        } else if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.PROCEDURE_NAME) {
             this.scanProcedure(this.currentToken.text);
         }
     }
@@ -513,9 +518,9 @@ class Parser {
                     ]);
                 return;
             }
-            
+
             let procedure = searchProcedureResults[0];
-            
+
             let procedureCallStackItem = {};
             procedureCallStackItem["name"] = procedure.name;
 
@@ -552,15 +557,15 @@ class Token {
         this.tokenType = tokenType;
         this.primitive = primitive;
     }
-    get [Symbol.toStringTag]() {
+    get[Symbol.toStringTag]() {
         let tokenTypeKey = Object.keys(logo.tokenizer.tokenTypes).find(key => logo.tokenizer.tokenTypes[key] === this.tokenType);
         let primitiveKey = Object.keys(logo.tokenizer.primitives).find(key => logo.tokenizer.primitives[key] === this.primitive);
-        
+
         let paddedStartIndex = this.startIndex.toString().padStart(3, '0');
         let paddedEndIndex = this.endIndex.toString().padStart(3, '0');
 
         let tokenWithEscapedCharacters = this.text !== "\n" ? this.text : "\\n";
-        
+
         return `Token (${paddedStartIndex}-${paddedEndIndex}) "${tokenWithEscapedCharacters}" ${tokenTypeKey} {${primitiveKey}}`;
     }
 }
@@ -586,7 +591,7 @@ class Tokenizer {
 
         if (foundPrimitives.length === 1) {
             return logo.tokenizer.primitives[foundPrimitives[0].name];
-            
+
         }
         return logo.tokenizer.primitives.NONE;
     }
@@ -632,12 +637,12 @@ class Tokenizer {
     }
     tokenize(script = "") {
         this.initialize(script);
-        
+
         do {
             this.getNextCharacter();
             if (this.isWhiteSpace(this.currentCharacter)) {
                 this.getNextCharacter();
-                while(this.isWhiteSpace(this.currentCharacter)) {
+                while (this.isWhiteSpace(this.currentCharacter)) {
                     this.getNextCharacter();
                 }
                 this.putbackCharacter();
@@ -650,8 +655,8 @@ class Tokenizer {
             } else if (this.isNumber(this.currentCharacter)) {
                 let number = this.currentCharacter;
                 let startIndex = this.currentIndex;
-                this.getNextCharacter();                
-                while(this.isNumber(this.currentCharacter)) {
+                this.getNextCharacter();
+                while (this.isNumber(this.currentCharacter)) {
                     number += this.currentCharacter;
                     this.getNextCharacter();
                 }
@@ -661,8 +666,8 @@ class Tokenizer {
             } else if (this.isLetter(this.currentCharacter)) {
                 let word = this.currentCharacter;
                 let startIndex = this.currentIndex;
-                this.getNextCharacter();                
-                while(this.isLetter(this.currentCharacter)) {
+                this.getNextCharacter();
+                while (this.isLetter(this.currentCharacter)) {
                     word += this.currentCharacter;
                     this.getNextCharacter();
                 }
@@ -678,8 +683,8 @@ class Tokenizer {
             } else if (this.isVariablePrefix(this.currentCharacter)) {
                 let variable = this.currentCharacter;
                 let startIndex = this.currentIndex;
-                this.getNextCharacter();                
-                while(this.isLetter(this.currentCharacter)) {
+                this.getNextCharacter();
+                while (this.isLetter(this.currentCharacter)) {
                     variable += this.currentCharacter;
                     this.getNextCharacter();
                 }
@@ -692,15 +697,17 @@ class Tokenizer {
                 }
             }
             //console.log(`Check last token index with current index  ${this.currentIndex}`)
-        } while(!this.isEndOfFile(this.currentCharacter))
+        } while (!this.isEndOfFile(this.currentCharacter))
 
         return this.tokens;
     }
 }
 
 class Turtle {
-    DEGREE_TO_RADIAN = Math.PI/180;
-    toRadians = (deg=0) => { return Number(deg * this.DEGREE_TO_RADIAN) };
+    DEGREE_TO_RADIAN = Math.PI / 180;
+    toRadians = (deg = 0) => {
+        return Number(deg * this.DEGREE_TO_RADIAN)
+    };
 
     constructor(canvasObject) {
         this.ctx = canvasObject.getContext('2d');
@@ -757,7 +764,7 @@ class Turtle {
             this.drawingCtx.stroke();
         }
         this.updateTurtlePosition(newX, newY);
-        
+
         this.deleteTurtle();
         this.drawTurtle();
         this.renderFrame();
@@ -782,13 +789,13 @@ class Turtle {
         let vertexAngleInDeg = 40;
         let alpha = vertexAngleInDeg / 2;
         let angle = this.toRadians(270 + alpha);
-        
+
         let r = 20;
         let halfbase = r * Math.sin(this.toRadians(alpha));
         let height = r * Math.cos(this.toRadians(alpha));
-        
+
         let x1 = this.x;
-        let y1 = this.y - height/2;
+        let y1 = this.y - height / 2;
         let x2 = x1 + r * Math.cos(angle);
         let y2 = y1 - r * Math.sin(angle);
         let x3 = x2 - 2 * halfbase;
