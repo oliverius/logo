@@ -103,10 +103,11 @@ A few things to note here.
 * We have made `tokens` as well available in Parser, so `getNextToken()` can access it.
 * The starting index is -1. Why? because as soon as I start parsing I ask for next token, so if I start in -1, my first token will be the next one, 0.
 * We are using a `do-while` loop instead of a `while`. Why? because with a `do-while` you always try to run the code once, and we don't need to do a `getNextToken` and later a while loop. In short, it looks neater.
+* I refrain from returning the current token when calling `getNextToken()`. This is done on purpose. We shold have a `currentToken` variable available in the parser, otherwise we may not use the correct token in the stream. By having a global variable in Parser we make sure that we always access the correct one, and this will save you time (time that I wasted when I first created the code. You are welcome).
 
 So our console will show as expected, only 8 tokens.
 
-```
+```javascript
 Current token: 0 - [object Token "repeat" - PRIMITIVE - {repeat}]
 Current token: 1 - [object Token "4" - NUMBER - {}]
 Current token: 2 - [object Token "[" - DELIMITER - {}]
@@ -116,4 +117,234 @@ Current token: 5 - [object Token "rt" - PRIMITIVE - {rt}]
 Current token: 6 - [object Token "90" - NUMBER - {}]
 Current token: 7 - [object Token "]" - DELIMITER - {}]
 ```
+
+Let's tackle now how we are going to do a `repeat`. If we find it, we will call a method to execute it. We get the next token, which should be a number (we are not doing error handling right now) and we make sure that the next one is a `[`. Now we will have to make sure that the current Token index gets back to the first primitive inside the brackets after we reach the `]`, and we need to count the number of repetitions and stop when done.
+
+For our test before we only saved the current token index, it will be easier for us if we also save the current token itself instead of doing all the time `tokens[currentTokenIndex]`. Our code for Parser, without the inner parts of what to do with `repeat` is below:
+
+```javascript
+class Parser {
+  execute_repeat() {
+    console.log("Starting: execute_repeat");
+  }
+  getNextToken() {
+    this.currentTokenIndex++;
+    if (this.currentTokenIndex <= this.lastTokenIndex) {
+      this.currentToken = this.tokens[this.currentTokenIndex];
+      console.log(`Current token: ${this.currentTokenIndex} - ${this.currentToken}`);
+    }
+  }
+  parse(tokens) {
+    this.tokens = tokens;
+    this.currentToken = {};
+    this.currentTokenIndex = -1;
+    this.lastTokenIndex = tokens.length - 1;
+    do {
+      this.getNextToken();
+      if (this.currentToken.tokenType === tokenTypes.PRIMITIVE) {
+        if (this.currentToken.primitive === primitives.REPEAT) {
+          this.execute_repeat();
+        }
+      }      
+    } while (this.currentTokenIndex < this.lastTokenIndex)
+  }
+}
+```
+
+In debugging (or starting a project) it helps me to put a log line at the beginning of each method, kind of like a cheap stack trace. This helps me a lot to follow the flow of the program when something doesn't go as expected.
+
+And now, finally for the `repeat` code, which is straight forward.
+
+```javascript
+execute_repeat() {
+    console.log("Starting: execute_repeat");
+    this.getNextToken();
+    if (this.currentToken.tokenType === tokenTypes.NUMBER) {
+      let n = parseInt(this.currentToken.text);
+      this.getNextToken();
+      if (this.currentToken.tokenType === tokenTypes.DELIMITER &&
+        this.currentToken.text === delimiters.OPENING_BRACKET) {
+        this.getNextToken();
+        this.loop = {
+          startTokenIndex: this.currentTokenIndex,
+          remainingLoops: n
+        };
+        console.log(this.loop);
+      }
+    }
+  }
+  ```
+
+  We don't have error handling as I said before but that can be done in the `else` part of the control flow `if`. We create two more properties, `startTokenIndex` and `remainingLoops`. Since both of them are intimately related, to avoid clutter I put them together in a `loop` property, that I will initialize in the `parse` method.
+
+We have defined the beginning of the loop, but now we need to focus on the ending of the loop when reaching `]`. However we have a bigger problem here, have you spotted?
+
+By doing a final `getNextToken` to get the first index inside the loop we have read the token `fd` from `fd 60` inside the loop, so after executing `execute_repeat` the `do-while` loop will start again and request another `getNextToken` so the first one they will act it won't be the `fd` but it will find a `60`.
+You don't believe me? Remember that in our `do-while` loop the first thing we do is `getNextToken`, if you look at the logs:
+
+```javascript
+Current token: 0 - [object Token "repeat" - PRIMITIVE - {repeat}]
+Starting: execute_repeat
+Current token: 1 - [object Token "4" - NUMBER - {}]
+Current token: 2 - [object Token "[" - DELIMITER - {}]
+Current token: 3 - [object Token "fd" - PRIMITIVE - {fd}]
+{startTokenIndex: 3, remainingLoops: 4}
+Current token: 4 - [object Token "60" - NUMBER - {}]
+Current token: 5 - [object Token "rt" - PRIMITIVE - {rt}]
+Current token: 6 - [object Token "90" - NUMBER - {}]
+Current token: 7 - [object Token "]" - DELIMITER - {}]
+```
+
+As you see, after we create the loop property the next token is token 4, `60`. We have either two options: create a method to putback the last token back to the token  stream (i.e. moving the currentTokenIndex back) or since in the loop we just need to know the index we can do `currentTokenIndex + 1`. At this point, we will choose the latter, so:
+
+```javascript
+if (this.currentToken.tokenType === tokenTypes.DELIMITER &&
+  this.currentToken.text === delimiters.OPENING_BRACKET) {
+  this.loop = {
+    startTokenIndex: this.currentTokenIndex + 1,
+    remainingLoops: n
+  };
+  console.log(this.loop);
+}
+```
+
+## Moving forward. No, really, moving FORWARD.
+Now in the `do-while` loop the next token will be the next primitive, `fd` (forward). And after that is a numeric argument. So we do in `parse` a `switch` statement that looks better than a list of `if`:
+
+```javascript
+if (this.currentToken.tokenType === tokenTypes.PRIMITIVE) {
+  switch (this.currentToken.primitive) {
+    case primitives.FORWARD:
+      this.execute_forward();
+      break;
+    case primitives.REPEAT:
+      this.execute_repeat();
+      break;
+  }
+}
+```
+
+And
+
+```javascript
+execute_forward() {
+  console.log("Starting: execute_forward");
+}
+```
+
+Just as a stub for what's to come. And... I almost forgot the code for the end of the loop, but since we have the same structure as well for the `rt` primitive, I am going to do the stubs for it as well:
+
+```javascript
+case primitives.RIGHT:
+  this.execute_right();
+  break;
+```
+
+and
+
+```javascript
+execute_right() {
+  console.log("Starting: execute_right");
+}
+```
+
+## Finally, the end of the loop
+After we've done `rt 90`, it is time for the end of the loop, where we read the `loop` property and subtract one to the `remainingLoops` variable and we move the index to the first token inside the loop.
+
+`]` is not a primitive, so in the parsing loop we can't just trap it in our `switch` for primitives, so we will do it in the `else` part of the `if`.
+
+```javascript
+if (this.currentToken.tokenType === tokenTypes.PRIMITIVE) {
+  switch (this.currentToken.primitive) {
+    case primitives.FORWARD:
+      this.execute_forward();
+      break;
+    case primitives.RIGHT:
+      this.execute_right();
+      break;
+    case primitives.REPEAT:
+      this.execute_repeat();
+      break;
+  }
+} else if (this.currentToken.tokenType === tokenTypes.DELIMITER) {
+  if (this.currentToken.text === delimiters.CLOSING_BRACKET) {
+    this.loop.remainingLoops--;
+    if (this.loop.remainingLoops > 0) {
+      this.currentTokenIndex = this.loop.startTokenIndex;
+    }
+  }
+}
+```
+
+so we run the code, and we get this (which is wrong). Can you spot what's missing?
+
+```javascript
+Current token: 0 - [object Token "repeat" - PRIMITIVE - {repeat}]
+Starting: execute_repeat
+Current token: 1 - [object Token "4" - NUMBER - {}]
+Current token: 2 - [object Token "[" - DELIMITER - {}]
+{startTokenIndex: 3, remainingLoops: 4}
+Current token: 3 - [object Token "fd" - PRIMITIVE - {fd}]
+Starting: execute_forward
+Current token: 4 - [object Token "60" - NUMBER - {}]
+Current token: 5 - [object Token "rt" - PRIMITIVE - {rt}]
+Starting: execute_right
+Current token: 6 - [object Token "90" - NUMBER - {}]
+Current token: 7 - [object Token "]" - DELIMITER - {}]
+Current token: 4 - [object Token "60" - NUMBER - {}]
+Current token: 5 - [object Token "rt" - PRIMITIVE - {rt}]
+Starting: execute_right
+Current token: 6 - [object Token "90" - NUMBER - {}]
+Current token: 7 - [object Token "]" - DELIMITER - {}]
+Current token: 4 - [object Token "60" - NUMBER - {}]
+Current token: 5 - [object Token "rt" - PRIMITIVE - {rt}]
+Starting: execute_right
+Current token: 6 - [object Token "90" - NUMBER - {}]
+Current token: 7 - [object Token "]" - DELIMITER - {}]
+Current token: 4 - [object Token "60" - NUMBER - {}]
+Current token: 5 - [object Token "rt" - PRIMITIVE - {rt}]
+Starting: execute_right
+Current token: 6 - [object Token "90" - NUMBER - {}]
+Current token: 7 - [object Token "]" - DELIMITER - {}]
+```
+
+in every loop we are missing the `fd` token. This is because we set wrongly the first token for the loop, we should have set it to `[` so when the next pass in the parsing loop is executed and we get the next token, we will get `fd`. Simple fix making `startTokenIndex: this.currentTokenIndex`. My log is correct as:
+
+```javascript
+Current token: 0 - [object Token "repeat" - PRIMITIVE - {repeat}]
+Starting: execute_repeat
+Current token: 1 - [object Token "4" - NUMBER - {}]
+Current token: 2 - [object Token "[" - DELIMITER - {}]
+{startTokenIndex: 2, remainingLoops: 4}
+Current token: 3 - [object Token "fd" - PRIMITIVE - {fd}]
+Starting: execute_forward
+Current token: 4 - [object Token "60" - NUMBER - {}]
+Current token: 5 - [object Token "rt" - PRIMITIVE - {rt}]
+Starting: execute_right
+Current token: 6 - [object Token "90" - NUMBER - {}]
+Current token: 7 - [object Token "]" - DELIMITER - {}]
+Current token: 3 - [object Token "fd" - PRIMITIVE - {fd}]
+Starting: execute_forward
+Current token: 4 - [object Token "60" - NUMBER - {}]
+Current token: 5 - [object Token "rt" - PRIMITIVE - {rt}]
+Starting: execute_right
+Current token: 6 - [object Token "90" - NUMBER - {}]
+Current token: 7 - [object Token "]" - DELIMITER - {}]
+Current token: 3 - [object Token "fd" - PRIMITIVE - {fd}]
+Starting: execute_forward
+Current token: 4 - [object Token "60" - NUMBER - {}]
+Current token: 5 - [object Token "rt" - PRIMITIVE - {rt}]
+Starting: execute_right
+Current token: 6 - [object Token "90" - NUMBER - {}]
+Current token: 7 - [object Token "]" - DELIMITER - {}]
+Current token: 3 - [object Token "fd" - PRIMITIVE - {fd}]
+Starting: execute_forward
+Current token: 4 - [object Token "60" - NUMBER - {}]
+Current token: 5 - [object Token "rt" - PRIMITIVE - {rt}]
+Starting: execute_right
+Current token: 6 - [object Token "90" - NUMBER - {}]
+Current token: 7 - [object Token "]" - DELIMITER - {}]
+```
+
+
 
