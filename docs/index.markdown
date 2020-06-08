@@ -17,7 +17,7 @@ When I was 11 years old I signed up for free computer classes once a week in my 
 The problem was that the school enthusiasm didn't match the resources and for a little while we had only the teacher's personal 8-bit computer with us.
 
 So around 20 kids crammed together in one room to a [MSX](https://en.wikipedia.org/wiki/MSX) connected to the school TV and running a [SONY Logo cartridge](https://www.generation-msx.nl/software/idealogic/logo-msx/release/3178/). I was intrigued to why we had a turtle over a blue background and what does a turtle have to do with learning about computers. But then after some introduction and showing us how to draw a square, the teacher typed:
-```Lisp
+```
 to square :side
 repeat 4 [forward :side right 90]
 end
@@ -30,6 +30,49 @@ Years later I found in a book fair the same book my teacher used and I kept it w
 This LOGO intepreter is based on Herbert Schildt (book name here and pic) the chapter for Tiny Basic. This book can be found easily (and cheap) second hand.
 
 This LOGO provides a subset of primitives (only graphical ones). If you are interested in a more complete LOGO in javascript please go to the excellent [jsLogo](https://github.com/inexorabletash/jslogo) project.
+
+My LOGO book (TODO take picture)
+## Scope
+From the beginning there were 4 examples that I wanted to be able to run in my project:
+### A square using REPEAT
+```
+repeat 4 [fd 60 rt 90]
+```
+This will teach me how to do loops
+### A square in a procedure
+```
+to square :side
+  repeat 4 [fd :side rt 90]
+end
+square 60
+```
+With this we can create any procedure and reuse it.
+### A spiral
+```
+to spiral :side
+  fd :side rt 90
+  spiral :side + 3
+end
+spiral 10
+```
+With this I can learn how to use expressions, since we call recursively the `spiral` with a different value every time.
+### A tree
+```
+to  tree :length
+  if :length < 15 [stop]
+  fd :length
+  lt 45
+  tree :length/2
+  rt 90
+  tree :length/2
+  lt 45
+  re :length
+end
+cs
+bk 100
+tree 160
+```
+This will teach us control flow and how to stop a recursive procedure without causing a stack overflow. We will learn more about this later on.
 ## Posts
-Part 1: We are not psychopaths, we start with functions, not classes
+Part 1: Project file structure
 Part 2: Poor man's tokenizer in action
