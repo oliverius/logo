@@ -557,9 +557,10 @@ class Token {
         this.tokenType = tokenType;
         this.primitive = primitive;
     }
+    getKey = (value, jsonObject) => Object.keys(jsonObject).find(key => jsonObject[key] === value);
     get[Symbol.toStringTag]() {
-        let tokenTypeKey = Object.keys(logo.tokenizer.tokenTypes).find(key => logo.tokenizer.tokenTypes[key] === this.tokenType);
-        let primitiveKey = Object.keys(logo.tokenizer.primitives).find(key => logo.tokenizer.primitives[key] === this.primitive);
+        let tokenTypeKey = this.getKey(this.tokenType, logo.tokenizer.tokenTypes);
+        let primitiveKey = this.getKey(this.primitive, logo.tokenizer.primitives);
 
         let paddedStartIndex = this.startIndex.toString().padStart(3, '0');
         let paddedEndIndex = this.endIndex.toString().padStart(3, '0');

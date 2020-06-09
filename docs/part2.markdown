@@ -251,7 +251,7 @@ let tokenTypeKey = Object.keys(tokenTypes).find(key => tokenTypes[key] === this.
 
 where first we get a list of all the keys with `Object.keys(tokenTypes)` and we find the one that satisfies the right numeric value. With this in the console we would get:
 
-```
+```javascript
 [object "repeat" - PRIMITIVE]
 [object "4" - NUMBER]
 [object "[" - DELIMITER]

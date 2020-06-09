@@ -76,3 +76,5 @@ This will teach us control flow and how to stop a recursive procedure without ca
 ## Posts
 Part 1: Project file structure
 Part 2: Poor man's tokenizer in action
+
+note: used gifmaker.me to create the gifs
