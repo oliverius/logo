@@ -706,9 +706,7 @@ class Tokenizer {
 
 class Turtle {
     DEGREE_TO_RADIAN = Math.PI / 180;
-    toRadians = (deg = 0) => {
-        return Number(deg * this.DEGREE_TO_RADIAN)
-    };
+    toRadians = (deg = 0) => Number(deg * this.DEGREE_TO_RADIAN);
 
     constructor(canvasObject) {
         this.ctx = canvasObject.getContext('2d');
@@ -716,7 +714,7 @@ class Turtle {
         this.height = canvasObject.height;
         this.centerX = parseInt(this.width / 2);
         this.centerY = parseInt(this.height / 2);
-        this.angleInDegrees = 0;
+        this.orientation = 0;
 
         this.virtualTurtleCanvas = document.createElement('canvas');
         this.virtualTurtleCanvas.width = this.width;
@@ -745,26 +743,34 @@ class Turtle {
         this.deleteTurtle();
 
         this.updateTurtlePosition(this.centerX, this.centerY);
-        this.updateTurtleOrientation(-this.angleInDegrees);
+        this.incrementTurtleOrientation(-this.orientation);
         this.drawTurtle();
 
         this.renderFrame();
     }
     execute_forward(n = 0) {
-        let angleFromYaxis = 90 - this.angleInDegrees;
-        let angleFromYaxisInRadians = this.toRadians(angleFromYaxis);
-
-        let newX = this.x + n * Math.cos(angleFromYaxisInRadians);
-        let newY = this.y - n * Math.sin(angleFromYaxisInRadians);
+        /*
+            α: angle from y-axis to the path of the turtle
+            Normal coordinates start on the x-axis => 90-α angle
+            x1 = x + r·cos(90-α) = x + r·sin(α)
+            y1 = y + r·sin(90-α) = y + r·cos(α)
+            Since y coordinates grow down instead of grow up,
+            the increment in y should change sign. So finally
+            x1 = x + r·sin(α)
+            y1 = y - r·cos(α)
+        */
+        let alpha = this.toRadians(this.orientation);
+        let x1 = this.x + n * Math.sin(alpha);
+        let y1 = this.y - n * Math.cos(alpha);
 
         this.drawingCtx.lineWidth = 1;
         this.drawingCtx.beginPath();
         this.drawingCtx.moveTo(this.x, this.y);
-        this.drawingCtx.lineTo(newX, newY);
+        this.drawingCtx.lineTo(x1, y1);
         if (this.isPenDown) {
             this.drawingCtx.stroke();
         }
-        this.updateTurtlePosition(newX, newY);
+        this.updateTurtlePosition(x1, y1);
 
         this.deleteTurtle();
         this.drawTurtle();
@@ -780,7 +786,7 @@ class Turtle {
         this.isPenDown = false;
     }
     execute_right(deg = 0) {
-        this.updateTurtleOrientation(deg);
+        this.incrementTurtleOrientation(deg);
 
         this.deleteTurtle();
         this.drawTurtle();
@@ -805,7 +811,7 @@ class Turtle {
         this.turtleCtx.resetTransform();;
 
         this.turtleCtx.translate(this.x, this.y);
-        this.turtleCtx.rotate(this.toRadians(this.angleInDegrees));
+        this.turtleCtx.rotate(this.toRadians(this.orientation));
         this.turtleCtx.translate(-this.x, -this.y);
 
         this.turtleCtx.beginPath();
@@ -815,13 +821,13 @@ class Turtle {
         this.turtleCtx.lineTo(x1, y1);
         this.turtleCtx.stroke();
     }
+    incrementTurtleOrientation(deg = 0) {
+        this.orientation += deg;
+    }
     renderFrame() {
         this.ctx.clearRect(0, 0, this.width, this.height);
         this.ctx.drawImage(this.virtualDrawingCanvas, 0, 0, this.width, this.height);
         this.ctx.drawImage(this.virtualTurtleCanvas, 0, 0, this.width, this.height);
-    }
-    updateTurtleOrientation(deg = 0) {
-        this.angleInDegrees += deg;
     }
     updateTurtlePosition(x = 0, y = 0) {
         this.x = x;
