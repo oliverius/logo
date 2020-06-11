@@ -716,15 +716,15 @@ class Turtle {
         this.centerY = parseInt(this.height / 2);
         this.orientation = 0;
 
-        this.virtualTurtleCanvas = document.createElement('canvas');
-        this.virtualTurtleCanvas.width = this.width;
-        this.virtualTurtleCanvas.height = this.height;
-        this.turtleCtx = this.virtualTurtleCanvas.getContext('2d');
+        let virtualTurtleCanvas = document.createElement('canvas');
+        virtualTurtleCanvas.width = this.width;
+        virtualTurtleCanvas.height = this.height;
+        this.turtleCtx = virtualTurtleCanvas.getContext('2d');
 
-        this.virtualDrawingCanvas = document.createElement('canvas');
-        this.virtualDrawingCanvas.width = this.width;
-        this.virtualDrawingCanvas.height = this.height;
-        this.drawingCtx = this.virtualDrawingCanvas.getContext('2d');
+        let virtualDrawingCanvas = document.createElement('canvas');
+        virtualDrawingCanvas.width = this.width;
+        virtualDrawingCanvas.height = this.height;
+        this.drawingCtx = virtualDrawingCanvas.getContext('2d');
 
         this.execute_clearscreen();
         this.execute_pendown()
@@ -809,7 +809,6 @@ class Turtle {
         let y3 = y2;
 
         this.turtleCtx.resetTransform();;
-
         this.turtleCtx.translate(this.x, this.y);
         this.turtleCtx.rotate(this.toRadians(this.orientation));
         this.turtleCtx.translate(-this.x, -this.y);
@@ -826,8 +825,8 @@ class Turtle {
     }
     renderFrame() {
         this.ctx.clearRect(0, 0, this.width, this.height);
-        this.ctx.drawImage(this.virtualDrawingCanvas, 0, 0, this.width, this.height);
-        this.ctx.drawImage(this.virtualTurtleCanvas, 0, 0, this.width, this.height);
+        this.ctx.drawImage(this.drawingCtx.canvas, 0, 0, this.width, this.height);
+        this.ctx.drawImage(this.turtleCtx.canvas, 0, 0, this.width, this.height);
     }
     updateTurtlePosition(x = 0, y = 0) {
         this.x = x;
