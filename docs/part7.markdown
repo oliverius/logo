@@ -170,10 +170,92 @@ TODO add part7_doubleloop
 
 Stack we get the one on top, draw the stack as well together with the script
 
-TODO drawing explaining what we do with the loops in draw.io
-
+TODO drawing explaining what we do with the loops in draw.io (it is the double loop gif with stack)
 
 ## A few more primitives, and we are done for now
-We are almost done with the graphical primitives, and because it is so simple we are going to add two more that are very simple to implement, `penup` and `pendown`. We need to remember that LOGO started with a mechanical turtle, so if the pen was up when drawing it wouldn't draw anything (as it wasn't touching the paper/floor) and if it was down it was drawing. Since the only place where we really draw 
+We are almost done with the graphical primitives, and because it is so simple we are going to add two more that are very simple to implement `penup` and `pendown`. We need to remember that LOGO started with a mechanical turtle, so if the pen was up when drawing it wouldn't draw anything (as it wasn't touching the paper/floor) and if it was down it was drawing. Since the only place where we really draw are in the `execute_forward()` method, that's where the logic will be.
 
-TODO name next part: a tokenizer to make your mama proud
+All in all, this is what we do:
+
+Two more primitives:
+```javascript
+const primitives = {
+  NONE: 0,
+  FORWARD: 1,
+  RIGHT: 2,
+  REPEAT: 3,
+  CLEARSCREEN: 4,
+  BACK: 5,
+  LEFT: 6,
+  PENUP: 7,
+  PENDOWN: 8
+};
+```
+
+Two primitive aliases:
+```javascript
+{
+  primitive: primitives.PENUP,
+  aliases: ["penup", "pu"]
+},
+{
+  primitive: primitives.PENDOWN,
+  aliases: ["pendown", "pd"]
+}
+```
+
+The parsing loop `parse()` will add the right entries to the queue for drawing:
+```javascript
+case primitives.PENDOWN:
+  this.turtleGraphicsQueue.push({
+    primitive: primitives.PENDOWN
+  });
+  break;
+case primitives.PENUP:
+  this.turtleGraphicsQueue.push({
+    primitive: primitives.PENUP
+  });
+  break;
+```
+
+and this will be dealt with in the queue by the `draw()` method that will direct to some action by the `turtle` to do:
+```javascript
+case primitives.PENUP:
+  this.turtle.execute_penup();
+  break;
+case primitives.PENDOWN:
+  this.turtle.execute_pendown();
+  break;
+```
+
+and in the `turtle`:
+```javascript
+execute_pendown() {
+  console.log("[Turtle] - execute_pendown");
+  this.isPenDown = true;
+}
+execute_penup() {
+  console.log("[Turtle] - execute_penup");
+  this.isPenDown = false;
+}
+```
+
+because we want to focus in `pendown`, so when we go to `execute_forward()` we check for pen down and... we write. So we wrap the `stroke` method in this:
+```javascript
+if (this.isPenDown) {
+  this.drawingCtx.stroke();
+}
+```
+
+and finally because the starting point of a turtle is with the pen down, in the turtle constructor after `execute_clearscreen()`
+```javascript
+this.execute_pendown();
+```
+
+Now we test with our tried and tested example with a triangle and the 3 squares but this time we don't draw the triangle.
+So instead of
+`cs repeat 3 [ fd 60 repeat 4 [ lt 90 bk 20 ] rt 120 ]`
+we do
+`cs repeat 3 [ pu fd 60 pd repeat 4 [ lt 90 bk 20 ] rt 120 ]`
+
+todo add picture pu_pd_example
