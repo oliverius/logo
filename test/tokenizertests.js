@@ -1,7 +1,7 @@
 runTokenizerTests();
 function runTokenizerTests() {
   const LF = "\n";
-  let tokenizer = new Tokenizer();
+  let tokenizer = new Tokenizer(logo.primitiveAliases);
   let assertToken = (expectedToken = {}, actualToken = {}) => {
           let success = actualToken.startIndex === expectedToken.startIndex &&
               actualToken.endIndex === expectedToken.endIndex &&

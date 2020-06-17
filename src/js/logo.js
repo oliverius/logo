@@ -64,43 +64,54 @@ const logo = {
             }
         }
     },
-    "primitiveAliases": [{
-        "name": "FORWARD",
-        "aliases": ["forward", "fd", "av"]
-    }, {
-        "name": "BACK",
-        "aliases": ["back", "bk", "re"]
-    }, {
-        "name": "LEFT",
-        "aliases": ["left", "lt", "gi"]
-    }, {
-        "name": "RIGHT",
-        "aliases": ["right", "rt", "gd"]
-    }, {
-        "name": "PENUP",
-        "aliases": ["penup", "pu", "sl"]
-    }, {
-        "name": "PENDOWN",
-        "aliases": ["pendown", "pd", "bl"]
-    }, {
-        "name": "REPEAT",
-        "aliases": ["repeat", "repite"]
-    }, {
-        "name": "CLEARSCREEN",
-        "aliases": ["clearscreen", "cs", "bp"]
-    }, {
-        "name": "TO",
-        "aliases": ["to", "para"]
-    }, {
-        "name": "END",
-        "aliases": ["end", "fin"]
-    }, {
-        "name": "IF",
-        "aliases": ["if", "si"]
-    }, {
-        "name": "STOP",
-        "aliases": ["stop", "alto"]
-    }]
+    "primitiveAliases": [
+        {
+            "primitive": "FORWARD",
+            "aliases": ["forward", "fd", "av"]
+        },
+        {
+            "primitive": "BACK",
+            "aliases": ["back", "bk", "re"]
+        },
+        {
+            "primitive": "LEFT",
+            "aliases": ["left", "lt", "gi"]
+        },
+        {
+            "primitive": "RIGHT",
+            "aliases": ["right", "rt", "gd"]
+        },
+        {
+            "primitive": "PENUP",
+            "aliases": ["penup", "pu", "sl"]
+        },
+        {
+            "primitive": "PENDOWN",
+            "aliases": ["pendown", "pd", "bl"]
+        },
+        {
+            "primitive": "REPEAT",
+            "aliases": ["repeat", "repite"]
+        },
+        {
+            "primitive": "CLEARSCREEN",
+            "aliases": ["clearscreen", "cs", "bp"]
+        },
+        {
+            "primitive": "TO",
+            "aliases": ["to", "para"]
+        },
+        {
+            "primitive": "END",
+            "aliases": ["end", "fin"]
+        }, {
+            "primitive": "IF",
+            "aliases": ["if", "si"]
+        },
+        {
+            "primitive": "STOP",
+            "aliases": ["stop", "alto"]
+        }]
 };
 
 class Interpreter {
@@ -109,7 +120,7 @@ class Interpreter {
         this.canvas = document.getElementById(canvasId);
         this.statusbar = document.getElementById(statusBarId);
         this.turtle = new Turtle(this.canvas);
-        this.tokenizer = new Tokenizer();
+        this.tokenizer = new Tokenizer(logo.primitiveAliases);
         this.parser = new Parser();
         this.setEditor(this.getLatestScriptRun());
         window.addEventListener(logo.parser.errorEvent.name, e => {
@@ -377,7 +388,7 @@ class Parser {
         this.currentTokenIndex++;
         if (this.currentTokenIndex < this.tokens.length) {
             this.currentToken = this.tokens[this.currentTokenIndex];
-            console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken} -${this.procedureCallStack.length}`);
+            console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
         } else {
             this.currentToken = new Token(this.currentTokenIndex, "", logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM);
         }
@@ -575,7 +586,9 @@ class Tokenizer {
     LF = "\n";
     EOF = "\0";
     VARIABLE_PREFIX = ":";
-
+    constructor(primitiveAliases = []) {
+        this.aliases = this.populatePrimitiveAliasesDictionary(primitiveAliases);
+    }
     getNextCharacter() {
         this.currentIndex++;
         if (this.currentIndex < this.script.length) {
@@ -586,15 +599,9 @@ class Tokenizer {
         //console.log(`Current character: ${this.currentIndex.toString().padStart(2, '0')} - ${this.currentCharacter}`);
     }
     getPrimitive(primitiveAlias = "") {
-        let foundPrimitives = logo.primitiveAliases.filter(p =>
-            p.aliases.includes(primitiveAlias.toLowerCase())
-        );
-
-        if (foundPrimitives.length === 1) {
-            return logo.tokenizer.primitives[foundPrimitives[0].name];
-
-        }
-        return logo.tokenizer.primitives.NONE;
+        let key = this.aliases[primitiveAlias.toLowerCase()];
+        let primitive = logo.tokenizer.primitives[key] ?? logo.tokenizer.primitives.NONE;
+        return primitive;
     }
     initialize(script) {
         this.script = script;
@@ -632,6 +639,15 @@ class Tokenizer {
     isWhiteSpace(c) {
         return c === " " || c === "\t";
     }
+    populatePrimitiveAliasesDictionary(primitiveAliases = []) { 
+        let dictionary = {};
+        primitiveAliases.forEach(item => {
+          item.aliases.forEach(alias => {
+            dictionary[alias] = item.primitive;
+          });
+        });
+        return dictionary;
+      }
     putbackCharacter() {
         this.currentIndex--;
         this.currentCharacter = this.script[this.currentIndex];
