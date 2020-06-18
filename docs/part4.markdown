@@ -4,14 +4,14 @@ title: Part 4
 permalink: /part4/
 ---
 # Palate cleanser, some refactoring before playing with the turtle
-So in the last part we managed to tokenize a expression like this: `repeat 4 [ fd 60 rt 90 ]` and parse it, even if it is only with console.log.
+In the last part we managed to tokenize a expression like this: `repeat 4 [ fd 60 rt 90 ]` and parse it, even if it is only with console.log.
 Today we are going to do some refactoring before moving on with the turtle graphics.
-I am trying to redo the project for this article with the same order of events that I created it, however in my original project I was so eager to see the turtle in the screen that I created the `canvas` for the graphics very early on and didn't refactor until later. That didn't help much because it created some expectations in what I was doing and set me back a few days (after all, I code only when I have free time and that's not much). So let's get this refactoring out of the way before we go and see how my turtle looks like!.
+For this article I am trying to redo the project from scratch with the same errors and aha! moments as I experienced before; however in my original project I was so eager to see the turtle in the screen that I created the `canvas` for the graphics very early on and didn't refactor until later. That didn't help much because it created some expectations in what I was doing and set me back a few days (after all, I code only when I have free time and that's not much). So let's get this refactoring out of the way before we go and see how my turtle looks like!.
 
 Also I will post the code so far at the end of this post because refactoring can get messy and it is difficult to follow up all the little changes.
 
 ## Refactor to get the parameter for different primitives
-`repeat` requires a further numeric parameter. `fd` as well. And `rt` the same. It will make sense that the code and checks we did in `execute_repeat` can be done separately and we call `execute_repeat`, `execute_forward` and `execute_right` with a parameter. As such:
+The primitive `repeat` requires a further numeric parameter. `fd` as well. And `rt` the same. It will make sense that the code and checks we did in `execute_repeat()` can be done separately and we call `execute_repeat()`, `execute_forward()` and `execute_right()` with a parameter. As such:
 
 ```javascript
 getParameter() {
@@ -22,7 +22,7 @@ getParameter() {
 }
 ```
 
-And the change in the `switch` in `parse`, which makes it more intuitive to read:
+And the change in the `switch` in `parse`, which makes it easier to read:
 
 ```javascript
 switch (this.currentToken.primitive) {
@@ -82,14 +82,15 @@ Loop has finished
 ```
 
 which is it infinitely easier to read. I wish I spent more time doing it like this before. This will also help us when we try nested loops, so we can see what's going on at a glance.
-
 ## Repeat should have two methods, begin and end
-I want to keep the logic for `repeat` out of the parsing loop, so I had `execute_repeat` and the logic when closing the loop directly in the parsing loop. I will rename `execute_repeat` to `execute_repeat_begin` and the logic for `]` to `execute_repeat_end`. At this point in time we don't need to do anything else, we will refactor more when we do multiple loops and later with the control flow primitive `if`.
-
+I want to keep the logic for `repeat` out of the parsing loop, so I had `execute_repeat()` and the logic when closing the loop directly in the parsing loop. I will rename `execute_repeat()` to `execute_repeat_begin()` and the logic for `]` to `execute_repeat_end()`. At this point in time we don't need to do anything else, we will refactor more when we do multiple loops and later with the primitive `if` for control flow.
 ## Tokenizer as a class
-It is becoming obvious that it is easier to deal with classes, although having to use `this.` with everything is killing me as I am not used to it in C# where I come from.
+It is becoming obvious that it is easier to deal with classes, although preceding everything with `this` is killing me as I am not used to it in C# where I come from.
+
 So the tokenizer has been refactored to be a class, not a function. This will help when we implement the proper tokenizer and not the simple one we have now (the one I called poor man's tokenizer).
-I was also not happy having the tokenizer receiving a DOM element (the editor) because in my opinion the tokenizer needs to receive only text and spits out tokens, that's all. So I moved out the editor reference outside. As such, we won't need a constructor for tokenizer and we will pass the text to the `tokenize` method instead.
+
+I was also not happy having the tokenizer receiving a DOM element (the editor) because in my opinion the tokenizer needs to receive only text and spits out tokens, that's all ([separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns) again). So I moved out the editor reference outside. As such, we won't need a constructor for tokenizer and we will pass the text to the `tokenize()` method instead.
+
 The code outside the classes is now:
 
 ```javascript
@@ -121,7 +122,7 @@ const interpreter = new Interpreter('myTextarea');
 interpreter.run();
 ```
 
-I created the method `run` because I want people to run different scripts when pressing a button `run` or `play` in the UI. So now only the interpreter knows about the DOM elements (editor for now), the tokenizer only knows about text and the parser only knows how to move back and forth in a stream of tokens.
+I created the method `run` because I want people to run different scripts when pressing a button `run` or `play` in the UI. So now only the interpreter knows about the DOM elements (editor for now), the tokenizer only knows about text and the parser only knows how to move back and forth in a stream of tokens. All clean and tidy
 
 ## Internal representation of a primitive
 The internal representation of a primitive so far is:
@@ -134,9 +135,9 @@ const primitives = {
 }
 ```
 
-I was never very happy with this, because I don't like mixing the internal representation of the primitive with how it will look in the outside. You may ask, so what about the delimiters? Delimiters are different because the representation doesn't change, an opening bracket will always look like an opening bracket.
+I was never very happy with this, because I don't like mixing the internal representation of the primitive with how it will look on the outside. You may ask, so what about the delimiters? Delimiters are different because the representation doesn't change, an opening bracket will always look like an opening bracket.
 
-But for example `fd`. This can be shown as `fd` or `forward` or even `FoRwArD` if we are inclined. And what about when we deal with other languages? In Spanish it would be `av` and `avanza`. So I am inclined to create another enum for the internal representation similar to what we did with the token types. As such:
+But for example `fd`. This can be shown as `fd` or `forward` or even `FoRwArD` if we are inclined. And what about when we deal with other languages? In Spanish it would be `av` or `avanza`. So I am inclined to create another enum for the internal representation similar to what we did with the token types. As such:
 
 ```javascript
 const primitives = {
@@ -169,7 +170,34 @@ const primitiveAliases = [
 ];
 ```
 
-Remember, we can have references in one of our enums (e.g. primitives) from another one, as long as we don't have circular references. We add the parameter to the interpreter, and we pass it to the tokenizer:
+Remember, we can have references in one of our enums (e.g. primitives) from another one as long as we don't have circular references or they are part of the same object because the object (json) has to be initialized before it can be used. In short, this will error:
+
+```javascript
+const thisWillError = {
+  primitives : {
+    NONE: 0,
+    FORWARD: 1,
+    RIGHT: 2,
+    REPEAT: 3
+  },
+  primitiveAliases : [
+    {
+      primitive: primitives.FORWARD,
+      aliases: ["forward", "fd"]
+    },
+    {
+      primitive: primitives.RIGHT,
+      aliases: ["right", "rt"]
+    },
+    {
+      primitive: primitives.REPEAT,
+      aliases: ["repeat"]
+    }
+  ]
+};
+```
+
+Coming back to the parameter, we add it to the interpreter and we pass it to the tokenizer:
 
 ```javascript
 constructor(editorId, aliases) {
@@ -202,6 +230,7 @@ populatePrimitiveAliasesDictionary(primitiveAliases = []) {
 ```
 
 Luckily we get the values we were expecting in the console:
+
 ```javascript
 1 "forward"
 1 "fd"
@@ -211,6 +240,7 @@ Luckily we get the values we were expecting in the console:
 ```
 
 So we just need to convert this into a dictionary, and as such:
+
 ```javascript
 populatePrimitiveAliasesDictionary(primitiveAliases = []) { 
   let dictionary = {};   
@@ -223,7 +253,8 @@ populatePrimitiveAliasesDictionary(primitiveAliases = []) {
 }
 ```
 
-I strinified the results of the dictionary just to see how it looks like:
+I stringified the results of the dictionary just to see how it looks like:
+
 ```javascript
 {
   "forward":1,
@@ -234,9 +265,9 @@ I strinified the results of the dictionary just to see how it looks like:
 }
 ```
 
-and you may think: why we don't do the `primitiveAliases` directly like this, instead of in the current format? The reason is that this is good for a dictionary but it is not so human-friendly to read. The current `primitiveAliases` puts the emphasis on the primitive and it is easier to see how many aliases each primitive has. Here the meaning of "alias" is lost.
+and you may think: why we don't do the `primitiveAliases` directly like this, instead of in the current format? The reason is that this is good for a dictionary but it is not so human-friendly to read. The current `primitiveAliases` puts the emphasis on the primitive and it is easier to see how many aliases each primitive has. In the transformation to make it more computer-friendly the meaning of "alias" is lost.
 
-The next step is to implement the dictionary in the `isPrimitive` method. At this point it is easier to make it a method than to keep it as a fat arrow function, mostly because we need to have access to `this` that contains the dictionary. Also now we need to return the primitive (before it was easier because it was the token text but now it is an enum), so we will rename `isPrimitive` to `getPrimitive`. If it can't find any, it will return `NONE`.
+The next step is to implement the dictionary in the `isPrimitive()` method. At this point it is easier to make it a method than to keep it as a fat arrow function, mostly because we need to have access to `this` that contains the dictionary. Also now we need to return the primitive (before it was easier because it was the token text but now it is an enum), so we will rename `isPrimitive()` to `getPrimitive()`. If it can't find any, it will return `NONE`.
 
 ```javascript
 getPrimitive(tokenText) {
@@ -244,7 +275,7 @@ getPrimitive(tokenText) {
 };
 ```
 
-If the value in the dictionary is not found (at the end of the day it is just a json object where we can't find the key), that returns `undefined`. We want to return the value `NONE` instead so we use the new operator `??` which you may know already when dealing with nulls in C#. So our `else if` becomes just an `else`:
+If the value in the dictionary is not found (at the end of the day it is just a json object where we can't find the key) it returns `undefined`. We want to return the value `NONE` instead so we use the new [nullish coalescing operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing_operator) `??` which you may know already when dealing with nulls in C#. So our `else if` becomes just an `else`:
 
 ```javascript
 else {
@@ -257,8 +288,9 @@ else {
 }
 ```
 
-I am leaving here room for checking some text that is not a primitive, because in the future that would be a procedure name but... still a while until we reach that 😊
-The last part would be to store the primitive (internal value) instead of the token text in the `Token`. The final code for all the project is below, see you in part 5.
+I am leaving here room for checking some text that is not a primitive because in the future that would be a procedure name but... still a while until we reach that 😊
+
+The last part would be to store the primitive (internal value) instead of the token text in the `Token`. The final code for all the project is below. see you in part 5 TODO.
 
 ```javascript
 const delimiters = {
