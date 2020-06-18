@@ -3,7 +3,7 @@ layout: page
 title: Part 5
 permalink: /part5/
 ---
-# Dude, where is my turtle?
+# Finally turtle graphics
 In part 4 we were doing some refactoring just to keep the house in order before we move to greater things. We've managed to do a `repeat` loop in the parser and we introduced for the first time the interpreter which will tie up together everything else.
 
 There are still many things to do, possibly the most pressing having a proper tokenizer, but as a developer we want to do what we want to do and that's to have a turtle responding to our commands, in this case to draw a square to start with!

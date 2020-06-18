@@ -4,12 +4,14 @@ title: Part 7
 permalink: /part7/
 ---
 # Adding a few more primitives and sorting out nested loops
+
 ## More primitives
+
 Now that we can draw nicely, let's add a few more primitives to play with.
 
-* The first one I want to add is the `clearscreen`. This simply clears the screen and puts the turtle in the middle facing up.
-* The second one is `back`, which is the opposite of `forward`
-* The third one is `left` which is the opposite of `right`
+* •	The first one I want to add is the `clearscreen`. This simply clears the screen and puts the turtle in the middle facing up.
+* •	The second one is `back`, which is the opposite of `forward`
+* •	The third one is `left` which is the opposite of `right`
 
 And that's it for now, because we are going to be testing those before we move any further. We will do them in one go so you can see how easy it is to extend what we have done so far.
 
