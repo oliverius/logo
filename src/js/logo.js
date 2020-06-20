@@ -233,8 +233,8 @@ class Parser {
     assignVariable(variableName) {
         let item = this.peekLastProcedureCallStackItem();
         let parameters = item.parameters;
-        let parameter = parameters.find(p => p.parameterName === variableName);
-        let value = parseInt(parameter.parameterValue);
+        let parameter = parameters.find(p => p.name === variableName);
+        let value = parseInt(parameter.value);
         return value;
     }
     beginCodeBlock(primitive = logo.tokenizer.primitives.NONE, arg = 0) {
@@ -312,11 +312,11 @@ class Parser {
             this.getNextToken();
         }
     }
-    execute_procedure_end() {
+    execute_end() {
         let item = this.procedureCallStack.pop();
-        this.setCurrentTokenIndex(item.currentTokenIndexBeforeJumpingToProcedure);
+        this.setCurrentTokenIndex(item.procedureCallLastTokenIndex);
     }
-    execute_procedure_to() {
+    execute_to() {
         let procedure = {};
         this.getNextToken();
         if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.PROCEDURE_NAME) {
@@ -328,12 +328,10 @@ class Parser {
                 procedure["parameters"].push(this.currentToken.text);
                 this.getNextToken();
             }
-            procedure["firstTokenInsideProcedureIndex"] = this.currentTokenIndex;
+            // TODO maybe do putback here so it is currenttokenIndex?
+            procedure["procedureDefinitionLastTokenIndex"] = this.currentTokenIndex - 1;
 
             this.skipUntilEndOfProcedure();
-
-            let indexLastTokenNotIncludingEndToken = this.currentTokenIndex - 1;
-            procedure["lastTokenInsideProcedureIndex"] = indexLastTokenNotIncludingEndToken;
 
             this.procedures.push(procedure);
         }
@@ -459,10 +457,10 @@ class Parser {
                     this.raiseTurtleDrawingEvent(logo.tokenizer.primitives.CLEARSCREEN);
                     break;
                 case logo.tokenizer.primitives.TO:
-                    this.execute_procedure_to();
+                    this.execute_to();
                     break;
                 case logo.tokenizer.primitives.END:
-                    this.execute_procedure_end();
+                    this.execute_end();
                     break;
                 case logo.tokenizer.primitives.IF:
                     this.execute_if()
@@ -476,7 +474,7 @@ class Parser {
                 this.endCodeBlock();
             }
         } else if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.PROCEDURE_NAME) {
-            this.scanProcedure(this.currentToken.text);
+            this.jumpToProcedure(this.currentToken.text);
         }
     }
     peekLastProcedureCallStackItem() {
@@ -515,9 +513,10 @@ class Parser {
         });
         window.dispatchEvent(event);
     }
-    scanProcedure(name) {
+    jumpToProcedure(name) {
+        console.log("oliver");
         let searchProcedureResults = this.procedures.filter(procedure => {
-            return procedure.name === name;
+            return procedure.name === name.toLowerCase(); // TODO create test with procedure defined in capitals and called in lower, and viceversa
         });
         if (searchProcedureResults.length > 0) {
             if (this.procedureCallStack.length + 1 > logo.parser.maxProcedureCallStack) {
@@ -532,24 +531,23 @@ class Parser {
 
             let procedure = searchProcedureResults[0];
 
-            let procedureCallStackItem = {};
-            procedureCallStackItem["name"] = procedure.name;
-
-            let values = [];
-            procedure.parameters.forEach(p => {
-                let value = {
-                    parameterName: p,
-                    parameterValue: this.getExpression()
-                };
-                values.push(value);
+            let assignedParameters = [];
+            procedure.parameters.forEach(parameter => {
+                assignedParameters.push({
+                    name: parameter,
+                    value: this.getExpression()
+                });
             });
-            procedureCallStackItem["parameters"] = values;
-            procedureCallStackItem["currentTokenIndexBeforeJumpingToProcedure"] = this.currentTokenIndex;
+
+            let procedureCallStackItem = {
+                name : procedure.name,
+                parameters: assignedParameters,
+                procedureCallLastTokenIndex: this.currentTokenIndex
+            };
 
             this.procedureCallStack.push(procedureCallStackItem);
-            let indexBeforeFirstTokenInsideProcedure = procedure.firstTokenInsideProcedureIndex - 1;
 
-            this.setCurrentTokenIndex(indexBeforeFirstTokenInsideProcedure); // So in the next getNextToken we have the first token inside the procedure
+            this.setCurrentTokenIndex(procedure.procedureDefinitionLastTokenIndex);
         }
     }
     setCurrentTokenIndex(index) {
@@ -584,7 +582,7 @@ class Token {
 
 class Tokenizer {
     LF = "\n";
-    EOF = "\0";
+    NUL = "\0";
     VARIABLE_PREFIX = ":";
     constructor(primitiveAliases = []) {
         this.aliases = this.populatePrimitiveAliasesDictionary(primitiveAliases);
@@ -594,7 +592,7 @@ class Tokenizer {
         if (this.currentIndex < this.script.length) {
             this.currentCharacter = this.script[this.currentIndex];
         } else {
-            this.currentCharacter = this.EOF;
+            this.currentCharacter = this.NUL;
         }
         //console.log(`Current character: ${this.currentIndex.toString().padStart(2, '0')} - ${this.currentCharacter}`);
     }
@@ -622,7 +620,7 @@ class Tokenizer {
         return this.delimiters.indexOf(c) !== -1;
     }
     isEndOfFile(c) {
-        return c === this.EOF;
+        return c === this.NUL;
     }
     isLetter(c) {
         return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".indexOf(c) !== -1;
@@ -648,7 +646,7 @@ class Tokenizer {
         });
         return dictionary;
       }
-    putbackCharacter() {
+    putBackCharacter() {
         this.currentIndex--;
         this.currentCharacter = this.script[this.currentIndex];
     }
@@ -662,7 +660,7 @@ class Tokenizer {
                 while (this.isWhiteSpace(this.currentCharacter)) {
                     this.getNextCharacter();
                 }
-                this.putbackCharacter();
+                this.putBackCharacter();
             } else if (this.isNewLine(this.currentCharacter)) {
                 let token = new Token(this.currentIndex, this.currentCharacter, logo.tokenizer.tokenTypes.DELIMITER);
                 this.tokens.push(token);
@@ -679,7 +677,7 @@ class Tokenizer {
                 }
                 let token = new Token(startIndex, number, logo.tokenizer.tokenTypes.NUMBER);
                 this.tokens.push(token);
-                this.putbackCharacter();
+                this.putBackCharacter();
             } else if (this.isLetter(this.currentCharacter)) {
                 let word = this.currentCharacter;
                 let startIndex = this.currentIndex;
@@ -688,7 +686,7 @@ class Tokenizer {
                     word += this.currentCharacter;
                     this.getNextCharacter();
                 }
-                this.putbackCharacter();
+                this.putBackCharacter();
                 let primitive = this.getPrimitive(word);
                 if (primitive === logo.tokenizer.primitives.NONE) {
                     let token = new Token(startIndex, word, logo.tokenizer.tokenTypes.PROCEDURE_NAME, primitive);
@@ -705,7 +703,7 @@ class Tokenizer {
                     variable += this.currentCharacter;
                     this.getNextCharacter();
                 }
-                this.putbackCharacter();
+                this.putBackCharacter();
                 let token = new Token(startIndex, variable, logo.tokenizer.tokenTypes.VARIABLE);
                 this.tokens.push(token);
             } else {
