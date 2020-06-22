@@ -50,8 +50,11 @@ to square :side
 end
 square 60
 ```
+
 With this we can create any procedure and reuse it.
+
 ### A spiral
+
 ```
 to spiral :side
   fd :side rt 90
@@ -59,8 +62,11 @@ to spiral :side
 end
 spiral 10
 ```
+
 With this I can learn how to use expressions, since we call recursively the spiral with a different value every time.
+
 ### A tree
+
 ```
 to  tree :length
   if :length < 15 [stop]
