@@ -5,7 +5,7 @@ permalink: /part9/
 ---
 # Your wish is my command (or my procedure)
 
-In the previous part we refactored the code for the tokenizer so now we can accept that the brackets are "touching" another tokens like in `repeat 4 [fd 60 rt 90]`. In this part we are going to be able to create a procedure and call it as many times as we want, for example: (TODO REF to index.md)
+In the previous part we refactored the code for the tokenizer so now we can accept that the brackets can "touch" another tokens like in `repeat 4 [fd 60 rt 90]`. In this part we are going to be able to create a procedure and call it as many times as we want, for example: (TODO REF to index.md)
 
 ```
 to square :side
@@ -18,7 +18,7 @@ In this case we will define a square and by calling it with a parameter the squa
 
 A procedure starts with the primitive `to` and end with the primitive `end`. 
 
-The primitive `to` must be followed by the name of the procedure and after that a list of parameters (variables) starting with `:` or no parameters at all. The rest until `end` is content of the procedure.
+The primitive `to` must be followed by the name of the procedure and after that a list of parameters (variables) starting with `:` or no parameters at all. The rest until `end` is the body of the procedure.
 
 Let's try to identify first the two new primitives, `to` and `end`. For that we would need to test the tokenizer, so it is a pity that I deleted the example we had in the previous part (TODO link) but we can do that again easily. Even better, we will use the editor box in the UI that it is used by the interpreter and we comment out the initialization of the parser, this way we will only do the tokenizer. So in the interpreter instead of having:
 
@@ -56,16 +56,16 @@ When we try to run it, we get an `Out of memory` message. Let's take a look at t
 
 The last four lines of the log before crashing were:
 
-```javascript
+```
 logo.js:271 	Current character: 52 -  
 logo.js:271 	Current character: 53 - 6
 logo.js:303 Processing number starting with: 6
 logo.js:271 	Current character: 54 - 0
 ```
 
-So the issue seems to be int he character 54 which is a 0. As it happens this is the last character that I can see in the script, so the problem must be when getting the next character and checking if it is a number. If we add a `console.log("check is number");` inside `isNumber()` method we will see that that's the culprit, we entered an endless loop in `isNumber()`. But what could have happened?
+So the issue seems to be int he character 54 which is a 0. As it happens this is the last character that I can see in the script, so the problem must be when getting the next character and checking if it is a number. If we add a `console.log("check is number");` inside `isNumber()` method we will see that that's the culprit, we entered an infinite loop in `isNumber()`. But what could have happened?
 
-Well, actually the issue is not in `isNumber()`. When we reach the last character and later we call `getNextCharacter()` we have only defined when the character is in the defined range, but we haven't done anything if we are out of that range. When we are in the last character the next one is out of the stream of characters so we don't do anything and effectively the `this.currentCharacter` doesn't change because it was changed inside the `if`. Let's show again what we do in `getNextCharacter()`:
+Well, actually the issue is not in `isNumber()`. When we reach the last character and later we call `getNextCharacter()` we have only defined when the character is in the defined range but we haven't done anything if we are out of that range. When we are in the last character the next one is out of the stream of characters so we don't do anything and effectively the `this.currentCharacter` doesn't change because it was changed inside the `if`. Let's show again what we do in `getNextCharacter()`:
 
 ```javascript
 getNextCharacter() {
@@ -77,9 +77,9 @@ getNextCharacter() {
 }
 ```
 
-So in our `while-loop` when we say "get numbers until you find something that it is not a number" the loop keeps receiving the last number shown (0) validating the condition and checking for even more numbers (...that it never happened) so here is our endless loop that crashes the browser.
+So in our while-loop when we say "get numbers until you find something that it is not a number" the loop keeps receiving the last number shown (0) validating the condition and checking for even more numbers (...that it never happened). Here is our infinite loop that crashes the browser.
 
-We need to find a way to signal that if we are over the last character allowed we should stop. We can think of having some boolean class property like `hasToStop`, and that would be fine, but we would need to add it to every single `while-loop` inside the big do-while loop, for example:
+We need to find a way to signal that if we are over the last character allowed we should stop. We can think of having some boolean class property like `hasToStop`, and that would be fine, but we would need to add it to every single while-loop inside the big do-while loop, for example:
 
 ```javascript
 while (this.isNumber(this.currentCharacter) && !this.hasToStop) {
@@ -88,11 +88,13 @@ while (this.isNumber(this.currentCharacter) && !this.hasToStop) {
 }
 ```
 
-so as soon has we raise the `hasToStop` flag the condition in the while-loop will be false and we will stop it. And we will need to do the same in the `while` for the `do-while`. The issue I have with this is that it will be easier to forget adding this extra condition to every loop that can go "endless". There is an easier way and that's to have a special character that will determine the end of the string, something that doesn't appear in the text itself. This problem has been sorted long time ago with the [null terminated strings](https://en.wikipedia.org/wiki/Null-terminated_string) over 50 years ago. We just need `getNextCharacter()` to return a `NUL` character (value 0 in ASCII) and we will stop.
+so as soon as we raise the `hasToStop` flag, the condition in the while-loop will be false and we will stop it.
 
-In the example above with the `while-loop` for number, because `0` is not a number the loop will stop and we don't need to keep adding an extra condition like `&& !this.hasToStop`.
+We will need to do the same in the `while` for the do-while loop. The issue I have with this is that it will be easier to forget adding this extra condition to every loop that can go "endless". There is an easier way and that's to have a special character that will determine the end of the string, something that doesn't appear in the text itself. This problem has been sorted over 50 years ago with the [null terminated strings](https://en.wikipedia.org/wiki/Null-terminated_string). We just need `getNextCharacter()` to return a `NUL` character (value 0 in ASCII) and we will stop.
 
-So we define our special character at the beginning in the tokenizer (TODO check that it shows correctly \ 0). Note that this can cause issues with UTF-8 but since we are focused for simplicity in the latin alphabet that won't be an issue.
+In the example above with the while-loop for number because `0` is not a number the loop will stop and we don't need to keep adding an extra condition like `&& !this.hasToStop`.
+
+So we define our special character at the beginning in the tokenizer. Note that this can cause issues with UTF-8 but since we are focused for simplicity in the latin alphabet that won't be an issue.
 
 ```javascript
 NUL = '\0';
@@ -112,9 +114,9 @@ getNextCharacter() {
 }
 ```
 
-we don't worry about the index because in the code we never manipulate the index on its own, only in `getNextCharacter()` and in the do-while-loop condition, and we just need a way to "escape" the do-while-loop.
+we don't worry about the index because in the code we never manipulate the index on its own, only in `getNextCharacter()` and in the do-while loop condition, and we just need a way to "escape" the do-while-loop.
 
-and the condition in the do-while-loop will change from:
+and the condition in the do-while loop will change from:
 
 ```javascript
 while (this.currentIndex < this.lastCharacterIndex)
@@ -181,7 +183,8 @@ case primitives.TO:
 case lprimitives.END:
   this.execute_end();
   break;
-`
+```
+
 and
 
 ```javascript
@@ -208,7 +211,7 @@ Do we need to do anything in the tokenizer? nope, because we didn't hardcode the
 [object Token "60" - NUMBER - {NONE}]
 ```
 
-There are two things that we still don't recognize: the name of a procedure (in our case `square`) and the name of the variable (`:side`). As usual, let's get out of the way the easy one, on this case the name of the procedure.
+There are two things that we still don't recognize: the name of a procedure (in our case `square`) and the name of the variable (`:side`). As usual, let's get out of the way the easy one, in this case the name of the procedure.
 
 Remember our code for the tokenizer, where we check if a "word" is a primitive or not? that's the place where we will check that, if something is not a primitive, it must be the name of a procedure. That's it. I know that this can be made better if we check that the procedure really exist. For example, this will look ok to the tokenizer:
 
@@ -293,7 +296,7 @@ It doesn't require a primitive alias because it is not a primitive. Also we won'
 VARIABLE_PREFIX = ":";
 ```
 
-and the same way we check is something `isNumber()` or `isLetter()` we can check if a character is `isVariablePrefix()`:
+and the same way we check if something `isNumber()` or `isLetter()` we can check if a character is `isVariablePrefix()`:
 
 ```javascript
 isVariablePrefix(c) {
@@ -303,7 +306,7 @@ isVariablePrefix(c) {
 
 where do we do the check in the tokenizer loop? it really doesn't matter because the loop is just a big if-else so if something is not caught in the net for delimiters, numbers or letters it will fall into the new "net" for variable prefix. It would be different if instead of a big if-else we do `if` after `if` (an issue I originally had). We will put it as another `else` after `isLetter()`.
 
-We can do some clever logic to say "when you find `:` loop again and you will find a "word" and that would be the name of the variable. I am not trying to be clever, but write code that it is easy to read and modify, so in this particular case we will duplicate the code we had to find a "word" inside the `isVariablePrefix()` block. The whole block is now:
+We can do some clever logic to say "when you find `:` loop again and you will find a "word" that would be the name of the variable. I am not trying to be clever but tobwrite code that it is easy to read and modify, so in this particular case we will duplicate the code we had to find a "word" inside the `isVariablePrefix()` block. The whole block is now:
 
 ```javascript
 else if (this.isVariablePrefix(this.currentCharacter)) {
@@ -342,7 +345,7 @@ where we need to do an extra `getNextCharacter()` because the first character is
 
 ## Defining procedures
 
-Since we have all the tokens ready, it is time we can work on the parser, which is the part of the code that would make sense of the tokens. We have created already two stub methods to deal with `to` and `end`, that is, `execute_to()` and `execute_end()`. Before that we comment out the line in Interpreter we commented before for our tokenizer tests.
+Since we have all the tokens ready it is time we can work on the parser, which is the part of the code that would make sense of the tokens. We have created already two stub methods to deal with `to` and `end`, that is, `execute_to()` and `execute_end()`. Before that we comment out the line in Interpreter we commented before for our tokenizer tests so our interpreter will work again.
 
 For future reuse we need to be able to hold a list of procedures so when we need to call one we can point the current index inside, very similar to how we did with the loops. In fact, it is almost the same idea, when finding a procedure we save the procedure details (name, arguments and current index) and we don't do anything with the rest of the procedure until we hit `end` (because we are not executing it).
 
@@ -394,11 +397,11 @@ execute_to() {
 
 Nothing new, as it is similar to the while loops in tokenizer. My guess is that we will need to put back the last token as we did in tokenizer with the last character but we will see. In the logs we get:
 
-```javascript
+```
 Uncaught TypeError: Cannot read property 'remainingLoops' of undefined
 ```
 
-Great. This must be because we are reading the `repeat` token that is the next after the only parameter `:side` and when reaching the opening brackets in the loop, because we haven't defined the loop, it complains. However when we check the logs and try to find our procedure, we see
+Great. This must be because we are reading the `repeat` token that is the next after the only parameter `:side` and when reaching the opening brackets in the loop because we haven't defined the loop, it complains. However when we check the logs and try to find our procedure, we see
 
 ```javascript
 {name: "square", parameters: Array(1)}
@@ -406,7 +409,7 @@ Great. This must be because we are reading the `repeat` token that is the next a
   parameters: [":side"]
 ```
 
-so the code we've done to define the procedure is correct, it is the last `getNextToken()` that messes this up. Before starting coding furiously a `putBackToken()` in the parser, let's take a step back ourselves. The error is because the code tries to run the contents of the procedure. But we don't want the procedure to be run at this moment, only stored for future use when called. Therefore we don't need to act on it, just to move to the `end` token and continue happily from there.
+so the code we've done to define the procedure is correct, it is the last `getNextToken()` that messes this up. Before starting coding furiously a `putBackToken()` in the parser let's take a step back ourselves. The error is because the code tries to run the body of the procedure. But we don't want the procedure to be run at this moment, only stored for future use when called. Therefore we don't need to act on it, just to move to the `end` token and continue happily from there.
 
 Also, as in the `repeat` loop (TODO Reference) we will store the index of the first token that has to be run when running the procedure. As such the whole code for `execute_to()` is:
 
@@ -447,7 +450,7 @@ Note that we haven't done any code yet for `execute_end()`. This is because we d
 
 When we find a procedure name outside of the procedure definition, first we need to check if it is in the procedures list. If it is, we find out how many parameters it has and therefore link the current value when invoking the procedure to the variable name. We may need to get the current position because it is the position we will come back once the procedure is called, like we would do in calling any function in javascript we go, we execute the function and return to the previous position when we call it and go on from there.
 
-Let's catch the procedure name in the parsing loop. For that, since it is not a primitive we will do a new `else` statement. We will try to find out the parameters as well:
+Let's catch the procedure name in the parsing loop. For that since it is not a primitive we will do a new `else` statement. We will try to find out the parameters as well:
 
 ```javascript
 else if (this.currentToken.tokenType === tokenTypes.PROCEDURE_NAME) {
@@ -474,7 +477,7 @@ Found procedure square
 Parameter: :side = 60
 ```
 
-The parameter is currently just text, not a number. The more I look at it the more familiar it gets, have I done this before? yes! when getting the parameter for my `fd`, `rt` and `repeat` primitives! as such we would just need to do for the parameters:
+The parameter is currently just text, not a number. The more I look at the code and the log the more familiar it gets, have I done this before? yes! when getting the parameter for my `fd`, `rt` and `repeat` primitives! as such we would just need to do for the parameters:
 
 ```javascript
 procedure.parameters.forEach(parameter => {
@@ -578,7 +581,9 @@ execute_end() {
 
 We run it and... not much, just the turtle "looking" in 4 directions but without moving. I realized that I missed the code to assign the value of the parameter `:side` so when we do in the procedure `fd :side` the parser doesn't know right now what to do so it won't do anything with `fd` and just rotate to the right 4 times because that's what's inside the `repeat` primitive that the parser can understand.
 
-Where do we assign the variable? there is a place we cal to get the parameter for `repeat`, `fd` and `rt` in the code and that's `getParameter()`. We can extend that to get the value of the variable. So now we have:
+Where do we assign the variable? there is a place we cal to get the parameter for `repeat`, `fd` and `rt` in the code and that's `getParameter()`. We can extend that to get the value of the variable.
+
+Currently we have:
 
 ```javascript
 getParameter() {
@@ -589,7 +594,7 @@ getParameter() {
 }
 ```
 
-and we check only if the token is a number. we will check now as well if it is a variable and get the information from `procedureCallInformation` to see the value
+and we check only if the token is a number. We will check now as well if it is a variable and get the information from `procedureCallInformation` to see the value
 
 ```javascript
 getParameter() {
