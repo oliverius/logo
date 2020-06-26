@@ -213,7 +213,7 @@ class Interpreter {
 }
 
 class Parser {
-    applyArithmeticOperation(operation, result, hold) {
+    getExpression_ApplyArithmeticOperation(operation, result, hold) {
         switch (operation) {
             case logo.tokenizer.delimiters.PLUS:
                 result.value += hold.value;
@@ -344,42 +344,42 @@ class Parser {
         this.putBackToken(); // So the END primitive will be the next one read in the next parsing step and we execute the END primitive code.
     }
     getExpression() {
-        this.getNextToken();
-
         let result = {
             value: 0
         };
+        
+        this.getNextToken();
         this.getExpression_AdditionOrSubtraction(result);
-
         this.putBackToken();
+
         return result.value;
     }
     getExpression_AdditionOrSubtraction(result) {
-        let hold = {
-            value: 0
-        };
         let operation = "";
         this.getExpression_MultiplicationOrDivision(result);
         while (this.currentToken.text === logo.tokenizer.delimiters.PLUS ||
             this.currentToken.text === logo.tokenizer.delimiters.MINUS) {
             operation = this.currentToken.text;
             this.getNextToken();
+            let hold = {
+                value: 0
+            };
             this.getExpression_MultiplicationOrDivision(hold);
-            this.applyArithmeticOperation(operation, result, hold);
+            this.getExpression_ApplyArithmeticOperation(operation, result, hold);
         }
     }
     getExpression_MultiplicationOrDivision(result) {
-        let hold = {
-            value: 0
-        };
         let operation = "";
         this.getNumberOrVariableValue(result);
         while (this.currentToken.text === logo.tokenizer.delimiters.MULTIPLIEDBY ||
             this.currentToken.text === logo.tokenizer.delimiters.DIVIDEDBY) {
             operation = this.currentToken.text;
             this.getNextToken();
+            let hold = {
+                value: 0
+            };
             this.getNumberOrVariableValue(hold);
-            this.applyArithmeticOperation(operation, result, hold);
+            this.getExpression_ApplyArithmeticOperation(operation, result, hold);
         }
     }
     getNextToken() {
