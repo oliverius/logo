@@ -122,7 +122,8 @@ class Interpreter {
         this.turtle = new Turtle(this.canvas);
         this.tokenizer = new Tokenizer(logo.primitiveAliases);
         this.parser = new Parser();
-        this.setEditor(this.getLatestScriptRun());
+        runTokenizerTests(this.tokenizer);
+        this.setEditor(this.getLatestScriptRun());        
         window.addEventListener(logo.parser.errorEvent.name, e => {
             let message = "";
             switch (e.detail.errorCode) {
