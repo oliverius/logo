@@ -18,7 +18,7 @@ function runTokenizerTests() {
           throw `TEST "${comment}": Expected and actual have different number of tokens`;
       }
       let success = expectedTokens.every((expectedToken, index) => assertToken(expectedToken, actualTokens[index]) === true);
-      let testResult = success ? "PASSED" : "FAILED";      
+      let testResult = success ? "PASSED" : "FAILED";
       console.log(`TEST "${comment}": ${testResult}`);
   };
   let lines = (arr) => arr.join('\n');
