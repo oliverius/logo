@@ -122,8 +122,14 @@ class Interpreter {
         this.turtle = new Turtle(this.canvas);
         this.tokenizer = new Tokenizer(logo.primitiveAliases);
         this.parser = new Parser();
+        this.setEditor(this.getLatestScriptRun());
+
         runTokenizerTests(this.tokenizer);
-        this.setEditor(this.getLatestScriptRun());        
+        runParserTests(this.tokenizer, this.parser);
+        
+        this.addEventListeners();
+    }
+    addEventListeners() {
         window.addEventListener(logo.parser.errorEvent.name, e => {
             let message = "";
             switch (e.detail.errorCode) {
@@ -140,31 +146,30 @@ class Interpreter {
             }
         });
         window.addEventListener(logo.parser.turtleDrawingEvent.name, e => {
-            let turtleMethodName = "";
+            let arg = e.detail.arg;
             switch (e.detail.primitive) {
                 case logo.tokenizer.primitives.FORWARD:
-                    turtleMethodName = "execute_forward";
+                    this.turtle.execute_forward(arg);
                     break;
                 case logo.tokenizer.primitives.BACK:
-                    turtleMethodName = "execute_back";
+                    this.turtle.execute_back(arg);
                     break;
                 case logo.tokenizer.primitives.LEFT:
-                    turtleMethodName = "execute_left";
+                    this.turtle.execute_left(arg);
                     break;
                 case logo.tokenizer.primitives.RIGHT:
-                    turtleMethodName = "execute_right";
+                    this.turtle.execute_right(arg);
                     break;
                 case logo.tokenizer.primitives.PENUP:
-                    turtleMethodName = "execute_penup";
+                    this.turtle.execute_penup();
                     break;
                 case logo.tokenizer.primitives.PENDOWN:
-                    turtleMethodName = "execute_pendown";
+                    this.turtle.execute_pendown();
                     break;
                 case logo.tokenizer.primitives.CLEARSCREEN:
-                    turtleMethodName = "execute_clearscreen";
+                    this.turtle.execute_clearscreen();
                     break;
             }
-            this.turtle[turtleMethodName](e.detail.arg);
         });
     }
     clear() {
@@ -214,23 +219,6 @@ class Interpreter {
 }
 
 class Parser {
-    getExpression_ApplyArithmeticOperation(operation, result, hold) {
-        switch (operation) {
-            case logo.tokenizer.delimiters.PLUS:
-                result.value += hold.value;
-                break;
-            case logo.tokenizer.delimiters.MINUS:
-                result.value -= hold.value;
-                break;
-            case logo.tokenizer.delimiters.MULTIPLIEDBY:
-                result.value *= hold.value;
-                break;
-            case logo.tokenizer.delimiters.DIVIDEDBY:
-                result.value /= hold.value;
-            default:
-                break; // TODO will be an error
-        }
-    }
     assignVariable(variableName) {
         let item = this.peekLastProcedureCallStackItem();
         let parameters = item.parameters;
@@ -369,9 +357,26 @@ class Parser {
             this.getExpression_ApplyArithmeticOperation(operation, result, hold);
         }
     }
+    getExpression_ApplyArithmeticOperation(operation, result, hold) {
+        switch (operation) {
+            case logo.tokenizer.delimiters.PLUS:
+                result.value += hold.value;
+                break;
+            case logo.tokenizer.delimiters.MINUS:
+                result.value -= hold.value;
+                break;
+            case logo.tokenizer.delimiters.MULTIPLIEDBY:
+                result.value *= hold.value;
+                break;
+            case logo.tokenizer.delimiters.DIVIDEDBY:
+                result.value /= hold.value;
+            default:
+                break; // TODO will be an error
+        }
+    }
     getExpression_MultiplicationOrDivision(result) {
         let operation = "";
-        this.getNumberOrVariableValue(result);
+        this.getExpression_NumberOrVariableValue(result);
         while (this.currentToken.text === logo.tokenizer.delimiters.MULTIPLIEDBY ||
             this.currentToken.text === logo.tokenizer.delimiters.DIVIDEDBY) {
             operation = this.currentToken.text;
@@ -379,20 +384,11 @@ class Parser {
             let hold = {
                 value: 0
             };
-            this.getNumberOrVariableValue(hold);
+            this.getExpression_NumberOrVariableValue(hold);
             this.getExpression_ApplyArithmeticOperation(operation, result, hold);
         }
     }
-    getNextToken() {
-        this.currentTokenIndex++;
-        if (this.currentTokenIndex < this.tokens.length) {
-            this.currentToken = this.tokens[this.currentTokenIndex];
-            console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
-        } else {
-            this.currentToken = new Token(this.currentTokenIndex, "", logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM);
-        }
-    }
-    getNumberOrVariableValue(result) {
+    getExpression_NumberOrVariableValue(result) {
         switch (this.currentToken.tokenType) {
             case logo.tokenizer.tokenTypes.NUMBER:
                 result.value = parseInt(this.currentToken.text);
@@ -407,7 +403,16 @@ class Parser {
                 break;
         }
     }
-    parse(tokens) {
+    getNextToken() {
+        this.currentTokenIndex++;
+        if (this.currentTokenIndex < this.tokens.length) {
+            this.currentToken = this.tokens[this.currentTokenIndex];
+            console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
+        } else {
+            this.currentToken = new Token(this.currentTokenIndex, "", logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM);
+        }
+    }
+    initializeParsing(tokens = []) {
         this.tokens = tokens;
         this.currentToken = {};
         this.currentTokenIndex = -1; // So when we get the first token, it will be 0, first index in an array.
@@ -415,6 +420,9 @@ class Parser {
         this.procedures = [];
         this.procedureCallStack = [];
         this.stopParsingRequested = false;
+    }
+    parse(tokens) {
+        this.initializeParsing(tokens);        
 
         this.raiseStatusEvent(logo.parser.statusEvent.values.START_PARSING);
 
