@@ -19,12 +19,12 @@
 # in the templates via {{ site.myvariable }}.
 
 title: Logo interpreter (turtle graphics) in vanilla javascript
-email: your-email@example.com
+email: oliverius@outlook.com
 description: >- # this means to ignore newlines until "baseurl:"
   Logo interpreter (turtle graphics) in vanilla javascript. In English and Spanish.
 baseurl: "" # the subpath of your site, e.g. /blog
-url: " https://oliverius.github.io/logo/" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: olivkan
+url: "https://oliverius.github.io/logo/" # the base hostname & protocol for your site, e.g. http://example.com
+twitter_username: ""
 github_username:  oliverius
 
 # Build settings
