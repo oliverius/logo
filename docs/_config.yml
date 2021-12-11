@@ -32,6 +32,24 @@ theme: minima
 plugins:
   #- jekyll-feed
 
+# https://github.com/jekyll/minima#customize-navigation-links
+# This will respect the right order for the tutorial
+header_pages:
+  - index.md
+  - part1.md
+  - part2.md
+  - part3.md
+  - part4.md
+  - part5.md
+  - part6.md
+  - part7.md
+  - part8.md
+  - part9.md
+  - part10.md
+  - part11.md
+  - part12.md
+  - part13.md
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
