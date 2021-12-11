@@ -1,5 +1,5 @@
 ---
-#layout: home
+layout: home
 ---
 ## What this project does
 This project creates a simple user interface for running [LOGO](https://en.wikipedia.org/wiki/Logo_(programming_language)) scripts (only the turtle graphics) with some examples built-in and the possibility to switch between English and Spanish.
