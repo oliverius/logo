@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Part 10
+title: [10]
 permalink: /part10/
 ---
 # Going for a spiral and ending with a little rocket

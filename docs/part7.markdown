@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Part 7
+title: [7]
 permalink: /part7/
 ---
 # Adding a few more primitives and sorting out nested loops

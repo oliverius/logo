@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Part 12
+title: [12]
 permalink: /part12/
 ---
 # Test, love and rock'n'roll

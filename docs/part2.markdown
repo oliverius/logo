@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Part 2
+title: [2]
 permalink: /part2/
 ---
 # Poor man's tokenizer

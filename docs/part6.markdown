@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Part 6
+title: [6]
 permalink: /part6/
 ---
 # Dude, where is my turtle?

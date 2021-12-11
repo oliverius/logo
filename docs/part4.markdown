@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Part 4
+title: [4]
 permalink: /part4/
 ---
 # Palate cleanser, some refactoring before playing with the turtle

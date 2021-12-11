@@ -1,17 +1,12 @@
 ---
 layout: page
-title: Part 1
+title: [1]
 permalink: /part1/
 ---
 # Project file structure
 If you know the typical folder structure of a project, you can skip this part and move to part 2.
 
-```
-
-
-
-
-```
+...
 
 Ok, are you still with me? good!
 
