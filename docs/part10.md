@@ -3,11 +3,11 @@ layout: page
 title: [10]
 permalink: /part10/
 ---
-# Going for a spiral and ending with a little rocket
+## Going for a spiral and ending with a little rocket
 
-In the previous (long) part (TODO reference) we learned how to create a procedure with parameters and how to use the parameters to move the turtle forward.
+In the previous (long) [part](/logo/part9) we learned how to create a procedure with parameters and how to use the parameters to move the turtle forward.
 
-The next example we wanted to conquer in (TODO ref. to index) is a spiral with straight lines where instead of doing a square each side of the square is slightly bigger than the previous one. With the current code we can do it manually, something like this:
+The next example we wanted to conquer in the scope we gave [at the beginning](/logo/index) is a spiral with straight lines where instead of doing a square each side of the square is slightly bigger than the previous one. With the current code we can do it manually, something like this:
 
 ```
 fd 10 rt 90
@@ -37,7 +37,7 @@ end
 spiral 10
 ```
 
-This example won't stop it will continue drawing but we will deal with that problem later, for now we will worry on how to make recursion work, and once we have the recursion sorted out we will worry about having parameters that take instead of a value `:side` they take an expression like `:side + 3`.
+This example won't stop it, will continue drawing but we will deal with that problem later, for now we will worry on how to make recursion work, and once we have the recursion sorted out we will worry about having parameters that take instead of a value `:side`, they take an expression like `:side + 3`.
 
 ## Inception
 
@@ -92,7 +92,7 @@ Basically, since we entered an infinite loop processing the tokens the browser n
 1. Try to refactor so we don't block the javascript thread.
 2. Use [web workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers) that have their own thread for either parsing or doing the graphics.
 
-As a developer using web workers seems very exciting and full of possibilities... and headaches. I have a problem with web workers and it is the same I have with regex (TODO ref. to previous part). Just because you can, doesn't mean you should. We need to remember that our project is a simple one and we won't require much interactivity apart from pressing some buttons and see the graphics, we don't need to run anything intensive in the background (think about image processing for example) so when possible we need to find an alternative.
+As a developer using web workers seems very exciting and full of possibilities... and headaches. I have a problem with web workers and it is the same I have with regex. Just because you can, doesn't mean you should. We need to remember that our project is a simple one and we won't require much interactivity apart from pressing some buttons and see the graphics, we don't need to run anything intensive in the background (think about image processing for example) so when possible we need to find an alternative.
 
 So the issue here is that the array of tokens is never finished because we enter an infinite loop. What if we don't have a loop and instead we call the body of the do-while loop with a clock, similar to how we do the graphics queue? What's more, why would you have two clocks when you can draw directly with every clock tick without even having a queue? Let's not go ahead of ourselves and refactor the do-while loop first.
 
@@ -220,7 +220,7 @@ And... there it goes, like a little rocket going to the sky (very slowly though)
 
 ![Recursive line going up](/img/part10_recursive_line.gif)
 
-## Refactoring or new functinality. Refactoring
+## Refactoring or new functionality. Refactoring
 
 The next step is clear, let's try to create the spiral. However I feel that it is more important to deal with the a few things that are annoying me:
 
@@ -228,7 +228,7 @@ The next step is clear, let's try to create the spiral. However I feel that it i
 2. The script window is really small and it bothers me copy and paste to run new scripts
 3. Now that I have the chance I want to get rid of the turtle queue.
 
-So I think we need to hold our breath and "do what we have to do first" so we can focus completely in the expression parser in the next part (TODO link) which will be quite interesting because it is the basis for writing our own calculator!
+So I think we need to hold our breath and "do what we have to do first" so we can focus completely in the expression parser in the next part which will be quite interesting because it is the basis for writing our own calculator!
 
 ### Can't stop a recursive script
 
@@ -298,7 +298,7 @@ so issue number 2 also sorted.
 
 ### Refactoring the graphics queue
 
-The final task I wanted to do before we move to getting the spiral working is to get rid of the graphics queue. I know I was proud before for decoupling the parsing loop from the turtle but I think it is important to get rid of the graphics queue because it simplifies the code. How can we reach a compromise and not adding the turtle back the parsing loop? the easiest way is to pass the parameters that we were sending to the graphics queue directly to the `draw()` method, so instead of
+The final task I wanted to do before we move to getting the spiral working is to get rid of the graphics queue. I know I was proud before for decoupling the parsing loop from the turtle but I think it is important to get rid of the graphics queue because it simplifies the code. How can we reach a compromise and not adding the turtle back to the parsing loop? the easiest way is to pass the parameters that we were sending to the graphics queue directly to the `draw()` method, so instead of
 
 ```javascript
 draw() {}
@@ -380,7 +380,7 @@ draw(primitive = primitives.NONE, parameter = 0) {
 }
 ```
 
-finally we get rid of the like `this.draw();` inside `startClock()` because the logic is now in parsing step. Our square will look like:
+finally we get rid of the like `this.draw();` inside `startClock()` because the logic is now in the parsing step. Our square will look like:
 
 ![Square after refactoring and removing graphics queue](/img/part10_square_no_graphics_queue.gif)
 
@@ -389,3 +389,5 @@ Note that there is a delay at the beginning that we didn't have before with the 
 Finally (yes, I know I said it before but this is the final comment in this part) we will see how we can stop our "rocket" from getting too high when pressing `stop`:
 
 ![Line with infinite loop stopped by button Stop](/img/part10_recursive_line_stop_button.gif)
+
+In the [next part](/logo/part11) we will deal with an expression parser a.k.a. calculator, which is needed when dealing with arguments that require some math, like adding two values together.

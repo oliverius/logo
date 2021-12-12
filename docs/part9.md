@@ -3,9 +3,9 @@ layout: page
 title: [9]
 permalink: /part9/
 ---
-# Your wish is my command (or my procedure)
+## Your wish is my command (or my procedure)
 
-In the previous part we refactored the code for the tokenizer so now we can accept that the brackets can "touch" another tokens like in `repeat 4 [fd 60 rt 90]`. In this part we are going to be able to create a procedure and call it as many times as we want, for example: (TODO REF to index.md)
+In the [previous part](/logo/part8) we refactored the code for the tokenizer so now we can accept that the brackets can "touch" another tokens like in `repeat 4 [fd 60 rt 90]`. In this part we are going to be able to create a procedure and call it as many times as we want; if we refer to the second example in the [scope we did previously](/logo/index).
 
 ```
 to square :side
@@ -20,7 +20,9 @@ A procedure starts with the primitive `to` and end with the primitive `end`.
 
 The primitive `to` must be followed by the name of the procedure and after that a list of parameters (variables) starting with `:` or no parameters at all. The rest until `end` is the body of the procedure.
 
-Let's try to identify first the two new primitives, `to` and `end`. For that we would need to test the tokenizer, so it is a pity that I deleted the example we had in the previous part (TODO link) but we can do that again easily. Even better, we will use the editor box in the UI that it is used by the interpreter and we comment out the initialization of the parser, this way we will only do the tokenizer. So in the interpreter instead of having:
+Let's try to identify first the two new primitives, `to` and `end`. For that we would need to test the tokenizer, so it is a pity that I deleted the example we had in the [previous part](/logo/part8) but we can do that again easily. Even better, we will use the editor box in the UI that it is used by the interpreter and we comment out the initialization of the parser, this way we will only do the tokenizer.
+
+So in the interpreter instead of having:
 
 ```javascript
 run() {
@@ -52,7 +54,7 @@ end
 square 60</textarea>
 ```
 
-When we try to run it, we get an `Out of memory` message. Let's take a look at the log, since we haven't removed any of the log messages from the previous part (TODO link)
+When we try to run it, we get an `Out of memory` message. Let's take a look at the log, since we haven't removed any of the log messages from the previous part.
 
 The last four lines of the log before crashing were:
 
@@ -63,7 +65,7 @@ logo.js:303 Processing number starting with: 6
 logo.js:271 	Current character: 54 - 0
 ```
 
-So the issue seems to be int he character 54 which is a 0. As it happens this is the last character that I can see in the script, so the problem must be when getting the next character and checking if it is a number. If we add a `console.log("check is number");` inside `isNumber()` method we will see that that's the culprit, we entered an infinite loop in `isNumber()`. But what could have happened?
+So the issue seems to be in the character 54 which is a 0. As it happens this is the last character that I can see in the script, so the problem must be when getting the next character and checking if it is a number. If we add a `console.log("check is number");` inside `isNumber()` method we will see that that's the culprit, we entered an infinite loop in `isNumber()`. But what could have happened?
 
 Well, actually the issue is not in `isNumber()`. When we reach the last character and later we call `getNextCharacter()` we have only defined when the character is in the defined range but we haven't done anything if we are out of that range. When we are in the last character the next one is out of the stream of characters so we don't do anything and effectively the `this.currentCharacter` doesn't change because it was changed inside the `if`. Let's show again what we do in `getNextCharacter()`:
 
@@ -411,7 +413,7 @@ Great. This must be because we are reading the `repeat` token that is the next a
 
 so the code we've done to define the procedure is correct, it is the last `getNextToken()` that messes this up. Before starting coding furiously a `putBackToken()` in the parser let's take a step back ourselves. The error is because the code tries to run the body of the procedure. But we don't want the procedure to be run at this moment, only stored for future use when called. Therefore we don't need to act on it, just to move to the `end` token and continue happily from there.
 
-Also, as in the `repeat` loop (TODO Reference) we will store the index of the first token that has to be run when running the procedure. As such the whole code for `execute_to()` is:
+Also, as in the `repeat` loop in [part 3](/logo/part3) we will store the index of the first token that has to be run when running the procedure. As such the whole code for `execute_to()` is:
 
 ```javascript
 execute_to() {
@@ -533,7 +535,7 @@ Found procedure square
 
 We see that the `currentTokenIndexBeforeCallingProcedure` is not something after the token `60`, I would assume that I return to the token after that i.e. 14 isntead of 13. However there is no token 14, `60` is the last one and if we put 14 we would get an error. Also keeping the token 13 makes sense because in the next parsing step in the parsing loop we will find out that there is no token 13 + 1 = 14 and stop the program. Perhaps `procedureCallLastTokenIndex` would make more sense because 13 is the last token of the procedure call `square 60`, so we will do that.
 
-Now that the procedure call is defined, we just need to point the current index to the first item inside the procedure call. Really? no, it should be the one before that, the last token index of the procedure definition (TODO check if better call it definition or signature https://developer.mozilla.org/en-US/docs/Glossary/Signature/Function#:~:text=A%20function%20signature%20(or%20type,a%20return%20value%20and%20type), because in the next parsing step we are going to do `getNextToken()` and we will dive into the first token inside the procedure.
+Now that the procedure call is defined, we just need to point the current index to the first item inside the procedure call. Really? no, it should be the one before that, the last token index of the procedure definition [(or signature function)](https://developer.mozilla.org/en-US/docs/Glossary/Signature/Function), because in the next parsing step we are going to do `getNextToken()` and we will dive into the first token inside the procedure.
 
 Before I move the index there, I need to fix what's going on when we reach the `end` primitive. If I don't do anything we will get an infinite loop because after we run what's inside the procedure we will call again `square 60` that will trigger again moving inside the procedure and so on. So the minimum we can do is when we reach `end` we move the index back to `procedureCallLastTokenIndex` and hope that it works the first time.
 
@@ -581,7 +583,7 @@ execute_end() {
 
 We run it and... not much, just the turtle "looking" in 4 directions but without moving. I realized that I missed the code to assign the value of the parameter `:side` so when we do in the procedure `fd :side` the parser doesn't know right now what to do so it won't do anything with `fd` and just rotate to the right 4 times because that's what's inside the `repeat` primitive that the parser can understand.
 
-Where do we assign the variable? there is a place we cal to get the parameter for `repeat`, `fd` and `rt` in the code and that's `getParameter()`. We can extend that to get the value of the variable.
+Where do we assign the variable? there is a place we call to get the parameter for `repeat`, `fd` and `rt` in the code and that's `getParameter()`. We can extend that to get the value of the variable.
 
 Currently we have:
 
@@ -614,3 +616,5 @@ getParameter() {
 Without any error handling, as usual. With this when we run it we succeed and we can finally see or square again!
 
 ![Square drawm from procedure](/img/part9_square_from_procedure.gif)
+
+In the [next part](/logo/part10) we will deal with recursivity drawing some spirals (and stopping them!)

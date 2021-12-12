@@ -17,7 +17,7 @@ This was helpful for us because we didn't have to get dirty with the tokenizer f
 
 `repeat 4 [fd 60 rt 90]`
 
-for cases like that we can do a manual tokenizer where we check each character and as such we build the tokens one character at a time. This is the approach from Tiny Basic (TODO reference), the example that we've been following to build our LOGO interpreter.
+for cases like that we can do a manual tokenizer where we check each character and as such we build the tokens one character at a time. This is the approach from Small BASIC, the example that we've been following to build our LOGO interpreter.
 
 Do we need to get rid of the previous tokenizer? yes, but not right away. We will "clone it" and build it slowly, kind of like in [Invasion of the body snatchers](https://en.wikipedia.org/wiki/Invasion_of_the_Body_Snatchers_(1978_film)) and when we are ready we do the "switcheroo".
 
@@ -55,7 +55,7 @@ and the result:
 [object Token "]" - DELIMITER - {NONE}]
 ```
 
-if this sounds familiar is because it is similar to what we did in part 2 (TODO link) when we were starting with the poor man's tokenizer. Let's start with this humble beginnings for our new Tokenizer which we will call... Tokenizer2. Disappointed? don't be, this is just some refactoring, we don't need a great deal of soul-searching with the name here because we will do a "switcheroo" with the old tokenizer later on so we keep things simple.
+if this sounds familiar is because it is similar to what we did in [part 2](/logo/part2) when we were starting with the poor man's tokenizer. Let's start with thess humble beginnings for our new Tokenizer which we will call... Tokenizer2. Disappointed? don't be, this is just some refactoring, we don't need a great deal of soul-searching with the name here because we will do a "switcheroo" with the old tokenizer later on so we keep things simple.
 
 So let's start the new tokenizer just with the constructor and stubs for some of the methods:
 
@@ -134,7 +134,7 @@ tokenize(script = "") {
 
 And this will output to the console what we expected:
 
-```javascript
+```
 	Current character: 0 - r
 	Current character: 1 - e
 	Current character: 2 - p
@@ -533,3 +533,5 @@ and we finally get the tokens we expected (with primitives!)
 ```
 
 We just need to get rid of our test with only the new tokenizer, do the "switcheroo" with the previous tokenizer and comment out the lines we commented before (for the interpreter). Done. You've got yourself a better tokenizer (even though it seems a lot of work for nothing it will pay off later on).
+
+And now for the next part, we will start with [our own procedures](/logo/part9).
