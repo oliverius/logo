@@ -31,8 +31,13 @@ Years later I found in a book fair the same book my teacher used and I kept it w
 ## References
 This LOGO intepreter is based on the chapter about language interpreters in Herbert Schildt's "C Power user's guide" from 1988 which I got very cheap second hand. It creates an interpreter of BASIC that he calls "Small BASIC" and even though the book is for C this chapter is quite easy to follow.
 
-This LOGO provides a subset of primitives (only graphical ones). If you are interested in a more complete LOGO in javascript please go to the excellent [jsLogo](https://github.com/inexorabletash/jslogo) project.
+![Herbert Schild's C Power user's guide](/img/index_c_power_users_guide_book.jpg)
 
+Also some of the examples are based on the original LOGO book from my teacher (in Spanish), Logo by sm publishers 1986
+
+![Logo editorial SM](/img/index_logo_book.jpg)
+
+This project provides a subset of primitives (only graphical ones). If you are interested in a more complete LOGO in javascript please go to the excellent [jsLogo](https://github.com/inexorabletash/jslogo) project.
 ## Scope
 From the beginning there were 4 examples that I wanted to be able to run in my project:
 ### A square using REPEAT
@@ -80,8 +85,5 @@ bk 100
 tree 160
 ```
 This will teach us control flow and how to stop a recursive procedure without causing a stack overflow. We will learn more about this later on.
-## Posts
-TODO post links
 
-
-
+And now let's start with the [project file structure](/part1)

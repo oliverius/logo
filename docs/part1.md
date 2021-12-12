@@ -4,13 +4,13 @@ title: [1]
 permalink: /part1/
 ---
 # Project file structure
-If you know the typical folder structure of a project, you can skip this part and move to part 2.
+If you know the typical folder structure of a project, you can skip this part and move to [poor man's tokenizer](/part2) section.
 
 ...
 
 Ok, are you still with me? good!
 
-Let's start with a blank html file that we call `index.html` in the `src` folder; `src` stands for `source` as in *source code* for the project. This is the default convention in most projects in github and has been pretty common since the days of [Unix](https://en.wikipedia.org/wiki/Unix).
+Let's start with a blank html file that we call `index.html` in the `src` folder; `src` stands for `source` as in *source code* for the project. This is the default convention in most projects in github and has been pretty common since the beginning with [Unix](https://en.wikipedia.org/wiki/Unix).
 
 ```html
 <!DOCTYPE html>
@@ -36,8 +36,9 @@ Let's add some javascript to the `<body>` element:
 </body>
 ```
 
-And this will show "Hello" in the browser and "and goodbye" in the console.
+And this will show "**Hello**" in the browser and "**and goodbye**" in the console.
 Some people may wonder why we don't add the script in the `<head>` element. This is because the `html` file is read top-bottom and if we need to reference the [DOM](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Introduction) and the DOM is not ready, our code won't work as expected.
+
 For example, let's say we run some code at startup that gets the value of a `textarea` and spits the value to the console.
 We would expect this to work:
 
@@ -73,7 +74,7 @@ There is an easy way to fix this and it is to run the script after the DOM has b
 </script>
 ```
 
-And we will get the value `Inside` in the console as expected.
+And we will get the value in the console as expected.
 This is similar to what you can see in a lot of [jQuery](https://api.jquery.com/ready/#ready-handler) code, which in our case would be:
 
 ```javascript
@@ -83,7 +84,7 @@ $(function() {
 });
 ```
 
-But since we don't use jQuery we don't need it that way. Also, we just want the code to run from an external javascript file in the future and we don't want to be worried that we waited for the event `window.onload` or not, so the easiest way since the code is read top to bottom is to add to the bottom of the `body` element the code:
+But since we don't use jQuery we don't need it that way. Also, we just want the code to run from an external javascript file in the future and we don't want to be worried that we waited for the event `window.onload` or not, so the easiest way since the code is read top to bottom is to add the script to the bottom of the `body` element:
 
 ```html
 <!DOCTYPE html>
@@ -103,7 +104,7 @@ But since we don't use jQuery we don't need it that way. Also, we just want the 
 </html>
 ```
 
-And we are back in business 👍
+And we are back in business 👍.
 
 We will move that code to a proper javascript file in the `src\js` folder and we replace the script block with:
 
@@ -130,4 +131,6 @@ So next time we run it we should see something like this:
 
 ![Browser screenshot](/img/part1_screenshot.png)
 
-In the next part we will start creating a simple tokenizer to recognize two primitives
+All pretty standard as a web project goes.
+
+In the [next part](/part2) we will start creating a simple tokenizer to recognize two primitives.

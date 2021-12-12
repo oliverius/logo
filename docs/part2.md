@@ -3,8 +3,8 @@ layout: page
 title: [2]
 permalink: /part2/
 ---
-# Poor man's tokenizer
-In the previous part we established the file structure of the project, just a html file, one javascript and one css. We don't use any external library or `node.js`, so everything will be done in the browser and in the console.
+## Poor man's tokenizer
+In the [previous part](/part1) we established the file structure of the project, just a html file, one javascript and one css. We don't use any external library or `node.js`, so everything will be done in the browser and in the console.
 
 So... what's a tokenizer? let's start with what we want to achieve, one step at a time. We want to be able to run this script:
 
@@ -17,7 +17,7 @@ For the computer to understand it, it has to be divided in recognizable chunks (
 So in this example, the tokens would be:
 `repeat` `4` `[` `fd` `60` `rt` `90` `]`
 
-and the program that translates of converting the text into a sequence of tokens is (wait for it) the tokenizer (also known as lexer or scanner) but I prefer the term tokenizer because, well, it creates tokens. For more information, [this article](https://en.wikipedia.org/wiki/Lexical_analysis) gives you a good introduction.
+and the program that translates the text into a sequence of tokens is (wait for it) the tokenizer (also known as lexer or scanner) but I prefer the term tokenizer because, well, it creates tokens. For more information, [this article](https://en.wikipedia.org/wiki/Lexical_analysis) gives you a good introduction.
 
 Since we are going to be working on this example for a while we may as well add it to the `textarea` element, and we remove the "Hello" text because we don't need it anymore:
 
@@ -44,13 +44,13 @@ And we will get the desired result:
 ```
 
 What this regex does is:
-* • Analyze the text inside the textarea (`textarea.value`). This is `repeat 4 [ fd 60 rt 90 ]`
-* • Find all the matches (`g` for global, not only the first one)
-* • The matches are for the regular expression between the two forward slashes, therefore `([^\s]+)`
-* • Whatever we try to match will be saved in an array, hence the brackets. So the expression is now `[^\s]+`.
-* • And that expression means: find any character that is not `^` a space `\s` and it is followed by more characters that are not spaces (i.e. the delimiter is a space)
+* Analyze the text inside the textarea (`textarea.value`). This is `repeat 4 [ fd 60 rt 90 ]`
+* Find all the matches (`g` for global, not only the first one)
+* The matches are for the regular expression between the two forward slashes, therefore `([^\s]+)`
+* Whatever we try to match will be saved in an array, hence the brackets. So the expression is now `[^\s]+`.
+* And that expression means: find any character that is not (`^`) a space (`\s`) and it is followed by more characters that are not spaces (i.e. the delimiter is a space)
 
-But since this is not going to be the final solution, do we need to use regex? My main issue is that when people use regex they tend to try more things with regex even if it is not necessary, and someone will try to solve a problem with a supercomplicated regex that it is difficult to read. Coming from C#, [Jon Skeet has also the same thoughts](https://codeblog.jonskeet.uk/2005/09/21/overuse-of-regular-expressions/)
+But since this is not going to be the final solution, do we need to use regex? My main issue is that when people use regex they tend to try more things with regex even if it is not necessary, and someone will try to solve a problem with a supercomplicated regex that it is difficult to read. Coming from C#, [Jon Skeet has also the same thoughts](https://codeblog.jonskeet.uk/2005/09/21/overuse-of-regular-expressions/).
 
 We will do the simplest possible way for now:
 
@@ -74,13 +74,13 @@ let tokens = tokenizer('myTextarea');
 console.log(tokens);
 ```
 
-and this looks much better since we encapsulate in a function and we don't hardcode the textarea element.
+and this looks much better since we encapsulate it in a function and we don't hardcode the textarea element.
 ## Tokens
 So far we have an array of strings and we want to find out what kind of tokens they are. Let's start looking at what kind of tokens we have in our example:
 
 `repeat` `4` `[` `fd` `60` `rt` `90` `]`
 
-Following Herbert Schild's Tiny basic example (TODO link to index), these can be classified as:
+Following Herbert Schild's Small BASIC code in the book commented in [here](/index), these can be classified as:
 
 Token text | Token type
 ---------- | ----------
@@ -95,8 +95,8 @@ rt | command
 
 and since the commands in LOGO are called **primitives** instead, we will use that word from now on.
 
-How do we encode the token types? if I were working in C# (or even typescript) I would use an **enum**.
-We don't have enums in javascript (and I won't enter the debate as to what is an enum) but we can take a look at how a typescript enum is transpiled to javascript using the [typescript playground](https://www.typescriptlang.org/play/index.html)
+How do we encode the token types? if I were working in C# (or even typescript) we would use an **enum**.
+We don't have enums in javascript (and I won't enter the debate as to what is an enum or not) but we can take a look at how a typescript enum is transpiled to javascript using the [typescript playground](https://www.typescriptlang.org/play/index.html)
 
 ![Typescript playground - enum](/img/part2_typescript_enum_to_javascript.png)
 
@@ -115,7 +115,7 @@ For my enums I always reserve the value `0` for the `NONE` value, i.e. a value t
 
 So now, how do we use the token types? Since now we have classes in javascript, let's create a `Token` class.
 
-If we look at the table before we can see that two properties immediately stand out: text and token type. So our class:
+If we look at the table before we can see that two properties immediately stand out: text and token type. So our class looks like:
 
 ```javascript
 class Token {
@@ -211,7 +211,9 @@ function tokenizer(editorId) {
 ```
 
 As someone can write `REPEAT` or `repeat` (or if you are feeling adventurous a mix like `RePeAt`) we match against the lowercase value.
-So we just need to check the tokens after splitting the text from the editor with spaces and start creating Token objects. In the tokenizer after `IsNumber()`, `IsDelimiter()` and `IsPrimitive()`:
+So we just need to check the tokens after splitting the text from the editor with spaces and start creating Token objects.
+
+In the tokenizer after `IsNumber()`, `IsDelimiter()` and `IsPrimitive()`:
 
 ```javascript
 let editor = document.getElementById(editorId);
@@ -245,6 +247,7 @@ public override string ToString()
 ```
 
 Yes, we can do that in javascript with `get[Symbol.toStringTag]()`
+
 So if we add in the `Token` class:
 
 ```javascript
@@ -261,7 +264,9 @@ So if we change `console.log(tokens)` to `console.log(tokens.toString())` we get
 [object "repeat" - 3],[object "4" - 2],[object "[" - 1],[object "fd" - 3],[object "60" - 2],[object "rt" - 3],[object "90" - 2],[object "]" - 1]
 ```
 
-We can't remove the `object` at the beginning, so this is as good as it gets. But wait a minute, we still have numbers instead of the enum values, and everything appears in one line. Let's focus on the latter. In the console we are not getting the text representation of tokens, we are getting the text representation of an array of tokens, which is different. If we wanted to see the tokens each in one line, instead of `console.log(tokens.toString())` we can do
+We can't remove the `object` at the beginning, so this is as good as it gets. But wait a minute, we still have numbers instead of the enum values, and everything appears in one line. Let's focus on the latter.
+
+In the console we are not getting the text representation of tokens, we are getting the text representation of an array of tokens, which is different. If we wanted to see the tokens each in one line, instead of `console.log(tokens.toString())` we can do
 
 ```javascript
 tokens.forEach(token => console.log(token.toString()));
@@ -289,4 +294,4 @@ where first we get a list of all the keys with `Object.keys(tokenTypes)` and we 
 
 which is exactly what we wanted to have, congratulations. Note that I could have added the code to get the keys somewhere else but since I just want to show the string representation when we convert the Token to string, nowhere else, I decided to use the code only in Token.
 
-In the next part we are going to use this tokenizer inside a parser and we will be able to run this code (in the console) before we start showing the turtle!
+In the [next part](/part3) we are going to use this tokenizer inside a parser and we will be able to run this code (in the console) before we start showing the turtle!

@@ -3,15 +3,20 @@ layout: page
 title: [4]
 permalink: /part4/
 ---
-# Palate cleanser, some refactoring before playing with the turtle
-In the last part we managed to tokenize a expression like this: `repeat 4 [ fd 60 rt 90 ]` and parse it, even if it is only with console.log.
+## Palate cleanser, some refactoring before playing with the turtle
+In the [last part](/part3) we managed to tokenize a expression like this: `repeat 4 [ fd 60 rt 90 ]` and parse them, even if it is only with *console.log*.
 Today we are going to do some refactoring before moving on with the turtle graphics.
-For this article I am trying to redo the project from scratch with the same errors and aha! moments as I experienced before; however in my original project I was so eager to see the turtle in the screen that I created the `canvas` for the graphics very early on and didn't refactor until later. That didn't help much because it created some expectations in what I was doing and set me back a few days (after all, I code only when I have free time and that's not much). So let's get this refactoring out of the way before we go and see how my turtle looks like!.
+
+For this article I am trying to redo the project from scratch with the same errors and "aha!" moments as I experienced before; however in my original project I was so eager to see the turtle in the screen that I created the `canvas` for the graphics very early on and didn't refactor until later. That didn't help much because it created some expectations on what I was doing and set me back a few days (after all, I code only when I have free time and that's not much).
+
+So let's get this refactoring out of the way before we go and see how my turtle looks like!.
 
 Also I will post the code so far at the end of this post because refactoring can get messy and it is difficult to follow up all the little changes.
 
 ## Refactor to get the parameter for different primitives
-The primitive `repeat` requires a further numeric parameter. `fd` as well. And `rt` the same. It will make sense that the code and checks we did in `execute_repeat()` can be done separately and we call `execute_repeat()`, `execute_forward()` and `execute_right()` with a parameter. As such:
+The primitive `repeat` requires a further numeric parameter. `fd` as well. And `rt` the same. It will make sense that the code and checks we did in `execute_repeat()` can be done separately and we call `execute_repeat()`, `execute_forward()` and `execute_right()` with a parameter.
+
+As such:
 
 ```javascript
 getParameter() {
@@ -87,9 +92,9 @@ I want to keep the logic for `repeat` out of the parsing loop, so I had `execute
 ## Tokenizer as a class
 It is becoming obvious that it is easier to deal with classes, although preceding everything with `this` is killing me as I am not used to it in C# where I come from.
 
-So the tokenizer has been refactored to be a class, not a function. This will help when we implement the proper tokenizer and not the simple one we have now (the one I called poor man's tokenizer).
+So the tokenizer has been refactored to be a class, not a function. This will help when we implement the proper tokenizer and not the simple one we have now (the one I called [poor man's tokenizer](/part2)).
 
-I was also not happy having the tokenizer receiving a DOM element (the editor) because in my opinion the tokenizer needs to receive only text and spits out tokens, that's all ([separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns) again). So I moved out the editor reference outside. As such, we won't need a constructor for tokenizer and we will pass the text to the `tokenize()` method instead.
+I was also not happy having the tokenizer receiving a DOM element (the editor) because in my opinion the tokenizer needs to receive only text and spits out tokens, that's all [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns) again. So I moved out the editor reference outside. As such, we won't need a constructor for tokenizer and we will pass the text to the `tokenize()` method instead.
 
 The code outside the classes is now:
 
@@ -122,8 +127,7 @@ const interpreter = new Interpreter('myTextarea');
 interpreter.run();
 ```
 
-I created the method `run` because I want people to run different scripts when pressing a button `run` or `play` in the UI. So now only the interpreter knows about the DOM elements (editor for now), the tokenizer only knows about text and the parser only knows how to move back and forth in a stream of tokens. All clean and tidy
-
+I created the method `run` because I want people to run different scripts when pressing a button `run` or `play` in the UI. So now only the interpreter knows about the DOM elements (editor for now), the tokenizer only knows about text and the parser only knows how to move back and forth in a stream of tokens. All clean and tidy.
 ## Internal representation of a primitive
 The internal representation of a primitive so far is:
 
@@ -137,7 +141,9 @@ const primitives = {
 
 I was never very happy with this, because I don't like mixing the internal representation of the primitive with how it will look on the outside. You may ask, so what about the delimiters? Delimiters are different because the representation doesn't change, an opening bracket will always look like an opening bracket.
 
-But for example `fd`. This can be shown as `fd` or `forward` or even `FoRwArD` if we are inclined. And what about when we deal with other languages? In Spanish it would be `av` or `avanza`. So I am inclined to create another enum for the internal representation similar to what we did with the token types. As such:
+But for example `fd`. This can be shown as `fd` or `forward` or even `FoRwArD` if we are inclined. And what about when we deal with other languages? In Spanish it would be `av` or `avanza`. So I am inclined to create another enum for the internal representation similar to what we did with the token types.
+
+As such:
 
 ```javascript
 const primitives = {
@@ -149,9 +155,9 @@ const primitives = {
 ```
 
 But we need to find a way to identify the primitives by the tokenizer or it won't have a clue what primitive to assign when it finds one.
-We can either hardcode the primitive list in the tokenizer (quick and dirty) or since we have a few enums we can pass the list of primitive representations to the tokenizer and it will know what to do with them, so we can pass different set of primitive representations for English than we do later for Spanish.
+We can either hardcode the primitive list in the tokenizer (quick and dirty) or since we have a few enums we can pass the list of primitive representations to the tokenizer and it will know what to do with them, so we can pass a different set of primitive representations for English than we do later for Spanish.
 
-Since we can have more than one way of saying "forward" without taking into account the case, `fd` and `forward`, we will call them "aliases".
+Since we can have more than one way of saying "forward" without taking into account the letter case, `fd` and `forward`, we will call them "aliases".
 
 ```javascript
 const primitiveAliases = [
@@ -170,7 +176,9 @@ const primitiveAliases = [
 ];
 ```
 
-Remember, we can have references in one of our enums (e.g. primitives) from another one as long as we don't have circular references or they are part of the same object because the object (json) has to be initialized before it can be used. In short, this will error:
+Remember, we can have references in one of our enums (e.g. primitives) from another one as long as we don't have circular references or they are part of the same object because the object (json) has to be initialized before it can be used.
+
+In short, this will error:
 
 ```javascript
 const thisWillError = {
@@ -275,7 +283,7 @@ getPrimitive(tokenText) {
 };
 ```
 
-If the value in the dictionary is not found (at the end of the day it is just a json object where we can't find the key) it returns `undefined`. We want to return the value `NONE` instead so we use the new [nullish coalescing operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing_operator) `??` which you may know already when dealing with nulls in C#. So our `else if` becomes just an `else`:
+If the value in the dictionary is not found (at the end of the day it is just a json object where we can't find the key) it returns `undefined`. We want to return the value `NONE` instead so we use the [nullish coalescing operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing_operator) `??` which you may know already when dealing with nulls in C#. So our `else if` becomes just an `else`:
 
 ```javascript
 else {
@@ -288,9 +296,9 @@ else {
 }
 ```
 
-I am leaving here room for checking some text that is not a primitive because in the future that would be a procedure name but... still a while until we reach that 😊
+I am leaving here room for checking some text that is not a primitive because in the future that would be a procedure name but... still a while until we reach that 😊.
 
-The last part would be to store the primitive (internal value) instead of the token text in the `Token`. The final code for all the project is below. see you in part 5 TODO.
+The last part would be to store the primitive (internal value) instead of the token text in the `Token`. The final code for all the project is below. see you in the [next part with the turtle graphics](/part5).
 
 ```javascript
 const delimiters = {
