@@ -295,4 +295,4 @@ we do
 
 ![Double loop with penup and pendown](/img/part7_double_loop_penup_pendown.gif)
 
-and it shows as expected. In the [next part](/part8) we do what we have done before, after two steps forward one step back. We will do some refactoring to have a proper tokenizer. So no more graphics for the time being for us!
+and it shows as expected. In the [next part](/logo/part8) we do what we have done before, after two steps forward one step back. We will do some refactoring to have a proper tokenizer. So no more graphics for the time being for us!

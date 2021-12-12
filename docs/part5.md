@@ -4,7 +4,7 @@ title: [5]
 permalink: /part5/
 ---
 ## Finally, turtle graphics
-In [part 4](/part4) we were doing some refactoring just to keep the house in order before we move to greater things. We've managed to do a `repeat` loop in the parser and we introduced for the first time the interpreter which will tie up together everything else.
+In [part 4](/logo/part4) we were doing some refactoring just to keep the house in order before we move to greater things. We've managed to do a `repeat` loop in the parser and we introduced for the first time the interpreter which will tie up together everything else.
 
 There are still many things to do, possibly the most pressing having a proper tokenizer, but as a developer we want to do what we want to do and that's to have a turtle responding to our commands, in this case to draw a square to start with!
 
@@ -277,4 +277,4 @@ let y1 = this.y - n * Math.cos(alpha);
 
 And finally (just finally) we can rest since our square is drawn in the correct coordinates using a `repeat` primitive.
 
-In the [next part](/part6) we will finally see the turtle (well, just a circle or triangle instead of a turtle) and we will work on not messing the drawings with extra turtles everywhere!
+In the [next part](/logo/part6) we will finally see the turtle (well, just a circle or triangle instead of a turtle) and we will work on not messing the drawings with extra turtles everywhere!

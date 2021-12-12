@@ -4,7 +4,7 @@ title: [2]
 permalink: /part2/
 ---
 ## Poor man's tokenizer
-In the [previous part](/part1) we established the file structure of the project, just a html file, one javascript and one css. We don't use any external library or `node.js`, so everything will be done in the browser and in the console.
+In the [previous part](/logo/part1) we established the file structure of the project, just a html file, one javascript and one css. We don't use any external library or `node.js`, so everything will be done in the browser and in the console.
 
 So... what's a tokenizer? let's start with what we want to achieve, one step at a time. We want to be able to run this script:
 
@@ -294,4 +294,4 @@ where first we get a list of all the keys with `Object.keys(tokenTypes)` and we 
 
 which is exactly what we wanted to have, congratulations. Note that I could have added the code to get the keys somewhere else but since I just want to show the string representation when we convert the Token to string, nowhere else, I decided to use the code only in Token.
 
-In the [next part](/part3) we are going to use this tokenizer inside a parser and we will be able to run this code (in the console) before we start showing the turtle!
+In the [next part](/logo/part3) we are going to use this tokenizer inside a parser and we will be able to run this code (in the console) before we start showing the turtle!

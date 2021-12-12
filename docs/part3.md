@@ -4,7 +4,7 @@ title: [3]
 permalink: /part3/
 ---
 ## May I introduce you the parser
-In the [previous part](/part2) we were able to convert a LOGO script into an array of tokens. These tokens have the token text and the token type (number, delimiter or primitive) and we managed to show in the console the string representation of the tokens in an easy way that will help us later when debugging.
+In the [previous part](/logo/part2) we were able to convert a LOGO script into an array of tokens. These tokens have the token text and the token type (number, delimiter or primitive) and we managed to show in the console the string representation of the tokens in an easy way that will help us later when debugging.
 
 So let's continue with the parser. The [parser](https://en.wikipedia.org/wiki/Parsing#Parser) runs the list of tokens and executes them correctly, so for our example:
 
@@ -17,7 +17,7 @@ We would expect the parser to do something like this reading the input:
 
 In short, we need to understand that after reading `repeat 4`, whatever is inside the brackets must be repeated 4 times. Seems easy, so let's start!
 
-The tokenizer in the [previous part](/part2) could identify the tokens as `primitive`, but we don't record in the token what kind of primitive it is.
+The tokenizer in the [previous part](/logo/part2) could identify the tokens as `primitive`, but we don't record in the token what kind of primitive it is.
 
 Let's add another property to `Token` to give me the primitive:
 
@@ -352,4 +352,4 @@ Current token: 6 - [object Token "90" - NUMBER - {}]
 Current token: 7 - [object Token "]" - DELIMITER - {}]
 ```
 
-In the [next part](/part4) we will do some refactoring before we start with graphics and we can finally see a turtle on the screen (well, kind of).
+In the [next part](/logo/part4) we will do some refactoring before we start with graphics and we can finally see a turtle on the screen (well, kind of).

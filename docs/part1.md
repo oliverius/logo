@@ -4,7 +4,7 @@ title: [1]
 permalink: /part1/
 ---
 # Project file structure
-If you know the typical folder structure of a project, you can skip this part and move to [poor man's tokenizer](/part2) section.
+If you know the typical folder structure of a project, you can skip this part and move to [poor man's tokenizer](/logo/part2) section.
 
 ...
 
@@ -133,4 +133,4 @@ So next time we run it we should see something like this:
 
 All pretty standard as a web project goes.
 
-In the [next part](/part2) we will start creating a simple tokenizer to recognize two primitives.
+In the [next part](/logo/part2) we will start creating a simple tokenizer to recognize two primitives.

@@ -86,4 +86,4 @@ tree 160
 ```
 This will teach us control flow and how to stop a recursive procedure without causing a stack overflow. We will learn more about this later on.
 
-And now let's start with the [project file structure](/part1)
+And now let's start with the [project file structure](/logo/part1)

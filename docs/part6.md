@@ -4,7 +4,7 @@ title: [6]
 permalink: /part6/
 ---
 ## Dude, where is my turtle?
-In the [previous part](/part5) we were able to draw a square using the `repeat` primitive after we sort out the coordinates of the turtle.
+In the [previous part](/logo/part5) we were able to draw a square using the `repeat` primitive after we sort out the coordinates of the turtle.
 In this part we will draw the turtle, since until now we didn't have one, and we will also draw the turtle differently according to the orientation so it will look like it is moving.
 
 The easiest way to draw a turtle is... to draw a circle, with the drawing point in the center of the circle.
@@ -285,4 +285,4 @@ And now, ladies and gentlemen, let me present you the final result, feel free to
 
 ![Square drawn with turtle animation correctly](/img/part6_square_correct.gif)
 
-In the [next part](/part7) since we have done all the groundwork already we will add more primitives to play with when drawing.
+In the [next part](/logo/part7) since we have done all the groundwork already we will add more primitives to play with when drawing.

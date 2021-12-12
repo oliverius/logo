@@ -3,9 +3,9 @@ layout: page
 title: [8]
 permalink: /part8/
 ---
-# A tokenizer to make your mama proud
+## A tokenizer to make your mama proud
 
-On part 2 (TODO link) we created a very simple tokenizer that was only splitting the tokens by the space between then so
+On [part 2](/logo/part2) we created a very simple tokenizer that was only splitting the tokens by the space between then so
 
 `repeat 4 [ fd 60 rt 90 ]`
 

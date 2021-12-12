@@ -4,7 +4,7 @@ title: [4]
 permalink: /part4/
 ---
 ## Palate cleanser, some refactoring before playing with the turtle
-In the [last part](/part3) we managed to tokenize a expression like this: `repeat 4 [ fd 60 rt 90 ]` and parse them, even if it is only with *console.log*.
+In the [last part](/logo/part3) we managed to tokenize a expression like this: `repeat 4 [ fd 60 rt 90 ]` and parse them, even if it is only with *console.log*.
 Today we are going to do some refactoring before moving on with the turtle graphics.
 
 For this article I am trying to redo the project from scratch with the same errors and "aha!" moments as I experienced before; however in my original project I was so eager to see the turtle in the screen that I created the `canvas` for the graphics very early on and didn't refactor until later. That didn't help much because it created some expectations on what I was doing and set me back a few days (after all, I code only when I have free time and that's not much).
@@ -92,7 +92,7 @@ I want to keep the logic for `repeat` out of the parsing loop, so I had `execute
 ## Tokenizer as a class
 It is becoming obvious that it is easier to deal with classes, although preceding everything with `this` is killing me as I am not used to it in C# where I come from.
 
-So the tokenizer has been refactored to be a class, not a function. This will help when we implement the proper tokenizer and not the simple one we have now (the one I called [poor man's tokenizer](/part2)).
+So the tokenizer has been refactored to be a class, not a function. This will help when we implement the proper tokenizer and not the simple one we have now (the one I called [poor man's tokenizer](/logo/part2)).
 
 I was also not happy having the tokenizer receiving a DOM element (the editor) because in my opinion the tokenizer needs to receive only text and spits out tokens, that's all [separation of concerns](https://en.wikipedia.org/wiki/Separation_of_concerns) again. So I moved out the editor reference outside. As such, we won't need a constructor for tokenizer and we will pass the text to the `tokenize()` method instead.
 
@@ -298,7 +298,7 @@ else {
 
 I am leaving here room for checking some text that is not a primitive because in the future that would be a procedure name but... still a while until we reach that 😊.
 
-The last part would be to store the primitive (internal value) instead of the token text in the `Token`. The final code for all the project is below. see you in the [next part with the turtle graphics](/part5).
+The last part would be to store the primitive (internal value) instead of the token text in the `Token`. The final code for all the project is below. see you in the [next part with the turtle graphics](/logo/part5).
 
 ```javascript
 const delimiters = {
