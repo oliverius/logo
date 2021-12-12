@@ -3,9 +3,7 @@ layout: page
 title: [7]
 permalink: /part7/
 ---
-# Adding a few more primitives and sorting out nested loops
-
-## More primitives
+## Adding a few more primitives and sorting out nested loops
 
 Now that we can draw nicely, let's add a few more primitives to play with.
 
@@ -113,7 +111,7 @@ Since we don't need now the method `centerTurtle()` because this is better, we g
 
 # Inception with nested loops
 
-Playing around with jsLogo (TODO website) online I came up with a very simple drawing of a triangle with 3 squares, and we use all the primitives at once so we know if it works well or not.
+Playing around with [jsLogo](https://github.com/inexorabletash/jslogo) online I came up with a very simple drawing of a triangle with 3 squares, and we use all the primitives at once so we know if it works well or not.
 
 `cs repeat 3 [ fd 60 repeat 4 [ lt 90 bk 20 ] rt 120 ]`
 
@@ -133,7 +131,7 @@ And we didn't get it right. What seems to be the problem? It appears that we are
 cs fd 60 repeat 4 [ lt 90 bk 20 ] rt 120
 ```
 
-the first loop is completely neglected. So how can we implement nested loops? we don't need to go very far because the answer is in the Tiny basic from Herbert Schildt (TODO link). In short, instead of having one loop variable like we do now we need to have a stack of loops so we keep track of where we were at any point, similar to how a call to a procedure or subroutine is done.
+the first loop is completely neglected. So how can we implement nested loops? we don't need to go very far because the answer is in the Small BASIC from Herbert Schildt. In short, instead of having one loop variable like we do now we need to have a stack of loops so we keep track of where we were at any point, similar to how a call to a procedure or subroutine is done.
 
 Our logic for loops is encapsulated in the parser in `execute_repeat_begin()` and `execute_repeat_end()`. In the `parse()` method instead of having a `loop` property, let's have a loop stack property.
 
@@ -296,3 +294,5 @@ we do
 `cs repeat 3 [ pu fd 60 pd repeat 4 [ lt 90 bk 20 ] rt 120 ]`
 
 ![Double loop with penup and pendown](/img/part7_double_loop_penup_pendown.gif)
+
+and it shows as expected. In the [next part](/part8) we do what we have done before, after two steps forward one step back. We will do some refactoring to have a proper tokenizer. So no more graphics for the time being for us!

@@ -3,12 +3,9 @@ layout: page
 title: [6]
 permalink: /part6/
 ---
-# Dude, where is my turtle?
-
-## My fat turtle
-
-In the previous part we were able to draw a square using the `repeat` primitive after we sort out the coordinates of the turtle.
-In this part we will draw the turtle, since until now we didn't have one, and we will also draw the turtle differently according to the orientation (so it will look like it is moving).
+## Dude, where is my turtle?
+In the [previous part](/part5) we were able to draw a square using the `repeat` primitive after we sort out the coordinates of the turtle.
+In this part we will draw the turtle, since until now we didn't have one, and we will also draw the turtle differently according to the orientation so it will look like it is moving.
 
 The easiest way to draw a turtle is... to draw a circle, with the drawing point in the center of the circle.
 
@@ -111,7 +108,7 @@ draw() {
   }
 }
 ```
-We take the first element of the queue (after all, it is a queue, not a stack, so we start always with the first element) and we call the turtle object directly so we can get rid of the shell methods in parser `execute_forward()` and `execute_right()`. With this we have practically decoupled the turtle from the parser, so I am thinking of having the turtle object in the interpreter instead of the parser, only having the `turtleGraphicsQueue` in the parser. We will have some issues that we will see in "TODO link to this part, also not sure if I will put the queue in the interpreter at the end".
+We take the first element of the queue (after all, it is a queue, not a stack, so we start always with the first element) and we call the turtle object directly so we can get rid of the shell methods in parser `execute_forward()` and `execute_right()`. With this we have practically decoupled the turtle from the parser, so I am thinking of having the turtle object in the interpreter instead of the parser, only having the `turtleGraphicsQueue` in the parser.
 
 So the moment of truth has come, we click run and bang! error!.
 
@@ -145,8 +142,6 @@ We will try to put our turtle on a diet and see how it goes when drawing the squ
 ## A tale of two canvases
 
 The easiest way to make the turtle show differently when rotating is to make it a triangle. I know, it doesn't look like a turtle (and it won't in this tutorial though), but the old LOGO programs all have the turtle as a triangle because of the graphics limitations of the time.
-
-TODO show pic of LOGOSB or my LOGO in MSX
 
 Since we have a method to draw the turtle, we just need to modify that. I must confess that it took me a while to get the size correctly for this turtle but I got it in the end.
 
@@ -244,7 +239,7 @@ renderFrame() {
 and if we run it now we get exactly the same as before, but with the massive difference that now we can play around with the turtle without disturbing the graphics.
 The reason I called it `renderFrame()` instead of something like `draw()` is because what we are really doing is creating a frame of animation like we would do with [requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame).
 
-I was thinking hard if `requestAnimationFrame` is the way forward here, however since our frames per seconds is going to be small (at the moment we have a frame every 500ms which is 2 frames per second or fps). For simplicity and due to the nature of what we are doing (we are not doing any parallax backgrounds or complicated sprites), this is enough.
+I was thinking hard if `requestAnimationFrame` is the way forward here, however since our frames per seconds is going to be small (at the moment we have a frame every 500ms which is 2 frames per second or fps) for simplicity and due to the nature of what we are doing (we are not doing any parallax backgrounds or complicated sprites), this is enough.
 
 And now, before we start removing the turtle from each frame so we can move it to the next frame instead of having 4 copies simultaneously, let's check how we can rotate our turtle.
 
@@ -255,7 +250,7 @@ So I will save you this misery. All had to do with the way rotations are done. T
 * • rotate the angle
 * • move back to (x,y), but since we have rotated it will be (-x,-y)
 
-For good measure we do a `resetTransform()` before we do any rotation. And the result is:
+For good measure we do a `resetTransform()` before we do any rotation. And the result is the correct one:
 
 ![Drawing a square with turtle as a triangle rotating](/img/part6_square_with_triangle_turtle_rotating.gif)
 
@@ -289,3 +284,5 @@ A final comment about some refactoring, wee could also add the `deleteTurtle()` 
 And now, ladies and gentlemen, let me present you the final result, feel free to create different scripts and click `run` and all will be drawn properly (and also on top of the previous drawing)
 
 ![Square drawn with turtle animation correctly](/img/part6_square_correct.gif)
+
+In the [next part](/part7) since we have done all the groundwork already we will add more primitives to play with when drawing.

@@ -3,14 +3,14 @@ layout: page
 title: [5]
 permalink: /part5/
 ---
-# Finally turtle graphics
-In part 4 we were doing some refactoring just to keep the house in order before we move to greater things. We've managed to do a `repeat` loop in the parser and we introduced for the first time the interpreter which will tie up together everything else.
+## Finally, turtle graphics
+In [part 4](/part4) we were doing some refactoring just to keep the house in order before we move to greater things. We've managed to do a `repeat` loop in the parser and we introduced for the first time the interpreter which will tie up together everything else.
 
 There are still many things to do, possibly the most pressing having a proper tokenizer, but as a developer we want to do what we want to do and that's to have a turtle responding to our commands, in this case to draw a square to start with!
 
 For the turtle we need to add a canvas to the `html`. To make it all more LOGO related I will call the canvas `logo-graphics`. This is also a good time to rename the editor from `myTextarea` to `logo-editor`.
 
-```javascript
+```html
 <textarea id="logo-editor">repeat 4 [ fd 60 rt 90 ]</textarea>
 <canvas id="logo-graphics" width="400" height="400"></canvas>
 ```
@@ -36,7 +36,7 @@ constructor(editorId, canvasId, aliases) {
   this.parser = new Parser();
 }
 ```
-
+and
 ```javascript
 const interpreter = new Interpreter('logo-editor', 'logo-graphics', primitiveAliases);
 interpreter.run();
@@ -276,3 +276,5 @@ let y1 = this.y - n * Math.cos(alpha);
 ![Square in correct coordinates](/img/part5_square.png)
 
 And finally (just finally) we can rest since our square is drawn in the correct coordinates using a `repeat` primitive.
+
+In the [next part](/part6) we will finally see the turtle (well, just a circle or triangle instead of a turtle) and we will work on not messing the drawings with extra turtles everywhere!
