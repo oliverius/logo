@@ -496,4 +496,4 @@ constructor(editorId, canvasId, aliases) {
 
 And I think for testing, this is enough. In the final version I added the `startTokenIndex` and `endTokenIndex` for each token, so we know that they start and finish in the correct character. These are just minor improvements but they help when debugging the tokenizer.
 
-In the [next part](/logo/part13) we will finally get the turtle out of the parser (it has been bothering me for a long time) and we will also get two more instructions, `if` and `stop` so we can stop in code the spiral instead of having to resort to press the `stop` button. And have some rest, we deserve it!
+In the [next part](/logo/part13) we will finally get the turtle out of the parser (it has been bothering me for a long time) thanks to our new parser events, and do a big refactoring to the code putting all the `const` together.
