@@ -3,9 +3,9 @@ layout: page
 title: [11]
 permalink: /part11/
 ---
-# Do you want to build a expression parser?
+## Do you want to build a expression parser?
 
-In the previous part (TODO link) we wanted to create a spiral, however we ran into some problems and I decided that it was better to nail down how to stop a recursive procedure call (like a spiral) and do some refactoring before we commit fully to deal with expressions.
+In the [previous part](/logo/part10) we wanted to create a spiral, however we ran into some problems and I decided that it was better to nail down how to stop a recursive procedure call (like a spiral) and do some refactoring before we commit fully to deal with expressions.
 
 What do I mean exactly with a expression parser? let's take a look again at the code for the spiral:
 
@@ -17,9 +17,11 @@ end
 spiral 10
 ```
 
-An expression for us is where the parameter we send (to spiral in this case) is not a single value but it can be any mathematical expression, in our case an addition of `:side` and `3`. Because we are using a recursive descent parser the way we deal with the expression is calling  the same methods until we sort out completely the expression. A good article about it (although for Python) is [here](https://ruslanspivak.com/lsbasi-part7/). In our case it will be simpler because we will follow the example for Tiny Basic (TODO ref. here) and he has already sorted it out without having to worry about grammars or abstract syntax trees or anything.
+An expression for us is where the parameter we send (to spiral in this case) is not a single value but it can be any mathematical expression, in our case an addition of `:side` and `3`.
 
-In Tiny Basic (which is written in C) to provide the values correctly it sends them by reference so we can build on them and return the value together with any operations done to it. In javascript [we don't have passing values by reference](https://stackoverflow.com/questions/13104494/does-javascript-pass-by-reference) however we can pass objects and alter the contents of the object which at the end of the day will do the same job.
+Because we are using a recursive descent parser the way we deal with the expression is calling  the same methods until we sort out completely the expression. A good article about it (although for Python) is [here](https://ruslanspivak.com/lsbasi-part7/). In our case it will be simpler because we will follow the example for Small BASIC and it has already sorted out the problem without having to worry about grammars or abstract syntax trees.
+
+In Small BASIC (which is written in C) to provide the values correctly it sends them by reference so we can build on them and return the value together with any operations done to it. In javascript [we don't have passing values by reference](https://stackoverflow.com/questions/13104494/does-javascript-pass-by-reference) however we can pass objects and alter the contents of the object which at the end of the day will do the same job.
 
 So let's start. Let's focus in getting the line `spiral :side + 3` correctly.
 
@@ -67,8 +69,6 @@ it should take not only one token (either a number or a variable) but a bunch of
 But I don't want to mess what I have here, so just in this case, we are going to create some code that won't be used anywhere else and we will delete, but it will help us to understand how an expression parser is done. May I present you, the expression parser
 
 ## The expression parser project
-
-(TODO herbert schild example)
 
 At the end of our javascript file we are going to create a test example of an expression parser. What we learn here we can use it to incorporate the logic inside the parser itself so we are not wasting time, we would waste more time if we try to do it with the current parser without testing if it works or not first. We also comment out the interpreter, we don't want anything that we don't need in the console
 
@@ -121,7 +121,7 @@ let expressionParser = new ExpressionParser();
 expressionParser.parse(testTokens);
 ```
 
-This will give us our tokens, as expected
+This will give us our tokens, as expected.
 
 The trick about the recursive parser (in our case recursive descent parser) is that we will deal with the expression according to the order of evaluation, for example a multiplication has to be dealt first before an addition or subtraction.
 
@@ -470,7 +470,7 @@ getExpression() {
   }
 ```
 
-and finally, the spiral:
+and finally, the spiral, that we will need to stop pressing the `Stop` button on the screen.
 
 ```
 to spiral :side
@@ -481,4 +481,5 @@ spiral 10
 ```
 
 ![Spiral with manual stop](/img/part11_spiral_manual_stop.gif)
-e
+
+In the [next part](/logo/part12) we will build some tests. At this point we have so many different things going on, specially with the expression parser that it would be wise to have some tests done to make sure that everything works well.

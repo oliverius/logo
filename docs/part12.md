@@ -3,9 +3,9 @@ layout: page
 title: [12]
 permalink: /part12/
 ---
-# Test, love and rock'n'roll
+## Test, love and rock'n'roll
 
-In the previous part (TODO Reference) we did the hard work of managing any kind of expression instead of just only a parameter, i.e. we can now call a procedure not only like `square 60` but like `square 30 + 30` or `square 2 * 15 + 30` or `square 100 / 2 + 10` or even `square 2 * 10 + 50 - 70 / 7` and I will get the same result. This was necessary to make the spiral work because every time we rotate 90 degrees we needed to write a line slightly bigger than the previous one to continue the spiral growing. This should work, right? right? let's see:
+In the [previous part](/logo/part11) we did the hard work of managing any kind of expression instead of just only a parameter, i.e. we can now call a procedure not only like `square 60` but like `square 30 + 30` or `square 2 * 15 + 30` or `square 100 / 2 + 10` or even `square 2 * 10 + 50 - 70 / 7` and I will get the same result. This was necessary to make the spiral work because every time we rotate 90 degrees we needed to write a line slightly bigger than the previous one to continue the spiral growing. This should work, right? right? let's see:
 
 ```
 to square :side
@@ -94,7 +94,7 @@ let actualToken = tokenizer.tokenize("fd");
 with
 
 ```javascript
-let actualToken = tokenizer.tokenize("fd");[0];
+let actualToken = tokenizer.tokenize("fd")[0];
 ```
 
 it will work. So let's formalize this for more than one token (for an array of tokens). Let's do `assertTokens` for the previous example `fd 60 rt 90`. Because when we assert the tokens we want to know what we are testing a.k.a. the name of the test, we will pass that argument:
@@ -130,7 +130,7 @@ function runTokenizerTests() {
 }
 ```
 
-And in the log we will get "TEST "Test primitives": PASSED" as expected. What we are doing is to check that every token asserted returns true and if not, the test will fail and we will need to find out why. So let's find out now if our 5 different ways to define a square all have the correct number of tokens. We won't worry about the name of the procedure (after all the tokenizer has no clue what a `square` is, and focus only on the expressions):
+And in the log we will get **TEST "Test primitives": PASSED** as expected. What we are doing is to check that every token asserted returns true and if not, the test will fail and we will need to find out why. So let's find out now if our 5 different ways to define a square all have the correct number of tokens. We won't worry about the name of the procedure (after all the tokenizer has no clue what a `square` is, and focus only on the expressions that are the arguments for the `square`):
 
 ```javascript
 assertTokens(
@@ -311,7 +311,7 @@ TEST expression "100 / 2 + 10": FAILED with value 50
 TEST expression "2 * 10 + 50 - 70 / 7": FAILED with value 20
 ```
 
-It looks like if the first operation is a multiplication or division we stop reading tokens. Probably it has to do with us removing two `getNextToken()` that were causing us problem, so probably that fix didn't work in all cases. After looking at the issues, the problem is that I forgot to put a `getNextToken()` in `getExpression_Multiplication()`, so the the whole method is now (with the `NEW` comment to the one I've added):
+It looks like if the first operation is a multiplication or division we stop reading tokens. Probably it has to do with us removing two `getNextToken()` that were causing us problems, so probably that fix didn't work in all cases. After looking at the issues, the problem is that I forgot to put a `getNextToken()` in `getExpression_Multiplication()`, so the the whole method is now (with the `NEW` comment to the one I've added):
 
 ```javascript
 getExpression_MultiplicationOrDivision(result) {
@@ -339,7 +339,7 @@ and we can uncomment the code and run the interpreter to see it working (5 squar
 
 ![All expression correct so squares overwrite each other](/img/part12_squares_identical.gif)
 
-Now we can delete the runTokenizerTests  and runParserTests functions, however it seems a waste giving the effort we have done. Since we are not using any testing framework, the only way to run the tests is either calling the function itself or calling the function from the interpreter, so every time we initialize the interpreter we may sure that the tests are all running. Also from the interpreter we won't care that the turtle is inside the parser, so another problem sorted
+Now we can delete the runTokenizerTests  and runParserTests functions, however it seems a waste giving the effort we have done. Since we are not using any testing framework, the only way to run the tests is either calling the function itself or calling the function from the interpreter, so every time we initialize the interpreter we may sure that the tests are all running. Also from the interpreter we won't care that the turtle is inside the parser, so another problem sorted.
 
 Our two test functions will require to return something. We can make them return a list of tests passed or not, but it is simpler here to leave all the comments in the console and just return `true` if all tests pass or `false` if not all of them pass.
 
@@ -496,4 +496,4 @@ constructor(editorId, canvasId, aliases) {
 
 And I think for testing, this is enough. In the final version I added the `startTokenIndex` and `endTokenIndex` for each token, so we know that they start and finish in the correct character. These are just minor improvements but they help when debugging the tokenizer.
 
-In the next part we will finally get the turtle out of the parser (it has been bothering me for a long time) and we will also get two more instructions, `if` and `stop` so we can stop in code the spiral instead of having to resort to press the `stop` button. And have some rest, we deserve it!
+In the [next part](/logo/part13) we will finally get the turtle out of the parser (it has been bothering me for a long time) and we will also get two more instructions, `if` and `stop` so we can stop in code the spiral instead of having to resort to press the `stop` button. And have some rest, we deserve it!

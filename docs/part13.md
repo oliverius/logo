@@ -3,9 +3,9 @@ layout: page
 title: [13]
 permalink: /part13/
 ---
-# Goodbye to the turtle in the parser
+## Goodbye to the turtle in the parser
 
-In the previous part we created some tests and incorporated them in the interpreter because we weren't using any testing framework, so the easiest way was to add the test to the instance of the interpreter. We commented how we had to hack the parser to avoid the canvas for the turtle not being defined and erroring. We will try to find a way to get the turtle out and incidentally be able to test the parser in action, not only the expressions.
+In the [previous part](/logo/part12) we created some tests and incorporated them in the interpreter because we weren't using any testing framework so the easiest way was to add the test to the instance of the interpreter. We commented how we had to hack the parser to avoid the canvas for the turtle not being defined and erroring. We will try to find a way to get the turtle out and incidentally be able to test the parser in action, not only the expressions.
 
 We want to decouple the turtle and the parser, so when we do parser tests we don't need to hack the parser as we did before to run it.
 

@@ -390,4 +390,4 @@ Finally (yes, I know I said it before but this is the final comment in this part
 
 ![Line with infinite loop stopped by button Stop](/img/part10_recursive_line_stop_button.gif)
 
-In the [next part](/logo/part11) we will deal with an expression parser a.k.a. calculator, which is needed when dealing with arguments that require some math, like adding two values together.
+In the [next part](/logo/part11) we will deal with an expression parser a.k.a. calculator, which is needed when dealing with arguments that require some math, like adding two values together when calling a procedure.
