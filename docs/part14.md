@@ -150,4 +150,113 @@ execute_if() {
 }
 ```
 
+We try to run a very simple script, just to check if we get the comments expected in the console, something like `if 7 > 5`. When we run it we realize that nothing happens. Why?
+
+When we debug we realize that `>` is not considered a delimiter (it doesn't appear in the list of tokens). The reason is because it is not in the check we do in the tokenizer in `isDelimiter`. When we fix it:
+
+```javascript
+isDelimiter(c) {
+  return c === logo.tokenizer.delimiters.OPENING_BRACKET ||
+    c === logo.tokenizer.delimiters.CLOSING_BRACKET ||
+    c === logo.tokenizer.delimiters.PLUS ||
+    c === logo.tokenizer.delimiters.MINUS ||
+    c === logo.tokenizer.delimiters.MULTIPLIEDBY ||
+    c === logo.tokenizer.delimiters.DIVIDEDBY ||
+    c === logo.tokenizer.delimiters.GREATERTHAN;
+}
+```
+
+Now with the example `if 7 > 5` we get the `true` part of the `if` (just a message in the console) and if we do `if 5 > 7` because it is false we get the `false` part of the condition, which for us will be just to run until the end of the code block between brackets.
+
+And here we tackle the code block in `[` `]`. But we already have code to deal with brackets because of the `repeat` primitive in `execute_repeat_begin` and `execute_repeat_end`
+
+```javascript
+execute_repeat_end() {
+  console.log(`Starting: execute_repeat_end`);   
+  let currentLoop = this.loopStack.pop();
+  currentLoop.remainingLoops--;
+  console.log(`Remaining loops: ${currentLoop.remainingLoops}`);
+  if (currentLoop.remainingLoops > 0) {
+    this.currentTokenIndex = currentLoop.startTokenIndex;
+    this.loopStack.push(currentLoop);
+  } else {
+    console.log("Loop has finished");
+  }
+}
+execute_repeat_begin(n = 0) {
+  console.log(`Starting: execute_repeat_begin ${n}`);
+  this.getNextToken();
+  if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER &&
+    this.currentToken.text === logo.tokenizer.delimiters.OPENING_BRACKET) {
+    this.loopStack.push({
+      startTokenIndex: this.currentTokenIndex,
+      remainingLoops: n
+    });
+  }
+}
+```
+
+This is going to be a big headache as we need to "hack" where we check for the opening bracket and accommodate for the code block for `if`.
+
+## Refactor the "repeat" code to allow for generic codeblocks
+
+Let's create a new method called `beginCodeBlock` where we will check for a code block for an `if` or for a `repeat`. At the moment it will be just the code inside `execute_repeat_begin`
+
+```javascript
+execute_repeat_begin(n = 0) {
+  this.beginCodeBlock(n);
+}
+```
+
+but we want to tell what primitive we are sending for the code block, either an `if` or a `repeat`. Then:
+
+```javascript
+execute_repeat_begin(n = 0) {
+  this.beginCodeBlock(logo.tokenizer.primitives.REPEAT, n);
+}
+beginCodeBlock(primitive = logo.tokenizer.primitives.NONE, n = 0) {
+  this.getNextToken();
+  if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER &&
+    this.currentToken.text === logo.tokenizer.delimiters.OPENING_BRACKET) {
+    switch(primitive) {
+      case logo.tokenizer.primitives.IF:
+        // stub for IF
+        break;
+      case logo.tokenizer.primitives.REPEAT:
+        this.loopStack.push({
+          startTokenIndex: this.currentTokenIndex,
+          remainingLoops: n
+        });
+        break;
+    }
+  }
+}
+```
+
+As we said, we just moved things around a little bit and accommodate for the `if` code. But what about when we end the code block? Very similar.
+
+In the `parsingStep` instead of:
+
+```javascript
+else if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER) {
+  if (this.currentToken.text === logo.tokenizer.delimiters.CLOSING_BRACKET) {
+    this.execute_repeat_end();
+  }
+}
+```
+
+We will have:
+
+```javascript
+else if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.DELIMITER) {
+  if (this.currentToken.text === logo.tokenizer.delimiters.CLOSING_BRACKET) {
+    this.endCodeBlock();
+  }
+}
+```
+
+And we of course rename `execute_repeat_end` to be `endCodeBlock` because we don't use it anywhere else. If we run an example with a `repeat` like `repeat 4 [ fd 60 rt 90]` it will work just as before.
+
+The problem is, how we identify when it is a loop counter or an `if` counter because we have only the loop stack?
+
 

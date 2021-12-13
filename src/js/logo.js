@@ -247,7 +247,7 @@ class Parser {
                     break;
             }
         } else {
-            console.log("this should be an error");
+            console.log("this should be an error"); // TODO better handling of this
         }
     }
     endCodeBlock() {
@@ -265,7 +265,7 @@ class Parser {
                     break;
             }
         } else {
-            throw "found a ] without being part of a IF or REPEAT";
+            throw "found a ] without being part of a IF or REPEAT"; // TODO more explicit
         }
     }
     execute_if() {
