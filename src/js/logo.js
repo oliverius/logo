@@ -242,7 +242,7 @@ class Parser {
                     this.codeBlockStack.push({
                         primitive: primitive,
                         firstTokenInsideCodeBlockIndex: firstTokenInsideCodeBlockIndex,
-                        remainingLoops: arg - 1
+                        remainingLoops: arg - 1 // Why arg -1 if we send arg?
                     });
                     break;
             }
