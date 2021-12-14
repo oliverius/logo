@@ -84,14 +84,14 @@ Following Herbert Schild's Small BASIC code in the book commented in [here](/ind
 
 Token text | Token type
 ---------- | ----------
-repeat | command
-4 | number
-[ | delimiter
-fd | command
-60 | number
-rt | command
-90 | number
-] | delimiter
+repeat     | command
+4          | number
+[          | delimiter
+fd         | command
+60         | number
+rt         | command
+90         | number
+]          | delimiter
 
 and since the commands in LOGO are called **primitives** instead, we will use that word from now on.
 

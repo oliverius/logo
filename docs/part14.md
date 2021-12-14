@@ -3,7 +3,7 @@ layout: page
 title: [14]
 permalink: /part14/
 ---
-## Stop the unstoppable spiral in code
+## Stop the unstoppable spiral with code
 
 In the [previous part](/logo/part13) we were doing some refactoring to have most of the constants all together and we also found a way to decouple the turtle from the parser by raising parser events. [Before that](/logo/part11) we were having a spiral test with recursion and we added a `stop` button to the UI. As someone that prefers to do things programatically I was wondering if we can stop the script through code. In fact, we can, LOGO has two instructions to do this, `if` and `stop`.
 
@@ -374,4 +374,4 @@ spiral 10
 
 ![Spiral with stop](/img/part14_spiral_with_stop.gif)
 
-In the [next part] we will try to finish our fourth example that was in the scope of this project, a recursive tree since we have all the primitives we need and functionality (procedures and recursion).
+In the [next part](/logo/part15) we will try to finish our fourth example that was in the scope of this project, a recursive tree since we have all the primitives we need and functionality (procedures and recursion).

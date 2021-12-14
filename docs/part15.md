@@ -4,27 +4,123 @@ title: [15]
 permalink: /part15/
 ---
 
-# still work in progress!
+## A recursive tree
 
-## Parser testing with events
+In the [previous part](/logo/part14) we managed to draw a spiral recursively and make it stop when a condition was met. This taught us how to do the primitives `if` and `stop`.
 
-There is another benefit of using events with the parser, and that's that we can test what the parser is doing instead of relying in looking at the screen.
+In this post we will deal with the fourth example that was part of the scope of this project, a recursive tree:
 
-For example, for our typical square `repeat 4 [fd 60 rt 90]` the parser will emit 8 events:
+```
+to  tree :length
+  if :length < 15 [stop]
+  fd :length
+  lt 45
+  tree :length/2
+  rt 90
+  tree :length/2
+  lt 45
+  re :length
+end
+cs
+bk 100
+tree 160
+```
 
-`fd 60` `rt 90` `fd 60` `rt 90` `fd 60` `rt 90` `fd 60` `rt 90`
+The first thing we can see is that there is nothing there that we haven't dealt with before in the past, except for the `<` in the `if`, because we have only implemented the logic for `>`. Let's start with this.
 
-which is very easy to test and will be always the same events for that script.
+We add a new delimiter "lesser than":
 
-In the final version of the code I did those tests tweaking the method `parse()` in the parser to avoid using the clock since the use of the clock was mostly to avoid endless loops blocking everything. Because we won't be testing endless loops recursively anyway we don't need to worry.
+```javascript
+delimiters: {
+  OPENING_BRACKET: "[",
+  CLOSING_BRACKET: "]",
+  PLUS: "+",
+  MINUS: "-",
+  MULTIPLIEDBY: "*",
+  DIVIDEDBY: "/",
+  GREATERTHAN: ">",
+  LESSERTHAN: "<"
+},
+```
 
-Note (just in case) that you won't really see values like `fd 60` but `1`, `60` because `1` is the value in the enum for the `forward` primitive, so instead of:
+Check that it is a delimiter:
 
-`fd 60` `rt 90` `fd 60` `rt 90` `fd 60` `rt 90` `fd 60` `rt 90`
+```javascript
+isDelimiter(c) {
+  return c === logo.tokenizer.delimiters.OPENING_BRACKET ||
+    c === logo.tokenizer.delimiters.CLOSING_BRACKET ||
+    c === logo.tokenizer.delimiters.PLUS ||
+    c === logo.tokenizer.delimiters.MINUS ||
+    c === logo.tokenizer.delimiters.MULTIPLIEDBY ||
+    c === logo.tokenizer.delimiters.DIVIDEDBY ||
+    c === logo.tokenizer.delimiters.GREATERTHAN ||
+    c === logo.tokenizer.delimiters.LESSERTHAN;
+  }
+```
 
-we will emit:
+And finally apply the logic in `execute_if`:
 
-`1 60` `2 90` `1 60` `2 90` `1 60` `2 90` `1 60` `2 90`
+```javascript
+switch (operator) {
+  case logo.tokenizer.delimiters.LESSERTHAN:
+    condition = left < right;
+    break;
+  case logo.tokenizer.delimiters.GREATERTHAN:
+    condition = left > right;
+    break;
+}
+```
+
+When we run the code we don't see what we were expecting (a bit of a letdown, really):
+
+
+![tree with only one branch](/img/part15_tree_only_one_branch.gif)
+
+It took me a while to get what was wrong when it was clearly in front of my nose, I even had to download the logs. This is an extract of the logs to show exactly what the parser did (because all the tokens were identified correctly, the problem was in the parser). When we check in the logs the turtle primitives that were executed we get:
+
+Remember that in the code going backwards is calling going forward but with a negative value and turning left is just turning left with a negative value.
+
+Turtle in code        | Equivalent
+--------------------- | ----------
+execute_forward(-100) | bk 100
+execute_forward(160)  | fd 160
+execute_right(-45)    | lt  45
+execute_forward(80)   | fd  80
+execute_right(-45)    | lt  45
+execute_forward(40)   | fd  40
+execute_right(-45)    | lt  45
+execute_forward(20)   | fd  20
+execute_right(-45)    | lt  45
+
+So if we expand the LOGO script when the procedure is called, this is what happens:
+
+```conf
+cs
+bk 100
+tree 160
+    if 160 < 15 [stop]
+    fd 160
+    lt 45
+    tree 80
+        if 80 < 15 [stop]
+        fd 80
+        lt 45
+        tree 40
+            if 40 < 15 [stop]
+            fd 40
+            lt 45
+            tree 20
+                fd 20
+                lt 45
+                tree 10
+                    if 10 < 15 [stop]
+(rest of the code not run)
+```
+
+What is going on is that when we finish a call to a procedure we never return to the point where it was branched out to continue with the code, we just run a single branch. As we did with the loops having a loop stack (now called a code block stack) we would need a **procedure call stack**.
+
+## The procedure call stack
+
 
 
 
