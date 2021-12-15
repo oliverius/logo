@@ -19,7 +19,7 @@
 # in the templates via {{ site.myvariable }}.
 
 title: Logo interpreter (turtle graphics) in vanilla javascript
-email: oliverius@outlook.com
+email: oliver@simpleone.dev
 description: >- # this means to ignore newlines until "baseurl:"
   Logo interpreter (turtle graphics) in vanilla javascript. In English and Spanish.
 baseurl: "/logo/" # the subpath of your site, e.g. /blog
