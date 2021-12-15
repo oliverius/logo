@@ -223,7 +223,7 @@ class Parser {
         let item = this.peekLastProcedureCallStackItem();
         let parameters = item.parameters;
         let parameter = parameters.find(p => p.name === variableName);
-        let value = parseInt(parameter.value);
+        let value = parseInt(parameter.value); // TODO value should be a number
         return value;
     }
     beginCodeBlock(primitive = logo.tokenizer.primitives.NONE, arg = 0) {
@@ -523,7 +523,6 @@ class Parser {
         window.dispatchEvent(event);
     }
     jumpToProcedure(name) {
-        console.log("oliver");
         let searchProcedureResults = this.procedures.filter(procedure => {
             return procedure.name === name.toLowerCase(); // TODO create test with procedure defined in capitals and called in lower, and viceversa
         });
