@@ -11,7 +11,7 @@ In the [previous part](/logo/part14) we managed to draw a spiral recursively and
 In this post we will deal with the fourth example that was part of the scope of this project, a recursive tree:
 
 ```
-to  tree :length
+to tree :length
   if :length < 15 [stop]
   fd :length
   lt 45
@@ -121,6 +121,77 @@ What is going on is that when we finish a call to a procedure we never return to
 
 ## The procedure call stack
 
+Now that we know we need a procedure call stack, and since we learned how to do the stacks with the loop stack it will be a lot easier.
+We just need to record when a procedure is called, run the procedure and when the procedure finishes go back to the point that we left it.
 
+We start with create the variable in `parse`:
 
+```javascript
+this.procedureCallStack = [];
+```
+
+The other two places are in `jumpToProcedure` to record it and in `execute_end` to return the control to the right token. When we take a look at `jumpToProcedure` we realize that we already have something we can use to store the information we need and that's the variable `procedureCallInformation`:
+
+```javascript
+this.procedureCallInformation = {
+  name: procedure.name,
+  parameters: values,
+  procedureCallLastTokenIndex: this.currentTokenIndex
+};
+```
+
+This variable is used in 3 places:
+* `jumpToProcedure` (obviously, we found it there)
+* `execute_end` (also obvious, to return the control to the right place)
+* `getExpression_Value`: when we call a procedure with arguments and we want to know the value of the argument, for example here when we call `fd :lenght` inside the procedure `to tree :length`, what is the value of `:length`.
+
+Let's show `getExpression_Value`:
+
+```javascript
+getExpression_Value(result) {
+  console.log("my current token", this.currentToken);
+  switch (this.currentToken.tokenType) {
+    case logo.tokenizer.tokenTypes.NUMBER:
+      result.value = parseInt(this.currentToken.text);
+      break;
+    case logo.tokenizer.tokenTypes.VARIABLE:
+      let variableName = this.currentToken.text;
+      let parameter = this.procedureCallInformation.parameters
+        .find(p => p.parameterName === variableName);
+      result.value = parseInt(parameter.parameterValue);
+      break;
+  }
+  console.log(`getExpression_Value -> ${result.value}`);
+}
+```
+
+The code for "variable" feels like it could be moved to another function so we can extract any call to the procedure to this new function and leave `getExpression_Value` free from it.
+
+Let's call it `assignVariable`:
+
+```javacript
+assignVariable(variableName) {
+  let parameter = this.procedureCallInformation.parameters
+    .find(p => p.parameterName === variableName);
+  let value = parseInt(parameter.parameterValue);
+  return value;
+}
+```
+
+And `getExpression_Value`, after removing a few console.log is:
+
+```javascript
+getExpression_Value(result) {
+  switch (this.currentToken.tokenType) {
+    case logo.tokenizer.tokenTypes.NUMBER:
+      result.value = parseInt(this.currentToken.text);
+      break;
+    case logo.tokenizer.tokenTypes.VARIABLE:
+      result.value = this.assignVariable(this.currentToken.text);
+      break;
+  }
+}
+```
+
+which looks cleaner. We haven't done anything so far, everything should work as before.
 

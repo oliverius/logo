@@ -70,7 +70,7 @@ With this I can learn how to use expressions, since we call recursively the spir
 ### A tree
 
 ```
-to  tree :length
+to tree :length
   if :length < 15 [stop]
   fd :length
   lt 45
