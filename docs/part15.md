@@ -114,7 +114,7 @@ tree 160
                 lt 45
                 tree 10
                     if 10 < 15 [stop]
-(rest of the code not run)
+(the rest of the code is not run)
 ```
 
 What is going on is that when we finish a call to a procedure we never return to the point where it was branched out to continue with the code, we just run a single branch. As we did with the loops having a loop stack (now called a code block stack) we would need a **procedure call stack**.
@@ -193,5 +193,140 @@ getExpression_Value(result) {
 }
 ```
 
-which looks cleaner. We haven't done anything so far, everything should work as before.
+which looks cleaner. We haven't done much so far, everything should work as before. The three places we need to look at are now:
+
+* `jumpToProcedure`
+* `execute_end`
+* `assignVariable`
+
+### jumpToProcedure
+
+The variable "procedureCallInformation" that was a property in the parser now we don't need it so we create a local variable with "let". We also add an extra logging.
+
+```javascript
+let procedureCallInformation = {
+  name: procedure.name,
+  parameters: values,
+  procedureCallLastTokenIndex: this.currentTokenIndex
+};
+this.procedureCallStack.push(procedureCallInformation);
+console.table(procedureCallInformation);
+```
+### execute_end
+
+Instead of
+
+```javascript
+execute_end() {
+  console.log(`Starting: execute_end`);
+  let index = this.procedureCallInformation.procedureCallLastTokenIndex;
+  this.currentTokenIndex = index;
+}
+```
+
+We will get the latest item from the stack.
+
+```javascript
+execute_end() {
+  let item = this.procedureCallStack.pop();
+  this.currentTokenIndex = item.procedureCallLastTokenIndex;
+}
+```
+### assignVariable
+
+Since before we had only one procedure, what we need to do is to check the last procedure in the stack without taking it out (that is done in `execute_end`). The easiest way to peek the value is to pop it, read what we need and push it back.
+Therefore the code changes to:
+
+```javascript
+assignVariable(variableName) {
+  let item = this.procedureCallStack.pop();
+  console.table(item.parameters);
+  let parameter = item.parameters.find(p => p.parameterName === variableName);
+  let value = parseInt(parameter.parameterValue);
+  this.procedureCallStack.push(item);
+  return value;
+}
+```
+
+We run the code now, expecting to get a beautiful tree and... we get the same half rubbish tree we got before! why?
+
+If we log every time we add something to the procedure call stack what are the values in the stack we can see that it contains 5 trees (the same as in our graph earlier when we did tree 160, tree 80, tree 40, tree 20, tree 10) but none of them are popped!! why?
+
+The answer is just staring at us, and this is the sneaky part when dealing with recursive functions. The problem is with `stop`. What did we write in the little graph above where we show the 5 calls to tree? at the end it says:
+
+"**(the rest of the code is not run)**"
+
+and because it is not run, we never reach `execute_end` and therefore we never use the recursivity that we were trying to test in the first place. And why we don't reach it? because when we do `stop` we do a complete stop for the parser. But inside a procedure `stop` really means: stop running this procedure and return control, which for us is the equivalent of "don't run anything else in this procedure right now and move the index to point to the `end` of the procedure and this way we can call the code for `execute_end`.
+
+So we create the function to skip until we reach the end of the procedure:
+
+```javascript
+skipUntilEndOfProcedure() {
+  while (this.currentToken.primitive !== logo.tokenizer.primitives.END) {
+    this.getNextToken();
+  }
+  this.putBackToken();
+}
+```
+
+We need to put back one token because in the loop we will move to the next one after `end` but we need to have `end` as the current token for our logic in `execute_end` work.
+
+So in `execute_stop`:
+
+```javascript
+execute_stop() {
+  this.skipUntilEndOfProcedure();
+}
+```
+
+we don't stop the parsing completely (only when pressing the UI button to stop).
+
+Ready to try again? yes? you will be disappointed because we still don't have the tree the way we wanted it to be. The good news is that the code seems to finish (it didn't enter an endless loop) but the tree looks a bit "spooked".
+
+![tree wrong turn procedure](/img/part15_wrong_turn_end_procedure.png)
+
+Ok, the red line has been drawn by me, it wasn't there. If you compare with the previous animation in this part you can see that what was done before was up to the red line. Anything on the left of the red line is something new after we created the procedure call stack. At first it looks like just something messed up but if we pay attention we can see that it is just the same values we needed drawn from the original tree but rotated 90 degrees to the right, i.e. if what's on the left of the red line could be rotated 90 degrees to the right it would be superimpose to the original tree, so I am afraid we would need to debug what's going on.
+
+## Debugging the wrong turn
+
+From the logs I got hold of the array of tokens that is our script and will try to find out what I am missing. My guess is that we are not reading one single token and that is causing one primitive not to be executed.
+
+Index | Text      | Type
+----- | --------- | --------------
+   00 | "to"      | PRIMITIVE
+   01 | "tree"    | PROCEDURE_NAME
+   02 | ":length" | VARIABLE
+   03 | "if"      | PRIMITIVE
+   04 | ":length" | VARIABLE
+   05 | "<"       | DELIMITER
+   06 | "15"      | NUMBER
+   07 | "["       | DELIMITER
+   08 | "stop"    | PRIMITIVE
+   09 | "]"       | DELIMITER
+   10 | "fd"      | PRIMITIVE
+   11 | ":length" | VARIABLE
+   12 | "lt"      | PRIMITIVE
+   13 | "45"      | NUMBER
+   14 | "tree"    | PROCEDURE_NAME
+   15 | ":length" | VARIABLE
+   16 | "/"       | DELIMITER
+   17 | "2"       | NUMBER
+   18 | "rt"      | PRIMITIVE
+   19 | "90"      | NUMBER
+   20 | "tree"    | PROCEDURE_NAME
+   21 | ":length" | VARIABLE
+   22 | "/"       | DELIMITER
+   23 | "2"       | NUMBER
+   24 | "lt"      | PRIMITIVE
+   25 | "45"      | NUMBER
+   26 | "re"      | PROCEDURE_NAME
+   27 | ":length" | VARIABLE
+   28 | "end"     | PRIMITIVE
+   29 | "cs"      | PRIMITIVE
+   30 | "bk"      | PRIMITIVE
+   31 | "100"     | NUMBER
+   32 | "tree"    | PROCEDURE_NAME
+   33 | "160"     | NUMBER
+
+
 
