@@ -7,6 +7,7 @@ const logo = {
             "MINUS": "-",
             "MULTIPLIEDBY": "*",
             "DIVIDEDBY": "/",
+            "GREATERTHAN": ">",
             "LESSERTHAN": "<"
         },
         "primitives": {
@@ -218,7 +219,15 @@ class Interpreter {
     }
 }
 
-class Parser {
+const ProcedureDefinition = class {
+    name = "";
+    parameters = [];
+    primitiveToTokenIndex = 0;
+    primitiveEndTokenIndex = 0;
+    procedureBodyFirstTokenIndex = 0;
+};
+class Parser {    
+
     assignVariable(variableName) {
         let item = this.peekLastProcedureCallStackItem();
         let parameters = item.parameters;
@@ -279,6 +288,8 @@ class Parser {
             case logo.tokenizer.delimiters.LESSERTHAN:
                 condition = left < right;
                 break;
+            case logo.tokenizer.delimiters.GREATERTHAN:
+                condition = left > right;
         }
         if (condition) {
             this.beginCodeBlock(logo.tokenizer.primitives.IF);
@@ -306,21 +317,34 @@ class Parser {
         this.setCurrentTokenIndex(item.procedureCallLastTokenIndex);
     }
     execute_to() {
+        // TODO some comment of what a definition of a procedure looks like
+        // {Primitive TO} {Procedure name} {Variable 1}...{Variable n} body {Primitive END}
+        let procedureClass = new Procedure();
+        procedureClass.primitiveToTokenIndex = this.currentTokenIndex;
+
         let procedure = {};
         this.getNextToken();
         if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.PROCEDURE_NAME) {
             procedure["name"] = this.currentToken.text;
             procedure["parameters"] = [];
 
+            procedureClass.name = this.currentToken.text;
+            
             this.getNextToken();
             while (this.currentToken.tokenType === logo.tokenizer.tokenTypes.VARIABLE) {
                 procedure["parameters"].push(this.currentToken.text);
+                procedureClass.parameters.push(this.currentToken.text);
                 this.getNextToken();
             }
+
+            procedureClass.procedureBodyFirstTokenIndex = this.currentTokenIndex;
+
             // TODO maybe do putback here so it is currenttokenIndex?
             procedure["procedureDefinitionLastTokenIndex"] = this.currentTokenIndex - 1;
 
             this.skipUntilEndOfProcedure();
+
+            procedureClass.primitiveEndTokenIndex = this.currentTokenIndex;
 
             this.procedures.push(procedure);
         }
@@ -418,6 +442,7 @@ class Parser {
         this.currentTokenIndex = -1; // So when we get the first token, it will be 0, first index in an array.
         this.codeBlockStack = [];
         this.procedures = [];
+        this.procedures2 = [];
         this.procedureCallStack = [];
         this.stopParsingRequested = false;
     }
@@ -565,7 +590,6 @@ class Parser {
         this.stopParsingRequested = true;
     }
 }
-
 class Token {
     constructor(startIndex = 0, text = "", tokenType = logo.tokenizer.tokenTypes.NONE, primitive = logo.tokenizer.primitives.NONE) {
         this.startIndex = startIndex;
@@ -621,8 +645,9 @@ class Tokenizer {
             logo.tokenizer.delimiters.MINUS,
             logo.tokenizer.delimiters.MULTIPLIEDBY,
             logo.tokenizer.delimiters.DIVIDEDBY,
+            logo.tokenizer.delimiters.GREATERTHAN,
             logo.tokenizer.delimiters.LESSERTHAN
-        ].join('');
+        ].join(''); // TODO to do reflection in logo.tokenizer.delimiters and get them from there
     }
     isDelimiter(c) {
         return this.delimiters.indexOf(c) !== -1;
