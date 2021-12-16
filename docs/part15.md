@@ -19,7 +19,7 @@ to tree :length
   rt 90
   tree :length/2
   lt 45
-  re :length
+  bk :length
 end
 cs
 bk 100
@@ -281,52 +281,8 @@ execute_stop() {
 
 we don't stop the parsing completely (only when pressing the UI button to stop).
 
-Ready to try again? yes? you will be disappointed because we still don't have the tree the way we wanted it to be. The good news is that the code seems to finish (it didn't enter an endless loop) but the tree looks a bit "spooked".
+Ready to try again? you will be pleased to know that it works as expected:
 
-![tree wrong turn procedure](/img/part15_wrong_turn_end_procedure.png)
+![recursive tree](/img/part15_recursive_tree.gif)
 
-Ok, the red line has been drawn by me, it wasn't there. If you compare with the previous animation in this part you can see that what was done before was up to the red line. Anything on the left of the red line is something new after we created the procedure call stack. At first it looks like just something messed up but if we pay attention we can see that it is just the same values we needed drawn from the original tree but rotated 90 degrees to the right, i.e. if what's on the left of the red line could be rotated 90 degrees to the right it would be superimpose to the original tree, so I am afraid we would need to debug what's going on.
-
-## Debugging the wrong turn
-
-From the logs I got hold of the array of tokens that is our script and will try to find out what I am missing. My guess is that we are not reading one single token and that is causing one primitive not to be executed.
-
-Index | Text      | Type
------ | --------- | --------------
-   00 | "to"      | PRIMITIVE
-   01 | "tree"    | PROCEDURE_NAME
-   02 | ":length" | VARIABLE
-   03 | "if"      | PRIMITIVE
-   04 | ":length" | VARIABLE
-   05 | "<"       | DELIMITER
-   06 | "15"      | NUMBER
-   07 | "["       | DELIMITER
-   08 | "stop"    | PRIMITIVE
-   09 | "]"       | DELIMITER
-   10 | "fd"      | PRIMITIVE
-   11 | ":length" | VARIABLE
-   12 | "lt"      | PRIMITIVE
-   13 | "45"      | NUMBER
-   14 | "tree"    | PROCEDURE_NAME
-   15 | ":length" | VARIABLE
-   16 | "/"       | DELIMITER
-   17 | "2"       | NUMBER
-   18 | "rt"      | PRIMITIVE
-   19 | "90"      | NUMBER
-   20 | "tree"    | PROCEDURE_NAME
-   21 | ":length" | VARIABLE
-   22 | "/"       | DELIMITER
-   23 | "2"       | NUMBER
-   24 | "lt"      | PRIMITIVE
-   25 | "45"      | NUMBER
-   26 | "re"      | PROCEDURE_NAME
-   27 | ":length" | VARIABLE
-   28 | "end"     | PRIMITIVE
-   29 | "cs"      | PRIMITIVE
-   30 | "bk"      | PRIMITIVE
-   31 | "100"     | NUMBER
-   32 | "tree"    | PROCEDURE_NAME
-   33 | "160"     | NUMBER
-
-
-
+In the [next part](/logo/part16) we will finally tackle how to use Spanish instead of English and you would be surprised at how easy it will be!

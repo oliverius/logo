@@ -78,7 +78,7 @@ to tree :length
   rt 90
   tree :length/2
   lt 45
-  re :length
+  bk :length
 end
 cs
 bk 100

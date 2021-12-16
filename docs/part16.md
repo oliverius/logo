@@ -6,27 +6,37 @@ permalink: /part16/
 
 ## Hola amigos! parser now also in Spanish
 
+We have already solved the 4 different examples that I wanted to be able to run in our LOGO interpreter. The only thing missing is to run a script in Spanish (because I learned LOGO in Spain) and this will be a lot simpler that you think because of our primitive aliases. Let's take a look for example of `forward`:
 
+```javascript
+{
+  primitive: logo.tokenizer.primitives.FORWARD,
+  aliases: ["forward", "fd"]
+}
+```
 
-## Parser testing with events
+we can see that we have two aliases already, `forward` and `fd`. Therefore the easiest way to add Spanish (and thanks to the primitives in both languages don't have any clash where one primitive is the name of another primitive in the other language) we can do:
 
-There is another benefit of using events with the parser, and that's that we can test what the parser is doing instead of relying in looking at the screen.
+```javascript
+{
+  primitive: logo.tokenizer.primitives.FORWARD,
+  aliases: ["forward", "fd", "avanza", "av"]
+}
+```
 
-For example, for our typical square `repeat 4 [fd 60 rt 90]` the parser will emit 8 events:
+and that's it! instead of showing the code here I will show a table comparing the primitives in both languages:
 
-`fd 60` `rt 90` `fd 60` `rt 90` `fd 60` `rt 90` `fd 60` `rt 90`
-
-which is very easy to test and will be always the same events for that script.
-
-In the final version of the code I did those tests tweaking the method `parse()` in the parser to avoid using the clock since the use of the clock was mostly to avoid endless loops blocking everything. Because we won't be testing endless loops recursively anyway we don't need to worry.
-
-Note (just in case) that you won't really see values like `fd 60` but `1`, `60` because `1` is the value in the enum for the `forward` primitive, so instead of:
-
-`fd 60` `rt 90` `fd 60` `rt 90` `fd 60` `rt 90` `fd 60` `rt 90`
-
-we will emit:
-
-`1 60` `2 90` `1 60` `2 90` `1 60` `2 90` `1 60` `2 90`
-
-
-
+English     |    | Spanish |  
+----------- | -  | ------- | -
+    forward | fd | avanza  | av
+       back | bk |         | re
+       left | lt |
+      right | rt |
+      penup | pu |
+    pendown | pd |
+     repeat |    |
+clearscreen | cs |
+         to |    |
+        end |    |
+         if |    |
+       stop |    |
