@@ -26,17 +26,37 @@ we can see that we have two aliases already, `forward` and `fd`. Therefore the e
 
 and that's it! instead of showing the code here I will show a table comparing the primitives in both languages:
 
-English     |    | Spanish |  
------------ | -  | ------- | -
-    forward | fd | avanza  | av
-       back | bk |         | re
-       left | lt |
-      right | rt |
-      penup | pu |
-    pendown | pd |
-     repeat |    |
-clearscreen | cs |
-         to |    |
-        end |    |
-         if |    |
-       stop |    |
+English     |    | Spanish       |  
+----------- | -  | ------------- | -
+    forward | fd | avanza        | av
+       back | bk | retrocede     | re
+       left | lt | giraizquierda | gi
+      right | rt | giraderecha   | gd
+      penup | pu | subelapiz     | sl
+    pendown | pd | bajalapiz     | bl
+     repeat |    | repite        |
+clearscreen | cs | borrapantalla | bp
+         to |    | para          |
+        end |    | fin           |
+         if |    | si            |
+       stop |    | alto          |
+
+and after implementing these values, we are able to work in Spanish as well!
+
+![square now in Spanish](/img/part16_square_in_spanish.gif)
+
+There is an unintended side effect with the way we do the aliases and it is that we can mix and match English and Spanish, for example instead of:
+
+`repeat 4 [forward 60 right 90]`
+
+or
+
+`repite 4 [avanza 60 giraderecha 90]`
+
+we can have something like
+
+`repeat 4 [forward 60 giraderecha 90]`
+
+but that's something that can be easily done if we feed the aliases one language at a time.
+
+Happy coding!
