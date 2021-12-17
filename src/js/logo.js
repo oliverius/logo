@@ -115,6 +115,14 @@ const logo = {
         }]
 };
 
+class Procedure {
+    name = "";
+    parameters = [];
+    primitiveToTokenIndex = 0;
+    primitiveEndTokenIndex = 0;
+    procedureBodyFirstTokenIndex = 0;
+}
+
 class Interpreter {
     constructor(editorId, canvasId, statusBarId) {
         this.editor = document.getElementById(editorId);
@@ -219,13 +227,7 @@ class Interpreter {
     }
 }
 
-const ProcedureDefinition = class {
-    name = "";
-    parameters = [];
-    primitiveToTokenIndex = 0;
-    primitiveEndTokenIndex = 0;
-    procedureBodyFirstTokenIndex = 0;
-};
+
 class Parser {    
 
     assignVariable(variableName) {
@@ -319,32 +321,27 @@ class Parser {
     execute_to() {
         // TODO some comment of what a definition of a procedure looks like
         // {Primitive TO} {Procedure name} {Variable 1}...{Variable n} body {Primitive END}
-        let procedureClass = new Procedure();
-        procedureClass.primitiveToTokenIndex = this.currentTokenIndex;
+        let procedure = new Procedure();
 
-        let procedure = {};
+        procedure.primitiveToTokenIndex = this.currentTokenIndex;
         this.getNextToken();
-        if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.PROCEDURE_NAME) {
-            procedure["name"] = this.currentToken.text;
-            procedure["parameters"] = [];
 
-            procedureClass.name = this.currentToken.text;
+        if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.PROCEDURE_NAME) {
             
+            procedure.name = this.currentToken.text;
             this.getNextToken();
-            while (this.currentToken.tokenType === logo.tokenizer.tokenTypes.VARIABLE) {
-                procedure["parameters"].push(this.currentToken.text);
-                procedureClass.parameters.push(this.currentToken.text);
+
+            while (this.currentToken.tokenType === logo.tokenizer.tokenTypes.VARIABLE) {            
+                procedure.parameters.push(this.currentToken.text);
                 this.getNextToken();
             }
-
-            procedureClass.procedureBodyFirstTokenIndex = this.currentTokenIndex;
-
-            // TODO maybe do putback here so it is currenttokenIndex?
-            procedure["procedureDefinitionLastTokenIndex"] = this.currentTokenIndex - 1;
+            procedure.procedureBodyFirstTokenIndex = this.currentTokenIndex;            
 
             this.skipUntilEndOfProcedure();
 
-            procedureClass.primitiveEndTokenIndex = this.currentTokenIndex;
+            procedure.primitiveEndTokenIndex = this.currentTokenIndex;
+
+            console.table(procedure);
 
             this.procedures.push(procedure);
         }
@@ -442,7 +439,6 @@ class Parser {
         this.currentTokenIndex = -1; // So when we get the first token, it will be 0, first index in an array.
         this.codeBlockStack = [];
         this.procedures = [];
-        this.procedures2 = [];
         this.procedureCallStack = [];
         this.stopParsingRequested = false;
     }
@@ -452,7 +448,7 @@ class Parser {
         this.raiseStatusEvent(logo.parser.statusEvent.values.START_PARSING);
 
         this.parsingLoop = setInterval(() => {
-            console.log("⌛️💓");
+            console.log("⌛️💓"); // heartbeat
             if (this.currentToken.tokenType !== logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM &&
                 !this.stopParsingRequested) {
                 this.parsingStep();
@@ -580,7 +576,7 @@ class Parser {
 
             this.procedureCallStack.push(procedureCallStackItem);
 
-            this.setCurrentTokenIndex(procedure.procedureDefinitionLastTokenIndex);
+            this.setCurrentTokenIndex(procedure.procedureBodyFirstTokenIndex - 1);
         }
     }
     setCurrentTokenIndex(index) {
