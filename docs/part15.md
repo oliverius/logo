@@ -286,3 +286,7 @@ Ready to try again? you will be pleased to know that it works as expected:
 ![recursive tree](/img/part15_recursive_tree.gif)
 
 In the [next part](/logo/part16) we will finally tackle how to use Spanish instead of English and you would be surprised at how easy it will be!
+
+And just out of curiosity if you want to see how the tree code is generated, I made a graph with all the trees expanded one inside the other. If we follow all the turtle commands (in red) from top to bottom we will get exactly what this recursive tree example does.
+
+![recursive tree code expanded](/img/part15_recursive_tree_code_expanded.png)
