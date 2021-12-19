@@ -124,17 +124,21 @@ class Procedure {
 }
 
 class Interpreter {
-    constructor(editorId, canvasId, statusBarId) {
+    constructor(editorId, canvasId, statusBarId, examplesDropdownId, i18n) {
         this.editor = document.getElementById(editorId);
         this.canvas = document.getElementById(canvasId);
         this.statusbar = document.getElementById(statusBarId);
         this.turtle = new Turtle(this.canvas);
         this.tokenizer = new Tokenizer(logo.primitiveAliases);
-        this.parser = new Parser();
+        this.parser = new Parser();        
         this.setEditor(this.getLatestScriptRun());
 
+        logo.i18n = i18n; // TODO We set up the different languages, WIP
+        
         runTokenizerTests(this.tokenizer);
         runParserTests(this.tokenizer, this.parser);
+
+        this.populateExamples(examplesDropdownId, "English");
         
         this.addEventListeners();
     }
@@ -183,6 +187,7 @@ class Interpreter {
     }
     clear() {
         this.setEditor("");
+        this.turtle.execute_clearscreen();
     }
     getLatestScriptRun() {
         return localStorage.getItem(logo.interpreter.storageKey) ?? "";
@@ -202,19 +207,25 @@ class Interpreter {
     openDialog() {
 
     }
-    toggleExamples() {
-        let dialog = document.getElementById('dialog-help-english');
-        if (dialog.classList.contains('hidden')) {
-            dialog.classList.remove('hidden');
-        } else {
-            dialog.classList.add('hidden');
-        }
-        // TODO, maybe it is a toggle
+    populateExamples(dropdownId, language = "English") {        
+        let select = document.getElementById(dropdownId);
 
+        let examples = logo.i18n[language].examples;
+        examples.forEach(example => {
+            let option = document.createElement('option');
+            option.value = example.name;
+            option.text = example.name;
+            select.appendChild(option);
+        });
+
+        select.addEventListener('change', (event) => {            
+            let example = examples.find(ex => ex.name === event.target.value);
+            if (example !== undefined) {
+                let code = example.code.join('\n');
+                this.setEditor(code);
+            }
+        });
     }
-
-
-
     stop() {
         this.parser.stopParsing();
     }
@@ -329,7 +340,6 @@ class Parser {
             Names of procedures and inputs are not case-sensitive.
             The number of inputs can be 0, 1, 2, ...
         */
-
         let procedure = new Procedure();
 
         procedure.primitiveToTokenIndex = this.currentTokenIndex;
@@ -338,8 +348,8 @@ class Parser {
         if (this.currentToken.tokenType === logo.tokenizer.tokenTypes.PROCEDURE_NAME) {
             
             procedure.name = this.currentToken.text;
+            
             this.getNextToken();
-
             while (this.currentToken.tokenType === logo.tokenizer.tokenTypes.VARIABLE) {            
                 procedure.inputs.push(this.currentToken.text);
                 this.getNextToken();
@@ -882,5 +892,5 @@ class Turtle {
         this.y = y;
     }
 }
-
-const interpreter = new Interpreter('logo-editor', 'logo-graphics', 'logo-statusbar');
+console.log(i18n);
+const interpreter = new Interpreter('logo-editor', 'logo-graphics', 'logo-statusbar', 'logo-examples', i18n);

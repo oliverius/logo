@@ -72,6 +72,16 @@ section.controls>button:focus {
     outline: 1px solid orange;
 }
 
+section.controls>select {
+    width: 133px;
+    font-size: 14px;
+    font-weight: bold;
+    border: 2px solid black;
+    font-family: Arial, Arial, Helvetica, sans-serif;
+    text-align: left;
+    background-color: #E8E8E8;
+}
+
 footer img {
     max-height: 100%;
     padding-right: 3px;

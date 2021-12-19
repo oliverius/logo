@@ -16,13 +16,15 @@
             <section class="controls">
                 <button onclick="interpreter.run()">Run ▶️</button>
                 <button onclick="interpreter.stop()">Stop ⏹</button>
-                <button onclick="interpreter.clear()">Clear ❌</button>
-                <button onclick="interpreter.toggleExamples()">Examples 🐢</button>
+                <button onclick="interpreter.clear()">Clear ❌</button>               
+                <select id="logo-examples">                   
+                    <option selected disabled>Examples 🐢</option>
+                </select>
                 <button onclick="interpreter.toggleHelp()">Help 🆘</button>
                 <button onclick="">English ⌨️</button>
             </section>
             <section class="output">
-                <span id="logo-statusbar">blah error here and there</span>
+                <span id="logo-statusbar">...</span>
             </section>
             <footer>
                 <a href="https://github.com/oliverius/logo#readme"><img src="img/GitHub-Mark-Light-32px.png">oliverius/logo</a><!--https://github.com/logos-->
@@ -39,22 +41,7 @@
             <button class="dialog_close_button">Close ❌</button>
         </aside>
         <aside role="dialog" aria-modal="true" id="dialog-help-english" class="hidden">
-            <h1>Examples:</h1>
-            <div>
-                <h2>Square</h2>
-                <p>fd 60 rt 90 fd 60 rt 90 fd 60 rt 90 fd 60 rt 90</p>
-            </div>
-            <div>
-                <h2>Square using REPEAT</h2>
-                <p>repeat 4 [fd 60 rt 90]</p>
-            </div>
-            <div>
-                <h2>Square using a procedure</h2>
-                <p>to square :side</p>
-                <p>repeat 4 [fd :side rt 90]</p>
-                <p>end</p>
-                <p>square 60</p>
-            </div>
+            <h1>Examples:</h1>            
             <div>
                 <h2>Flower</h2>
             </div>
@@ -66,6 +53,7 @@
         </aside>
         <script type="text/javascript" src="../test/tokenizertests.js"></script>
         <script type="text/javascript" src="../test/parsertests.js"></script>
+        <script type="text/javascript" src="js/logo.i18n.js"></script>
         <script type="text/javascript" src="js/logo.js"></script>
     </body>
 </html>
