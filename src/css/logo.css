@@ -82,6 +82,10 @@ section.controls>select {
     background-color: #E8E8E8;
 }
 
+section.controls>select.double {
+    width: 272px;
+}
+
 footer img {
     max-height: 100%;
     padding-right: 3px;
@@ -113,39 +117,4 @@ footer a:active {
 #logo-graphics {
     border: 2px solid black;
     background-color: #E8E8E8;
-}
-
-[role="dialog"] {
-    box-sizing: border-box;
-    padding: 15px;
-    border: 1px solid black;
-    background-color: peru;
-    min-height: 100vh;
-    position: absolute;
-    top: 2rem;
-    left: 50vw;
-    /* move to the middle of the screen (assumes relative parent is the body/viewport) */
-    transform: translateX(-50%);
-    /* move backwards 50% of this element's width */
-    min-width: 760px;
-    min-height: auto;
-    box-shadow: 0 19px 38px rgba(0, 0, 0, 0.12), 0 15px 12px rgba(0, 0, 0, 0.22);
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 10px;
-}
-
-.hidden {
-    display: none;
-}
-
-.dialog_close_button {
-    float: right;
-    position: absolute;
-    top: 10px;
-    left: 90%;
-    height: 25px;
-}
-
-.dialog_close_button img {
-    border: 0;
 }

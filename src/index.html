@@ -14,43 +14,24 @@
                 <canvas id="logo-graphics" width="400" height="400"></canvas>
             </section>
             <section class="controls">
-                <button onclick="interpreter.run()">Run ▶️</button>
-                <button onclick="interpreter.stop()">Stop ⏹</button>
-                <button onclick="interpreter.clear()">Clear ❌</button>               
-                <select id="logo-examples">                   
+                <button name="run" onclick="interpreter.run()">Run ▶️</button>
+                <button name="stop" onclick="interpreter.stop()">Stop ⏹</button>
+                <button name="clear" onclick="interpreter.clear()">Clear ❌</button>
+                <select id="logo-examples" name="examples" class="double">                   
                     <option selected disabled>Examples 🐢</option>
                 </select>
-                <button onclick="interpreter.toggleHelp()">Help 🆘</button>
-                <button onclick="">English ⌨️</button>
+                <select>
+                    <option selected>English ⌨️</option>
+                    <option>Español ⌨️</option>
+                </select>              
             </section>
             <section class="output">
-                <span id="logo-statusbar">...</span>
+                <span id="logo-statusbar"></span>
             </section>
             <footer>
                 <a href="https://github.com/oliverius/logo#readme"><img src="img/GitHub-Mark-Light-32px.png">oliverius/logo</a><!--https://github.com/logos-->
             </footer>
         </main>
-        <aside role="dialog" aria-modal="true" id="dialog-examples-english" class="hidden">
-            Examples:
-            <ul>
-                <li>Square</li>
-                <li>Square using REPEAT</li>
-                <li>Hexagon</li>
-
-            </ul>
-            <button class="dialog_close_button">Close ❌</button>
-        </aside>
-        <aside role="dialog" aria-modal="true" id="dialog-help-english" class="hidden">
-            <h1>Examples:</h1>            
-            <div>
-                <h2>Flower</h2>
-            </div>
-            <div>
-                <h2>Circle of pentagons</h2>
-            </div>
-              
-            <button class="dialog_close_button">Close ❌</button>
-        </aside>
         <script type="text/javascript" src="../test/tokenizertests.js"></script>
         <script type="text/javascript" src="../test/parsertests.js"></script>
         <script type="text/javascript" src="js/logo.i18n.js"></script>

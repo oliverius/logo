@@ -202,11 +202,6 @@ class Interpreter {
     setStatusBar(message) {
         this.statusbar.innerText = message;
     }
-
-
-    openDialog() {
-
-    }
     populateExamples(dropdownId, language = "English") {        
         let select = document.getElementById(dropdownId);
 

@@ -1,5 +1,23 @@
 const i18n = {
     "English": {
+        "UI": [
+            {
+                "name": "run",
+                "text": "Run ▶️"
+            },
+            {
+                "name": "stop",
+                "text": "Stop ⏹"
+            },
+            {
+                "name": "clear",
+                "text": "Clear ❌"
+            },
+            {
+                "name": "examples",
+                "text": "Examples 🐢"
+            }
+        ],
         "examples": [
             {
                 "name": "A square with REPEAT",
