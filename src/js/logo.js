@@ -117,7 +117,7 @@ const logo = {
 
 class Procedure {
     name = "";
-    parameters = [];
+    inputs = [];
     primitiveToTokenIndex = 0;
     primitiveEndTokenIndex = 0;
     procedureBodyFirstTokenIndex = 0;
@@ -227,14 +227,13 @@ class Interpreter {
     }
 }
 
-
 class Parser {    
 
     assignVariable(variableName) {
         let item = this.peekLastProcedureCallStackItem();
-        let parameters = item.parameters;
-        let parameter = parameters.find(p => p.name === variableName);
-        let value = parseInt(parameter.value); // TODO value should be a number
+        let inputs = item.inputs;
+        let input  = inputs.find(i => i.name === variableName);
+        let value = parseInt(input.value); // TODO check value should be a number
         return value;
     }
     beginCodeBlock(primitive = logo.tokenizer.primitives.NONE, arg = 0) {
@@ -319,8 +318,18 @@ class Parser {
         this.setCurrentTokenIndex(item.procedureCallLastTokenIndex);
     }
     execute_to() {
-        // TODO some comment of what a definition of a procedure looks like
-        // {Primitive TO} {Procedure name} {Variable 1}...{Variable n} body {Primitive END}
+        /*
+            Procedure definition
+
+            TO procedure_name :input1 :input2 ...
+              ... body of the procedure ...
+            END
+
+            There must be only one procedure with procedure_name.
+            Names of procedures and inputs are not case-sensitive.
+            The number of inputs can be 0, 1, 2, ...
+        */
+
         let procedure = new Procedure();
 
         procedure.primitiveToTokenIndex = this.currentTokenIndex;
@@ -332,7 +341,7 @@ class Parser {
             this.getNextToken();
 
             while (this.currentToken.tokenType === logo.tokenizer.tokenTypes.VARIABLE) {            
-                procedure.parameters.push(this.currentToken.text);
+                procedure.inputs.push(this.currentToken.text);
                 this.getNextToken();
             }
             procedure.procedureBodyFirstTokenIndex = this.currentTokenIndex;            
@@ -343,7 +352,7 @@ class Parser {
 
             console.table(procedure);
 
-            this.procedures.push(procedure);
+            this.procedures[procedure.name] = procedure;
         }
     }
     execute_repeat(n = 0) {
@@ -438,7 +447,7 @@ class Parser {
         this.currentToken = {};
         this.currentTokenIndex = -1; // So when we get the first token, it will be 0, first index in an array.
         this.codeBlockStack = [];
-        this.procedures = [];
+        this.procedures = {};
         this.procedureCallStack = [];
         this.stopParsingRequested = false;
     }
@@ -544,10 +553,7 @@ class Parser {
         window.dispatchEvent(event);
     }
     jumpToProcedure(name) {
-        let searchProcedureResults = this.procedures.filter(procedure => {
-            return procedure.name === name.toLowerCase(); // TODO create test with procedure defined in capitals and called in lower, and viceversa
-        });
-        if (searchProcedureResults.length > 0) {
+        if (this.procedures[name] !== undefined) {
             if (this.procedureCallStack.length + 1 > logo.parser.maxProcedureCallStack) {
                 this.stopParsing();
                 this.raiseErrorEvent(
@@ -558,19 +564,19 @@ class Parser {
                 return;
             }
 
-            let procedure = searchProcedureResults[0];
+            let procedure = this.procedures[name];
 
-            let assignedParameters = [];
-            procedure.parameters.forEach(parameter => {
-                assignedParameters.push({
-                    name: parameter,
+            let assignedInputs = [];
+            procedure.inputs.forEach(input => {
+                assignedInputs.push({
+                    name: input,
                     value: this.getExpression()
                 });
             });
 
             let procedureCallStackItem = {
                 name : procedure.name,
-                parameters: assignedParameters,
+                inputs: assignedInputs,
                 procedureCallLastTokenIndex: this.currentTokenIndex
             };
 
