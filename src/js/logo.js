@@ -137,7 +137,7 @@ class Interpreter {
         runTokenizerTests(this.tokenizer);
         runParserTests(this.tokenizer, this.parser);
         
-        this.setUI("English", examplesDropdownId, languageDropdownId);
+        this.setUI(examplesDropdownId, languageDropdownId);
         
         this.addWindowEventListeners();
     }
@@ -191,6 +191,37 @@ class Interpreter {
     getLatestScriptRun() {
         return localStorage.getItem(logo.interpreter.storageKey) ?? "";
     }
+    populateExamples(dropdownId, language, title, examples) {
+        let select = document.getElementById(dropdownId);
+
+        select.removeEventListener('change', this);
+
+        while (select.options.length > 0) {
+            select.remove(0);
+        }
+
+        let titleOption = document.createElement('option');
+        titleOption.value = title;
+        titleOption.text = title;
+        titleOption.disabled = true;
+        titleOption.selected = true;
+        select.appendChild(titleOption);
+
+        examples.forEach(example => {
+            let option = document.createElement('option');
+            option.value = example.name;
+            option.text = example.name;
+            select.appendChild(option);
+        });
+
+        select.addEventListener('change', (event) => {
+            let example = examples.find(ex => ex.name === event.target.value);
+            if (example !== undefined) {
+                let code = example.code.join('\n');
+                this.setEditor(code);
+            }
+        });        
+    }
     saveLatestScriptRun(script) {
         localStorage.setItem(logo.interpreter.storageKey, script);
     }
@@ -201,10 +232,8 @@ class Interpreter {
     setStatusBar(message) {
         this.statusbar.innerText = message;
     }
-    setUI(language, examplesDropdownId, languageDropdownId) {
+    setUI(examplesDropdownId, languageDropdownId) {
         this.setEditor(this.getLatestScriptRun());
-
-        //this.populateExamples(examplesDropdownId, language);
 
         let select = document.getElementById(languageDropdownId);
         select.addEventListener('change', (event) => {
@@ -230,37 +259,6 @@ class Interpreter {
     triggerChange(element) {
         let changeEvent = new Event('change');
         element.dispatchEvent(changeEvent);
-    }
-    populateExamples(dropdownId, language, title, examples) {
-        let select = document.getElementById(dropdownId);
-
-        select.removeEventListener('change', this);
-
-        while (select.options.length > 0) {
-            select.remove(0);
-        }
-
-        let titleOption = document.createElement('option');
-        titleOption.value = title;
-        titleOption.text = title;
-        titleOption.disabled = true;
-        select.appendChild(titleOption);
-
-        examples.forEach(example => {
-            let option = document.createElement('option');
-            option.value = example.name;
-            option.text = example.name;
-            select.appendChild(option);
-        });
-
-        select.addEventListener('change', (event) => {
-            console.log(event);
-            let example = examples.find(ex => ex.name === event.target.value);
-            if (example !== undefined) {
-                let code = example.code.join('\n');
-                this.setEditor(code);
-            }
-        });        
     }
     stop() {
         this.parser.stopParsing();
