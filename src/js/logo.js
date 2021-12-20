@@ -204,32 +204,48 @@ class Interpreter {
     setUI(language, examplesDropdownId, languageDropdownId) {
         this.setEditor(this.getLatestScriptRun());
 
-        this.populateExamples(examplesDropdownId, language);
+        //this.populateExamples(examplesDropdownId, language);
 
         let select = document.getElementById(languageDropdownId);
         select.addEventListener('change', (event) => {
             let selectedLanguage = event.target.value;
-            console.log(logo.i18n[selectedLanguage]);
-            logo.i18n[selectedLanguage].UI.forEach(uiElement => {
+            let locale = logo.i18n[selectedLanguage];
+            locale.UI.forEach(uiElement => {
                 let control = document.getElementById(uiElement.id);
                 switch(control.type) {
                     case "button":
                         control.innerText = uiElement.text;
                         break;
                     case "select-one":
-                        this.populateExamples(examplesDropdownId, selectedLanguage);
+                        let title = uiElement.text;
+                        let examples = locale.examples;
+                        this.populateExamples(examplesDropdownId, selectedLanguage, title, examples);
                         break;
                 }
             });
         });
+
+        this.triggerChange(select); // To populate it for the first time
     }
-    populateExamples(dropdownId, language = "English") {
+    triggerChange(element) {
+        let changeEvent = new Event('change');
+        element.dispatchEvent(changeEvent);
+    }
+    populateExamples(dropdownId, language, title, examples) {
         let select = document.getElementById(dropdownId);
+
+        select.removeEventListener('change', this);
+
         while (select.options.length > 0) {
-            select.remove(0); // TODO we also remove the disable option that we didn't want to remove because it is the "title"
+            select.remove(0);
         }
-        
-        let examples = logo.i18n[language].examples;
+
+        let titleOption = document.createElement('option');
+        titleOption.value = title;
+        titleOption.text = title;
+        titleOption.disabled = true;
+        select.appendChild(titleOption);
+
         examples.forEach(example => {
             let option = document.createElement('option');
             option.value = example.name;
@@ -237,14 +253,14 @@ class Interpreter {
             select.appendChild(option);
         });
 
-        select.removeEventListener('change', this);
-        select.addEventListener('change', (event) => {            
+        select.addEventListener('change', (event) => {
+            console.log(event);
             let example = examples.find(ex => ex.name === event.target.value);
             if (example !== undefined) {
                 let code = example.code.join('\n');
                 this.setEditor(code);
             }
-        });
+        });        
     }
     stop() {
         this.parser.stopParsing();
@@ -467,7 +483,7 @@ class Parser {
         this.currentTokenIndex++;
         if (this.currentTokenIndex < this.tokens.length) {
             this.currentToken = this.tokens[this.currentTokenIndex];
-            console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
+            //console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
         } else {
             this.currentToken = new Token(this.currentTokenIndex, "", logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM);
         }

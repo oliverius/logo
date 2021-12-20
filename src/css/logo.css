@@ -84,6 +84,11 @@ section.controls>select {
 
 section.controls>select.double {
     width: 272px;
+    padding-left: 20px;
+}
+
+section.controls>select.language {
+    padding-left: 20px;
 }
 
 footer img {
