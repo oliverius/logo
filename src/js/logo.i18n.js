@@ -7,7 +7,7 @@ const i18n = {
             },
             {
                 "id": "stop",
-                "id": "Stop ⏹"
+                "text": "Stop ⏹"
             },
             {
                 "id": "clear",

@@ -209,14 +209,18 @@ class Interpreter {
         let select = document.getElementById(languageDropdownId);
         select.addEventListener('change', (event) => {
             let selectedLanguage = event.target.value;
+            console.log(logo.i18n[selectedLanguage]);
             logo.i18n[selectedLanguage].UI.forEach(uiElement => {
                 let control = document.getElementById(uiElement.id);
-                //control.innerText = uiElement.text;
-                console.log(control.type);
+                switch(control.type) {
+                    case "button":
+                        control.innerText = uiElement.text;
+                        break;
+                    case "select-one":
+                        this.populateExamples(examplesDropdownId, selectedLanguage);
+                        break;
+                }
             });
-            
-            
-            this.populateExamples(examplesDropdownId, selectedLanguage);
         });
     }
     populateExamples(dropdownId, language = "English") {
