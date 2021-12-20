@@ -1,5 +1,6 @@
-function runTokenizerTests(tokenizer) {
+function runTokenizerTests(i18n) {
   const LF = "\n";
+  const tokenizer = new Tokenizer(i18n['English'].primitiveAliases); // Tests only with English primitives
   let assertToken = (expectedToken = {}, actualToken = {}) => {
           let success = actualToken.startIndex === expectedToken.startIndex &&
               actualToken.endIndex === expectedToken.endIndex &&

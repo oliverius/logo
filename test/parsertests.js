@@ -1,4 +1,6 @@
-function runParserTests(tokenizer, parser) {
+function runParserTests(i18n) {
+    const tokenizer = new Tokenizer(i18n['English'].primitiveAliases); // Tests only with English primitives
+    const parser = new Parser();
     let assertExpression = (expression = "", expectedValue = 0) => {
         let tokens = tokenizer.tokenize(expression);
         parser.initializeParsing(tokens);

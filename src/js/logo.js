@@ -87,11 +87,9 @@ class Interpreter {
         this.turtle = new Turtle(this.canvas);
         this.tokenizer = new Tokenizer(primitiveAliases);
         this.parser = new Parser();
-   
-        // TODO My tests are default in English so I can't pass the tokenizer in different language from the beginning,
-        // they have to be independent
-        //runTokenizerTests(this.tokenizer);
-        //runParserTests(this.tokenizer, this.parser);
+
+        runTokenizerTests(i18n);
+        runParserTests(i18n);
 
         this.setUI(examplesDropdownId, languageDropdownId);
         

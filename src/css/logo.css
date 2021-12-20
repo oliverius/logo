@@ -65,7 +65,7 @@ section.controls>button {
 }
 
 section.controls>button:active {
-    background: rgba(71, 152, 194, 1);
+    background: orange;
 }
 
 section.controls>button:focus {
