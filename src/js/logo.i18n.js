@@ -1,5 +1,54 @@
 const i18n = {
     "English": {
+        "primitiveAliases": [
+            {
+                "primitive": "FORWARD",
+                "aliases": [ "forward", "fd" ]
+            },
+            {
+                "primitive": "BACK",
+                "aliases": [ "back", "bk" ]
+            },
+            {
+                "primitive": "LEFT",
+                "aliases": [ "left", "lt" ]
+            },
+            {
+                "primitive": "RIGHT",
+                "aliases": [ "right", "rt" ]
+            },
+            {
+                "primitive": "PENUP",
+                "aliases": [ "penup", "pu" ]
+            },
+            {
+                "primitive": "PENDOWN",
+                "aliases": [ "pendown", "pd" ]
+            },
+            {
+                "primitive": "REPEAT",
+                "aliases": [ "repeat" ]
+            },
+            {
+                "primitive": "CLEARSCREEN",
+                "aliases": [ "clearscreen", "cs" ]
+            },
+            {
+                "primitive": "TO",
+                "aliases": [ "to" ]
+            },
+            {
+                "primitive": "END",
+                "aliases": [ "end" ]
+            }, {
+                "primitive": "IF",
+                "aliases": [ "if" ]
+            },
+            {
+                "primitive": "STOP",
+                "aliases": [ "stop" ]
+            }
+        ],
         "UI": [
             {
                 "id": "run",
@@ -65,6 +114,55 @@ const i18n = {
         ]
     },
     "Spanish": {
+        "primitiveAliases": [
+            {
+                "primitive": "FORWARD",
+                "aliases": [ "avanza", "av" ]
+            },
+            {
+                "primitive": "BACK",
+                "aliases": [ "retrocede", "re" ]
+            },
+            {
+                "primitive": "LEFT",
+                "aliases": [ "giraizquierda", "gi"]
+            },
+            {
+                "primitive": "RIGHT",
+                "aliases": [ "giraderecha", "gd"]
+            },
+            {
+                "primitive": "PENUP",
+                "aliases": [ "subelapiz", "sl"]
+            },
+            {
+                "primitive": "PENDOWN",
+                "aliases": [ "bajalapiz", "pd", "bl"]
+            },
+            {
+                "primitive": "REPEAT",
+                "aliases": [ "repite" ]
+            },
+            {
+                "primitive": "CLEARSCREEN",
+                "aliases": [ "borrapantalla", "bp"]
+            },
+            {
+                "primitive": "TO",
+                "aliases": [ "para" ]
+            },
+            {
+                "primitive": "END",
+                "aliases": [ "fin" ]
+            }, {
+                "primitive": "IF",
+                "aliases": [ "si" ]
+            },
+            {
+                "primitive": "STOP",
+                "aliases": [ "alto" ]
+            }
+        ],
         "UI": [
             {
                 "id": "run",
