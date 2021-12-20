@@ -641,19 +641,9 @@ class Tokenizer {
         this.tokens = [];
         this.currentIndex = -1; // So when we get the first character, it will be script[0]
         this.currentCharacter = '';
-        this.delimiters = [
-            logo.tokenizer.delimiters.OPENING_BRACKET,
-            logo.tokenizer.delimiters.CLOSING_BRACKET,
-            logo.tokenizer.delimiters.PLUS,
-            logo.tokenizer.delimiters.MINUS,
-            logo.tokenizer.delimiters.MULTIPLIEDBY,
-            logo.tokenizer.delimiters.DIVIDEDBY,
-            logo.tokenizer.delimiters.GREATERTHAN,
-            logo.tokenizer.delimiters.LESSERTHAN
-        ].join(''); // TODO to do reflection in logo.tokenizer.delimiters and get them from there
     }
     isDelimiter(c) {
-        return this.delimiters.indexOf(c) !== -1;
+        return Object.values(logo.tokenizer.delimiters).includes(c);
     }
     isEndOfFile(c) {
         return c === this.NUL;
@@ -673,7 +663,7 @@ class Tokenizer {
     isWhiteSpace(c) {
         return c === " " || c === "\t";
     }
-    populatePrimitiveAliasesDictionary(primitiveAliases = []) { 
+    populatePrimitiveAliasesDictionary(primitiveAliases = []) {
         let dictionary = {};
         primitiveAliases.forEach(item => {
           item.aliases.forEach(alias => {
@@ -747,7 +737,6 @@ class Tokenizer {
                     console.log(`Unexpected character: "${this.currentCharacter}" ${this.currentCharacter.charCodeAt(0)}`);
                 }
             }
-            //console.log(`Check last token index with current index  ${this.currentIndex}`)
         } while (!this.isEndOfFile(this.currentCharacter))
 
         return this.tokens;

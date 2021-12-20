@@ -211,7 +211,7 @@ const i18n = {
                 "name": "Arbol",
                 "code": [
                     "para arbol :rama",
-                    "  if :rama < 15 [para]",
+                    "  si :rama < 15 [alto]",
                     "  av :rama",
                     "  gi 45",
                     "  arbol :rama/2",
