@@ -124,25 +124,24 @@ class Procedure {
 }
 
 class Interpreter {
-    constructor(editorId, canvasId, statusBarId, examplesDropdownId, i18n) {
+    constructor(editorId, canvasId, statusBarId, examplesDropdownId, languageDropdownId, i18n) {
         this.editor = document.getElementById(editorId);
         this.canvas = document.getElementById(canvasId);
         this.statusbar = document.getElementById(statusBarId);
         this.turtle = new Turtle(this.canvas);
         this.tokenizer = new Tokenizer(logo.primitiveAliases);
-        this.parser = new Parser();        
-        this.setEditor(this.getLatestScriptRun());
-
-        logo.i18n = i18n; // TODO We set up the different languages, WIP
+        this.parser = new Parser();
+        
+        logo.i18n = i18n;
         
         runTokenizerTests(this.tokenizer);
         runParserTests(this.tokenizer, this.parser);
-
-        this.populateExamples(examplesDropdownId, "English");
         
-        this.addEventListeners();
+        this.setUI("English", examplesDropdownId, languageDropdownId);
+        
+        this.addWindowEventListeners();
     }
-    addEventListeners() {
+    addWindowEventListeners() {
         window.addEventListener(logo.parser.errorEvent.name, e => {
             let message = "";
             switch (e.detail.errorCode) {
@@ -202,9 +201,30 @@ class Interpreter {
     setStatusBar(message) {
         this.statusbar.innerText = message;
     }
-    populateExamples(dropdownId, language = "English") {        
-        let select = document.getElementById(dropdownId);
+    setUI(language, examplesDropdownId, languageDropdownId) {
+        this.setEditor(this.getLatestScriptRun());
 
+        this.populateExamples(examplesDropdownId, language);
+
+        let select = document.getElementById(languageDropdownId);
+        select.addEventListener('change', (event) => {
+            let selectedLanguage = event.target.value;
+            logo.i18n[selectedLanguage].UI.forEach(uiElement => {
+                let control = document.getElementById(uiElement.id);
+                //control.innerText = uiElement.text;
+                console.log(control.type);
+            });
+            
+            
+            this.populateExamples(examplesDropdownId, selectedLanguage);
+        });
+    }
+    populateExamples(dropdownId, language = "English") {
+        let select = document.getElementById(dropdownId);
+        while (select.options.length > 0) {
+            select.remove(0); // TODO we also remove the disable option that we didn't want to remove because it is the "title"
+        }
+        
         let examples = logo.i18n[language].examples;
         examples.forEach(example => {
             let option = document.createElement('option');
@@ -213,6 +233,7 @@ class Interpreter {
             select.appendChild(option);
         });
 
+        select.removeEventListener('change', this);
         select.addEventListener('change', (event) => {            
             let example = examples.find(ex => ex.name === event.target.value);
             if (example !== undefined) {
@@ -887,5 +908,10 @@ class Turtle {
         this.y = y;
     }
 }
-console.log(i18n);
-const interpreter = new Interpreter('logo-editor', 'logo-graphics', 'logo-statusbar', 'logo-examples', i18n);
+const interpreter = new Interpreter(
+    'logo-editor',
+    'logo-graphics',
+    'logo-statusbar',
+    'logo-examples',
+    'logo-languages',
+    i18n);

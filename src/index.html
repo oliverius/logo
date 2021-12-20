@@ -14,15 +14,15 @@
                 <canvas id="logo-graphics" width="400" height="400"></canvas>
             </section>
             <section class="controls">
-                <button name="run" onclick="interpreter.run()">Run ▶️</button>
-                <button name="stop" onclick="interpreter.stop()">Stop ⏹</button>
-                <button name="clear" onclick="interpreter.clear()">Clear ❌</button>
-                <select id="logo-examples" name="examples" class="double">                   
+                <button id="run" onclick="interpreter.run()">Run ▶️</button>
+                <button id="stop" onclick="interpreter.stop()">Stop ⏹</button>
+                <button id="clear" onclick="interpreter.clear()">Clear ❌</button>
+                <select id="logo-examples" class="double">                   
                     <option selected disabled>Examples 🐢</option>
                 </select>
-                <select>
-                    <option selected>English ⌨️</option>
-                    <option>Español ⌨️</option>
+                <select id="logo-languages">
+                    <option value="English" selected>English ⌨️</option>
+                    <option value="Spanish">Español ⌨️</option>
                 </select>              
             </section>
             <section class="output">

@@ -2,19 +2,19 @@ const i18n = {
     "English": {
         "UI": [
             {
-                "name": "run",
+                "id": "run",
                 "text": "Run ▶️"
             },
             {
-                "name": "stop",
-                "text": "Stop ⏹"
+                "id": "stop",
+                "id": "Stop ⏹"
             },
             {
-                "name": "clear",
+                "id": "clear",
                 "text": "Clear ❌"
             },
             {
-                "name": "examples",
+                "id": "logo-examples",
                 "text": "Examples 🐢"
             }
         ],
@@ -60,6 +60,71 @@ const i18n = {
                     "cs",
                     "bk 100",
                     "tree 160"
+                ]
+            }
+        ]
+    },
+    "Spanish": {
+        "UI": [
+            {
+                "id": "run",
+                "text": "Corre ▶️"
+            },
+            {
+                "id": "stop",
+                "text": "Para ⏹"
+            },
+            {
+                "id": "clear",
+                "text": "Limpia ❌"
+            },
+            {
+                "id": "logo-examples",
+                "text": "Ejemplos 🐢"
+            }
+        ],
+        "examples": [
+            {
+                "name": "Un cuadrado con REPITE",
+                "code": [
+                    "repite 4 [av 60 gd 90]"
+                ]
+            },
+            {
+                "name": "Un cuadrado en un procedimiento",
+                "code": [
+                    "para cuadrado :lado",
+                    "  repite 4 [av :lado gd 90]",
+                    "fin",
+                    "cuadrado 60"
+                ]
+            },
+            {
+                "name": "Una espiral",
+                "code": [
+                    "para espiral :lado",
+                    "  av :lado gd 90",
+                    "  espiral :lado + 3",
+                    "fin",
+                    "espiral 10"
+                ]
+            },
+            {
+                "name": "Arbol",
+                "code": [
+                    "para arbol :rama",
+                    "  if :rama < 15 [para]",
+                    "  av :rama",
+                    "  gi 45",
+                    "  arbol :rama/2",
+                    "  gd 90",
+                    "  arbol :rama/2",
+                    "  gi 45",
+                    "  re :rama",
+                    "fin",
+                    "lp",
+                    "re 100",
+                    "arbol 160"
                 ]
             }
         ]
