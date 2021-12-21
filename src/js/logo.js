@@ -55,6 +55,18 @@ const logo = {
                 "NONE": 0,
                 "PROCEDURE_CALL_STACK_OVERFLOW": 1
             }
+        },
+        "logEvent": {
+            "name": "PARSER_LOG_EVENT",
+            "types": {
+                "NONE": 0,
+                "INFO": 1,
+                "ERROR": 2              
+            },
+            "errors": {
+                "NONE": 0,
+                "PROCEDURE_CALL_STACK_OVERFLOW": 1
+            }
         }
     },
     "interpreter": {
@@ -96,6 +108,16 @@ class Interpreter {
         this.addWindowEventListeners();
     }
     addWindowEventListeners() {
+        window.addEventListener(logo.parser.logEvent.name, e => {
+            switch(e.detail.type) {
+                case logo.parser.logEvent.types.INFO:
+                    console.log(`%c${e.detail.message}`, "color:blue");
+                    break;
+                case logo.parser.logEvent.types.ERROR:
+                    // TODO do the same as errorEvent and delete errorEvent
+                    break;
+            }
+        });
         window.addEventListener(logo.parser.errorEvent.name, e => {
             let message = "";
             switch (e.detail.errorCode) {
@@ -436,7 +458,9 @@ class Parser {
         this.currentTokenIndex++;
         if (this.currentTokenIndex < this.tokens.length) {
             this.currentToken = this.tokens[this.currentTokenIndex];
-            //console.log(`Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
+            this.raiseLogEvent(
+                logo.parser.logEvent.types.INFO,
+                `Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
         } else {
             this.currentToken = new Token(this.currentTokenIndex, "", logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM);
         }
@@ -456,7 +480,7 @@ class Parser {
         this.raiseStatusEvent(logo.parser.statusEvent.values.START_PARSING);
 
         this.parsingLoop = setInterval(() => {
-            console.log("⌛️💓"); // heartbeat
+            this.raiseLogEvent(logo.parser.logEvent.types.INFO, "⌛️💓"); // heartbeat
             if (this.currentToken.tokenType !== logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM &&
                 !this.stopParsingRequested) {
                 this.parsingStep();
@@ -521,6 +545,19 @@ class Parser {
     putBackToken() {
         this.currentTokenIndex--;
         this.currentToken = this.tokens[this.currentTokenIndex];
+    }
+    raiseEvent(name = "", payload = {}) {
+        let event = new CustomEvent(name, {
+            bubbles: true,
+            detail: payload
+        });
+        window.dispatchEvent(event);
+    }
+    raiseLogEvent(type = logo.parser.logEvent.types.NONE, message = "") {
+        this.raiseEvent(logo.parser.logEvent.name, {
+            type: logo.parser.logEvent.types.INFO,
+            message: message
+        });
     }
     raiseErrorEvent(errorCode = logo.parser.errorEvent.values.NONE, args = []) {
         let event = new CustomEvent(logo.parser.errorEvent.name, {

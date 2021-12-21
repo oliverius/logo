@@ -111,7 +111,10 @@ const i18n = {
                     "tree 160"
                 ]
             }
-        ]
+        ],
+        "errors": {
+            "PROCEDURE_CALL_STACK_OVERFLOW": "You have called a procedure more than {0} times and we stop the program"
+        }
     },
     "Spanish": {
         "primitiveAliases": [
@@ -225,6 +228,9 @@ const i18n = {
                     "arbol 160"
                 ]
             }
-        ]
+        ],
+        "errors": {
+            "PROCEDURE_CALL_STACK_OVERFLOW": "Has llamado un procedimiento mas de {0} y hemos parado el programa"
+        }
     }
 };
