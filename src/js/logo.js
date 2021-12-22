@@ -70,12 +70,7 @@ const logo = {
         }
     },
     "interpreter": {
-        "storageKey": "oliverius_logo",
-        "localization": {
-            "parserErrors": {
-                "PROCEDURE_CALL_STACK_OVERFLOW": "You have called a procedure more than {0} times and we stop the program"
-            }
-        }
+        "storageKey": "oliverius_logo"        
     }   
 };
 
@@ -116,8 +111,8 @@ class Interpreter {
                 case logo.parser.logEvent.types.ERROR:
                     let message = "";
                     switch (e.detail.errorCode) {
-                        case logo.parser.errorEvent.values.PROCEDURE_CALL_STACK_OVERFLOW: // todo get from this.locale
-                            message = logo.interpreter.localization.parserErrors.PROCEDURE_CALL_STACK_OVERFLOW;
+                        case logo.parser.logEvent.errors.PROCEDURE_CALL_STACK_OVERFLOW:
+                            message = this.locale.errors.PROCEDURE_CALL_STACK_OVERFLOW;
                             message = message.replace("{0}", e.detail.args[0]);
                         break;
                     }
@@ -159,6 +154,7 @@ class Interpreter {
     }
     clear() {
         this.setEditor("");
+        this.setStatusBar("");
         this.turtle.execute_clearscreen();
     }
     getLatestScriptRun() {
@@ -228,6 +224,7 @@ class Interpreter {
                 }
             });
             this.tokenizer = new Tokenizer(this.locale.primitiveAliases);
+            this.clear();
         });
 
         this.triggerChange(select); // To populate it for the first time
@@ -558,7 +555,7 @@ class Parser {
             message: message
         });
     }
-    raiseErrorEvent(errorCode = "", args = []) {
+    raiseErrorEvent(errorCode = logo.parser.logEvent.errors.NONE, args = []) {
         this.raiseEvent(logo.parser.logEvent.name, {
             type: logo.parser.logEvent.types.ERROR,
             errorCode: errorCode,

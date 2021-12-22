@@ -354,7 +354,7 @@ const i18n = {
             }
         ],
         "errors": {
-            "PROCEDURE_CALL_STACK_OVERFLOW": "Has llamado un procedimiento mas de {0} y hemos parado el programa"
+            "PROCEDURE_CALL_STACK_OVERFLOW": "Has llamado un procedimiento mas de {0} veces y hemos parado el programa"
         }
     }
 };
