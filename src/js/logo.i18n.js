@@ -84,6 +84,16 @@ const i18n = {
                 ]
             },
             {
+                "name": "Pentagon flower",
+                "code": [
+                    "to pentagon :side",
+                    "  repeat 5 [fd :side rt 360/5]",
+                    "end",
+                    "cs",
+                    "repeat 8 [pentagon 50 rt 45]"                   
+                ]
+            },
+            {
                 "name": "A spiral",
                 "code": [
                     "to spiral :side",
@@ -198,6 +208,16 @@ const i18n = {
                     "  repite 4 [av :lado gd 90]",
                     "fin",
                     "cuadrado 60"
+                ]
+            },
+            {
+                "name": "Flor de pentagonos",
+                "code": [
+                    "para pentagono :lado",
+                    "  repite 5 [av :lado gd 360/5]",
+                    "fin",
+                    "bp",
+                    "repite 8 [pentagono 50 gd 45]"                   
                 ]
             },
             {
