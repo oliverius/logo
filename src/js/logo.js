@@ -91,13 +91,13 @@ class Interpreter {
     constructor(editorId, canvasId, statusBarId, examplesDropdownId, languageDropdownId, i18n, defaultLanguage) {
         
         logo.i18n = i18n;
-        let primitiveAliases = logo.i18n[defaultLanguage].primitiveAliases;
+        this.locale = logo.i18n[defaultLanguage];
 
         this.editor = document.getElementById(editorId);
         this.canvas = document.getElementById(canvasId);
         this.statusbar = document.getElementById(statusBarId);
         this.turtle = new Turtle(this.canvas);
-        this.tokenizer = new Tokenizer(primitiveAliases);
+        this.tokenizer = new Tokenizer(this.locale.primitiveAliases);
         this.parser = new Parser();
 
         runTokenizerTests(i18n);
@@ -114,19 +114,16 @@ class Interpreter {
                     console.log(`%c${e.detail.message}`, "color:blue");
                     break;
                 case logo.parser.logEvent.types.ERROR:
-                    // TODO do the same as errorEvent and delete errorEvent
+                    let message = "";
+                    switch (e.detail.errorCode) {
+                        case logo.parser.errorEvent.values.PROCEDURE_CALL_STACK_OVERFLOW: // todo get from this.locale
+                            message = logo.interpreter.localization.parserErrors.PROCEDURE_CALL_STACK_OVERFLOW;
+                            message = message.replace("{0}", e.detail.args[0]);
+                        break;
+                    }
+                    this.setStatusBar(message);
                     break;
             }
-        });
-        window.addEventListener(logo.parser.errorEvent.name, e => {
-            let message = "";
-            switch (e.detail.errorCode) {
-                case logo.parser.errorEvent.values.PROCEDURE_CALL_STACK_OVERFLOW:
-                    message = logo.interpreter.localization.parserErrors.PROCEDURE_CALL_STACK_OVERFLOW;
-                    message = message.replace("{0}", e.detail.args[0]);
-                    break;
-            }
-            this.setStatusBar(message);
         });
         window.addEventListener(logo.parser.statusEvent.name, e => {
             if (e.detail.status === logo.parser.statusEvent.values.END_PARSING) {
@@ -214,8 +211,10 @@ class Interpreter {
         let select = document.getElementById(languageDropdownId);
         select.addEventListener('change', (event) => {
             let selectedLanguage = event.target.value;
-            let locale = logo.i18n[selectedLanguage];
-            locale.UI.forEach(uiElement => {
+
+            this.locale = logo.i18n[selectedLanguage];
+            
+            this.locale.UI.forEach(uiElement => {
                 let control = document.getElementById(uiElement.id);
                 switch(control.type) {
                     case "button":
@@ -223,12 +222,12 @@ class Interpreter {
                         break;
                     case "select-one":
                         let title = uiElement.text;
-                        let examples = locale.examples;
+                        let examples = this.locale.examples;
                         this.populateExamples(examplesDropdownId, selectedLanguage, title, examples);
                         break;
                 }
             });
-            this.tokenizer = new Tokenizer(locale.primitiveAliases);
+            this.tokenizer = new Tokenizer(this.locale.primitiveAliases);
         });
 
         this.triggerChange(select); // To populate it for the first time
@@ -559,44 +558,27 @@ class Parser {
             message: message
         });
     }
-    raiseErrorEvent(errorCode = logo.parser.errorEvent.values.NONE, args = []) {
-        let event = new CustomEvent(logo.parser.errorEvent.name, {
-            bubbles: true,
-            detail: {
-                errorCode: errorCode,
-                args: args
-            }
+    raiseErrorEvent(errorCode = "", args = []) {
+        this.raiseEvent(logo.parser.logEvent.name, {
+            type: logo.parser.logEvent.types.ERROR,
+            errorCode: errorCode,
+            args: args
         });
-        window.dispatchEvent(event);
-    }
+    }    
     raiseStatusEvent(status = logo.parser.statusEvent.values.NONE) {
-        let event = new CustomEvent(logo.parser.statusEvent.name, {
-            bubbles: true,
-            detail: {
-                status: status
-            }
-        });
-        window.dispatchEvent(event);
+        this.raiseEvent(logo.parser.statusEvent.name, { status: status });
     }
     raiseTurtleDrawingEvent(primitive = logo.tokenizer.primitives.NONE, arg = 0) {
-        let event = new CustomEvent(logo.parser.turtleDrawingEvent.name, {
-            bubbles: true,
-            detail: {
-                primitive: primitive,
-                arg: arg
-            }
+        this.raiseEvent(logo.parser.turtleDrawingEvent.name, {
+            primitive: primitive,
+            arg: arg
         });
-        window.dispatchEvent(event);
     }
     jumpToProcedure(name) {
         if (this.procedures[name] !== undefined) {
             if (this.procedureCallStack.length + 1 > logo.parser.maxProcedureCallStack) {
                 this.stopParsing();
-                this.raiseErrorEvent(
-                    logo.parser.errorEvent.values.PROCEDURE_CALL_STACK_OVERFLOW,
-                    [
-                        logo.parser.maxProcedureCallStack
-                    ]);
+                this.raiseErrorEvent(logo.parser.logEvent.errors.PROCEDURE_CALL_STACK_OVERFLOW, [logo.parser.maxProcedureCallStack]);
                 return;
             }
 
