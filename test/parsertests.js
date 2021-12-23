@@ -37,7 +37,7 @@ function runParserTests(i18n) {
         parser.initializeParsing(tokens);
         do {
             parser.parsingStep();
-        } while(parser.currentToken.tokenType !== logo.tokenizer.tokenTypes.END_OF_TOKEN_STREAM &&
+        } while(parser.currentToken.tokenType !== Tokenizer.tokenTypes.END_OF_TOKEN_STREAM &&
             !parser.stopParsingRequested)
 
         if (expectedTurtleDrawingEvents.length !== actualTurtleDrawingEvents.length) {
@@ -68,66 +68,66 @@ function runParserTests(i18n) {
         "Forward and right only",
         "fd 60 rt 90",
         [
-            [logo.tokenizer.primitives.FORWARD, 60],
-            [logo.tokenizer.primitives.RIGHT, 90]
+            [Tokenizer.primitives.FORWARD, 60],
+            [Tokenizer.primitives.RIGHT, 90]
         ]
     );
     assertTurtleDrawingEvents(
         "Square with REPEAT primitive",
         "repeat 4 [fd 60 rt 90]",
         [
-            [logo.tokenizer.primitives.FORWARD, 60],
-            [logo.tokenizer.primitives.RIGHT, 90],
-            [logo.tokenizer.primitives.FORWARD, 60],
-            [logo.tokenizer.primitives.RIGHT, 90],
-            [logo.tokenizer.primitives.FORWARD, 60],
-            [logo.tokenizer.primitives.RIGHT, 90],
-            [logo.tokenizer.primitives.FORWARD, 60],
-            [logo.tokenizer.primitives.RIGHT, 90]
+            [Tokenizer.primitives.FORWARD, 60],
+            [Tokenizer.primitives.RIGHT, 90],
+            [Tokenizer.primitives.FORWARD, 60],
+            [Tokenizer.primitives.RIGHT, 90],
+            [Tokenizer.primitives.FORWARD, 60],
+            [Tokenizer.primitives.RIGHT, 90],
+            [Tokenizer.primitives.FORWARD, 60],
+            [Tokenizer.primitives.RIGHT, 90]
         ]
     );
     assertTurtleDrawingEvents(
         "Double REPEAT with inside one in the middle of the primitives of the first one",
         "repeat 3 [fd 60 repeat 4 [lt 90 bk 20] rt 120]",
         [
-            [logo.tokenizer.primitives.FORWARD, 60],
+            [Tokenizer.primitives.FORWARD, 60],
 
-            [logo.tokenizer.primitives.LEFT, 90],
-            [logo.tokenizer.primitives.BACK, 20],
-            [logo.tokenizer.primitives.LEFT, 90],
-            [logo.tokenizer.primitives.BACK, 20],
-            [logo.tokenizer.primitives.LEFT, 90],
-            [logo.tokenizer.primitives.BACK, 20],
-            [logo.tokenizer.primitives.LEFT, 90],
-            [logo.tokenizer.primitives.BACK, 20],
+            [Tokenizer.primitives.LEFT, 90],
+            [Tokenizer.primitives.BACK, 20],
+            [Tokenizer.primitives.LEFT, 90],
+            [Tokenizer.primitives.BACK, 20],
+            [Tokenizer.primitives.LEFT, 90],
+            [Tokenizer.primitives.BACK, 20],
+            [Tokenizer.primitives.LEFT, 90],
+            [Tokenizer.primitives.BACK, 20],
 
-            [logo.tokenizer.primitives.RIGHT, 120],
+            [Tokenizer.primitives.RIGHT, 120],
 
-            [logo.tokenizer.primitives.FORWARD, 60],
+            [Tokenizer.primitives.FORWARD, 60],
 
-            [logo.tokenizer.primitives.LEFT, 90],
-            [logo.tokenizer.primitives.BACK, 20],
-            [logo.tokenizer.primitives.LEFT, 90],
-            [logo.tokenizer.primitives.BACK, 20],
-            [logo.tokenizer.primitives.LEFT, 90],
-            [logo.tokenizer.primitives.BACK, 20],
-            [logo.tokenizer.primitives.LEFT, 90],
-            [logo.tokenizer.primitives.BACK, 20],
+            [Tokenizer.primitives.LEFT, 90],
+            [Tokenizer.primitives.BACK, 20],
+            [Tokenizer.primitives.LEFT, 90],
+            [Tokenizer.primitives.BACK, 20],
+            [Tokenizer.primitives.LEFT, 90],
+            [Tokenizer.primitives.BACK, 20],
+            [Tokenizer.primitives.LEFT, 90],
+            [Tokenizer.primitives.BACK, 20],
 
-            [logo.tokenizer.primitives.RIGHT, 120],
+            [Tokenizer.primitives.RIGHT, 120],
 
-            [logo.tokenizer.primitives.FORWARD, 60],
+            [Tokenizer.primitives.FORWARD, 60],
 
-            [logo.tokenizer.primitives.LEFT, 90],
-            [logo.tokenizer.primitives.BACK, 20],
-            [logo.tokenizer.primitives.LEFT, 90],
-            [logo.tokenizer.primitives.BACK, 20],
-            [logo.tokenizer.primitives.LEFT, 90],
-            [logo.tokenizer.primitives.BACK, 20],
-            [logo.tokenizer.primitives.LEFT, 90],
-            [logo.tokenizer.primitives.BACK, 20],
+            [Tokenizer.primitives.LEFT, 90],
+            [Tokenizer.primitives.BACK, 20],
+            [Tokenizer.primitives.LEFT, 90],
+            [Tokenizer.primitives.BACK, 20],
+            [Tokenizer.primitives.LEFT, 90],
+            [Tokenizer.primitives.BACK, 20],
+            [Tokenizer.primitives.LEFT, 90],
+            [Tokenizer.primitives.BACK, 20],
 
-            [logo.tokenizer.primitives.RIGHT, 120]
+            [Tokenizer.primitives.RIGHT, 120]
         ]
     );
 
@@ -149,156 +149,156 @@ function runParserTests(i18n) {
             "tree 160"
         ]),
         [
-            [logo.tokenizer.primitives.CLEARSCREEN, 0],
-            [logo.tokenizer.primitives.BACK, 100],
+            [Tokenizer.primitives.CLEARSCREEN, 0],
+            [Tokenizer.primitives.BACK, 100],
 
             // start tree 160 --------------------------------------------------------------
-            [logo.tokenizer.primitives.FORWARD, 160],                                     //
-            [logo.tokenizer.primitives.LEFT, 45],                                         //
+            [Tokenizer.primitives.FORWARD, 160],                                          //
+            [Tokenizer.primitives.LEFT, 45],                                              //
             //                                                                            //
             // start tree 80 ---------------------------------------------------          //
-            [logo.tokenizer.primitives.FORWARD, 80],                          //          //
-            [logo.tokenizer.primitives.LEFT, 45],                             //          //
+            [Tokenizer.primitives.FORWARD, 80],                               //          //
+            [Tokenizer.primitives.LEFT, 45],                                  //          //
             //                                                                //          //
             // start tree 40 ---------------------------------------          //          //
-            [logo.tokenizer.primitives.FORWARD, 40],              //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],                 //          //          //
+            [Tokenizer.primitives.FORWARD, 40],                   //          //          //
+            [Tokenizer.primitives.LEFT, 45],                      //          //          //
             //                                                    //          //          //
             // start tree 20 ---------------------------          //          //          //
-            [logo.tokenizer.primitives.FORWARD, 20],  //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
+            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.RIGHT, 90],    //          //          //          //
+            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
-            [logo.tokenizer.primitives.BACK, 20],     //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+            [Tokenizer.primitives.BACK, 20],          //          //          //          //
             // end tree 20 -----------------------------          //          //          //
             //                                                    //          //          //
-            [logo.tokenizer.primitives.RIGHT, 90],                //          //          //
+            [Tokenizer.primitives.RIGHT, 90],                     //          //          //
             //                                                    //          //          //
             // start tree 20 ---------------------------          //          //          //
-            [logo.tokenizer.primitives.FORWARD, 20],  //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
+            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.RIGHT, 90],    //          //          //          //
+            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
-            [logo.tokenizer.primitives.BACK, 20],     //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+            [Tokenizer.primitives.BACK, 20],          //          //          //          //
             // end tree 20 -----------------------------          //          //          //
             //                                                    //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],                 //          //          //
-            [logo.tokenizer.primitives.BACK, 40],                 //          //          //
+            [Tokenizer.primitives.LEFT, 45],                      //          //          //
+            [Tokenizer.primitives.BACK, 40],                      //          //          //
             // end tree 40 -----------------------------------------          //          //
             //                                                                //          //
-            [logo.tokenizer.primitives.RIGHT, 90],                            //          //
+            [Tokenizer.primitives.RIGHT, 90],                                 //          //
             //                                                                //          //
             // start tree 40 ---------------------------------------          //          //
-            [logo.tokenizer.primitives.FORWARD, 40],              //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],                 //          //          //
+            [Tokenizer.primitives.FORWARD, 40],                   //          //          //
+            [Tokenizer.primitives.LEFT, 45],                      //          //          //
             //                                                    //          //          //
             // start tree 20 ---------------------------          //          //          //
-            [logo.tokenizer.primitives.FORWARD, 20],  //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
+            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.RIGHT, 90],    //          //          //          //
+            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
-            [logo.tokenizer.primitives.BACK, 20],     //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+            [Tokenizer.primitives.BACK, 20],          //          //          //          //
             // end tree 20 -----------------------------          //          //          //
             //                                                    //          //          //
-            [logo.tokenizer.primitives.RIGHT, 90],                //          //          //
+            [Tokenizer.primitives.RIGHT, 90],                     //          //          //
             //                                                    //          //          //
             // start tree 20 ---------------------------          //          //          //
-            [logo.tokenizer.primitives.FORWARD, 20],  //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
+            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.RIGHT, 90],    //          //          //          //
+            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
-            [logo.tokenizer.primitives.BACK, 20],     //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+            [Tokenizer.primitives.BACK, 20],          //          //          //          //
             // end tree 20 -----------------------------          //          //          //
             //                                                    //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],                 //          //          //
-            [logo.tokenizer.primitives.BACK, 40],                 //          //          //
+            [Tokenizer.primitives.LEFT, 45],                      //          //          //
+            [Tokenizer.primitives.BACK, 40],                      //          //          //
             // end tree 40 -----------------------------------------          //          //
             //                                                                //          //
-            [logo.tokenizer.primitives.LEFT, 45],                             //          //
-            [logo.tokenizer.primitives.BACK, 80],                             //          //
+            [Tokenizer.primitives.LEFT, 45],                                  //          //
+            [Tokenizer.primitives.BACK, 80],                                  //          //
             // end tree 80 -----------------------------------------------------          //
             //                                                                            //
-            [logo.tokenizer.primitives.RIGHT, 90],                                        //
+            [Tokenizer.primitives.RIGHT, 90],                                             //
             //                                                                            //
             // start tree 80 ---------------------------------------------------          //
-            [logo.tokenizer.primitives.FORWARD, 80],                          //          //
-            [logo.tokenizer.primitives.LEFT, 45],                             //          //
+            [Tokenizer.primitives.FORWARD, 80],                               //          //
+            [Tokenizer.primitives.LEFT, 45],                                  //          //
             //                                                                //          //
             // start tree 40 ---------------------------------------          //          //
-            [logo.tokenizer.primitives.FORWARD, 40],              //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],                 //          //          //
+            [Tokenizer.primitives.FORWARD, 40],                   //          //          //
+            [Tokenizer.primitives.LEFT, 45],                      //          //          //
             //                                                    //          //          //
             // start tree 20 ---------------------------          //          //          //
-            [logo.tokenizer.primitives.FORWARD, 20],  //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
+            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.RIGHT, 90],    //          //          //          //
+            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
-            [logo.tokenizer.primitives.BACK, 20],     //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+            [Tokenizer.primitives.BACK, 20],          //          //          //          //
             // end tree 20 -----------------------------          //          //          //
             //                                                    //          //          //
-            [logo.tokenizer.primitives.RIGHT, 90],                //          //          //
+            [Tokenizer.primitives.RIGHT, 90],                     //          //          //
             //                                                    //          //          //
             // start tree 20 ---------------------------          //          //          //
-            [logo.tokenizer.primitives.FORWARD, 20],  //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
+            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.RIGHT, 90],    //          //          //          //
+            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
-            [logo.tokenizer.primitives.BACK, 20],     //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+            [Tokenizer.primitives.BACK, 20],          //          //          //          //
             // end tree 20 -----------------------------          //          //          //
             //                                                    //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],                 //          //          //
-            [logo.tokenizer.primitives.BACK, 40],                 //          //          //
+            [Tokenizer.primitives.LEFT, 45],                      //          //          //
+            [Tokenizer.primitives.BACK, 40],                      //          //          //
             // end tree 40 -----------------------------------------          //          //
             //                                                                //          //
-            [logo.tokenizer.primitives.RIGHT, 90],                            //          //
+            [Tokenizer.primitives.RIGHT, 90],                                 //          //
             //                                                                //          //
             // start tree 40 ---------------------------------------          //          //
-            [logo.tokenizer.primitives.FORWARD, 40],              //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],                 //          //          //
+            [Tokenizer.primitives.FORWARD, 40],                   //          //          //
+            [Tokenizer.primitives.LEFT, 45],                      //          //          //
             //                                                    //          //          //
             // start tree 20 ---------------------------          //          //          //
-            [logo.tokenizer.primitives.FORWARD, 20],  //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
+            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.RIGHT, 90],    //          //          //          //
+            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
-            [logo.tokenizer.primitives.BACK, 20],     //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+            [Tokenizer.primitives.BACK, 20],          //          //          //          //
             // end tree 20 -----------------------------          //          //          //
             //                                                    //          //          //
-            [logo.tokenizer.primitives.RIGHT, 90],                //          //          //
+            [Tokenizer.primitives.RIGHT, 90],                     //          //          //
             //                                                    //          //          //
             // start tree 20 ---------------------------          //          //          //
-            [logo.tokenizer.primitives.FORWARD, 20],  //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
+            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
             //                                        //          //          //          //
-            [logo.tokenizer.primitives.RIGHT, 90],    //          //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],     //          //          //          //
-            [logo.tokenizer.primitives.BACK, 20],     //          //          //          //
+            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
+            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+            [Tokenizer.primitives.BACK, 20],          //          //          //          //
             // end tree 20 -----------------------------          //          //          //
             //                                                    //          //          //
-            [logo.tokenizer.primitives.LEFT, 45],                 //          //          //
-            [logo.tokenizer.primitives.BACK, 40],                 //          //          //
+            [Tokenizer.primitives.LEFT, 45],                      //          //          //
+            [Tokenizer.primitives.BACK, 40],                      //          //          //
             // end tree 40 -----------------------------------------          //          //
             //                                                                //          //
-            [logo.tokenizer.primitives.LEFT, 45],                             //          //
-            [logo.tokenizer.primitives.BACK, 80],                             //          //
+            [Tokenizer.primitives.LEFT, 45],                                  //          //
+            [Tokenizer.primitives.BACK, 80],                                  //          //
             // end tree 80 -----------------------------------------------------          //
             //                                                                            //                    
-            [logo.tokenizer.primitives.LEFT, 45],                                         //
-            [logo.tokenizer.primitives.BACK, 160]                                         //
+            [Tokenizer.primitives.LEFT, 45],                                              //
+            [Tokenizer.primitives.BACK, 160]                                              //
             // end tree 160 ----------------------------------------------------------------
         ]
     );
