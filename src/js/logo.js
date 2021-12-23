@@ -65,7 +65,11 @@ const logo = {
             },
             "errors": {
                 "NONE": 0,
-                "PROCEDURE_CALL_STACK_OVERFLOW": 1
+                "PROCEDURE_CALL_STACK_OVERFLOW": 1,
+                "UNMATCHED_CLOSING_BRACKET": 2,
+                "CODEBLOCK_EXPECTED_OPENING_BRACKET": 3,
+                "EXPECTED_NUMBER_OR_VARIABLE": 4,
+                "PROCEDURE_NOT_DEFINED": 5
             }
         }
     },
@@ -114,9 +118,24 @@ class Interpreter {
                         case logo.parser.logEvent.errors.PROCEDURE_CALL_STACK_OVERFLOW:
                             message = this.locale.errors.PROCEDURE_CALL_STACK_OVERFLOW;
                             message = message.replace("{0}", e.detail.args[0]);
-                        break;
+                            break;
+                        case logo.parser.logEvent.errors.UNMATCHED_CLOSING_BRACKET:
+                            message = this.locale.errors.UNMATCHED_CLOSING_BRACKET;
+                            break;
+                        case logo.parser.logEvent.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET:
+                            message = this.locale.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET;                            
+                            break;
+                        case logo.parser.logEvent.errors.EXPECTED_NUMBER_OR_VARIABLE:
+                            message = this.locale.errors.EXPECTED_NUMBER_OR_VARIABLE;
+                            message = message.replace("{0}", e.detail.args[0]);
+                            break;
+                        case logo.parser.logEvent.errors.PROCEDURE_NOT_DEFINED:
+                            message = this.locale.errors.PROCEDURE_NOT_DEFINED;
+                            message = message.replace("{0}", e.detail.args[0]);
+                            break;
                     }
                     this.setStatusBar(message);
+                    this.stop();
                     break;
             }
         });
@@ -275,7 +294,7 @@ class Parser {
                     break;
             }
         } else {
-            console.log("this should be an error"); // TODO better handling of this
+            this.raiseErrorEvent(logo.parser.logEvent.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET, []);
         }
     }
     endCodeBlock() {
@@ -293,7 +312,7 @@ class Parser {
                     break;
             }
         } else {
-            throw "found a ] without being part of a IF or REPEAT"; // TODO more explicit
+            this.raiseErrorEvent(logo.parser.logEvent.errors.UNMATCHED_CLOSING_BRACKET, []);
         }
     }
     execute_if() {
@@ -357,7 +376,7 @@ class Parser {
             procedure.name = this.currentToken.text;
             
             this.getNextToken();
-            while (this.currentToken.tokenType === logo.tokenizer.tokenTypes.VARIABLE) {            
+            while (this.currentToken.tokenType === logo.tokenizer.tokenTypes.VARIABLE) {
                 procedure.inputs.push(this.currentToken.text);
                 this.getNextToken();
             }
@@ -446,7 +465,7 @@ class Parser {
                 this.getNextToken();
                 break;
             default:
-                // TODO error
+                this.raiseErrorEvent(logo.parser.logEvent.errors.EXPECTED_NUMBER_OR_VARIABLE, [ this.currentToken.text ]);                
                 break;
         }
     }
@@ -598,6 +617,8 @@ class Parser {
             this.procedureCallStack.push(procedureCallStackItem);
 
             this.setCurrentTokenIndex(procedure.procedureBodyFirstTokenIndex - 1);
+        } else {
+            this.raiseErrorEvent(logo.parser.logEvent.errors.PROCEDURE_NOT_DEFINED, [ name ]);
         }
     }
     setCurrentTokenIndex(index) {
