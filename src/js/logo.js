@@ -1,40 +1,4 @@
 const logo = {
-    "tokenizer": {
-        "delimiters": {
-            "OPENING_BRACKET": "[",
-            "CLOSING_BRACKET": "]",
-            "PLUS": "+",
-            "MINUS": "-",
-            "MULTIPLIEDBY": "*",
-            "DIVIDEDBY": "/",
-            "GREATERTHAN": ">",
-            "LESSERTHAN": "<"
-        },
-        "primitives": {
-            "NONE": 0,
-            "FORWARD": 1,
-            "BACK": 2,
-            "LEFT": 3,
-            "RIGHT": 4,
-            "PENUP": 5,
-            "PENDOWN": 6,
-            "REPEAT": 7,
-            "CLEARSCREEN": 8,
-            "TO": 9,
-            "END": 10,
-            "IF": 11,
-            "STOP": 12
-        },
-        "tokenTypes": {
-            "NONE": 0,
-            "DELIMITER": 1,
-            "NUMBER": 2,
-            "PRIMITIVE": 3,
-            "VARIABLE": 4,
-            "PROCEDURE_NAME": 5,
-            "END_OF_TOKEN_STREAM": 6
-        }
-    },
     "parser": {
         "fps": 10,
         "maxProcedureCallStack": 100,

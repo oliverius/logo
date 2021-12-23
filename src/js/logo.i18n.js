@@ -299,7 +299,7 @@ const i18n = {
                     "  gi 45",
                     "  re :rama",
                     "fin",
-                    "lp",
+                    "bp",
                     "re 100",
                     "arbol 160"
                 ]
