@@ -13,13 +13,6 @@ const logo = {
         "turtleDrawingEvent": {
             "name": "PARSER_TURTLE_DRAWING_EVENT"
         },
-        "errorEvent": {
-            "name": "PARSER_ERROR_EVENT",
-            "values": {
-                "NONE": 0,
-                "PROCEDURE_CALL_STACK_OVERFLOW": 1
-            }
-        },
         "logEvent": {
             "name": "PARSER_LOG_EVENT",
             "types": {
