@@ -27,7 +27,7 @@ function runParserTests(i18n) {
         let tokens = tokenizer.tokenize(script);
         let actualTurtleDrawingEvents = [];
 
-        window.addEventListener(logo.parser.turtleDrawingEvent.name, (event) => {
+        window.addEventListener(Parser.events.turtleDrawingEvent.name, (event) => {
             actualTurtleDrawingEvents.push(event.detail);
         }, false);
 
@@ -49,7 +49,7 @@ function runParserTests(i18n) {
             assertTurtleDrawingEvent(testName, expectedTurtleDrawingEvent, actualTurtleDrawingEvents[index]);
         });
 
-        window.removeEventListener(logo.parser.turtleDrawingEvent.name, this);
+        window.removeEventListener(Parser.events.turtleDrawingEvent.name, this);
 
         return success;
     };

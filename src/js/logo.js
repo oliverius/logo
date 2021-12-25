@@ -1,29 +1,4 @@
-const logo = {
-    "parser": {
-        "fps": 10,
-        "maxProcedureCallStack": 100,
-        "statusEvent": {
-            "name": "PARSER_STATUS_EVENT",
-            "values": {
-                "NONE": 0,
-                "START_PARSING": 1,
-                "END_PARSING": 2
-            }
-        },
-        "turtleDrawingEvent": {
-            "name": "PARSER_TURTLE_DRAWING_EVENT"
-        },
-        "logEvent": {
-            "name": "PARSER_LOG_EVENT",
-            "types": {
-                "NONE": 0,
-                "INFO": 1,
-                "ERROR": 2              
-            }           
-        }
-    }
-};
-
+// LOGO
 class Procedure {
     name = "";
     inputs = [];
@@ -37,8 +12,8 @@ class Interpreter {
         
         this.storageKey = "oliverius_logo";
 
-        logo.i18n = i18n;
-        this.locale = logo.i18n[defaultLanguage];
+        this.i18n = i18n;
+        this.locale = this.i18n[defaultLanguage];
 
         this.editor = document.getElementById(editorId);
         this.canvas = document.getElementById(canvasId);
@@ -55,12 +30,12 @@ class Interpreter {
         this.addWindowEventListeners();
     }
     addWindowEventListeners() {
-        window.addEventListener(logo.parser.logEvent.name, e => {
+        window.addEventListener(Parser.events.logEvent.name, e => {
             switch(e.detail.type) {
-                case logo.parser.logEvent.types.INFO:
+                case Parser.events.logEvent.types.INFO:
                     console.log(`%c${e.detail.message}`, "color:blue");
                     break;
-                case logo.parser.logEvent.types.ERROR:
+                case Parser.events.logEvent.types.ERROR:
                     let message = "";
                     switch (e.detail.errorCode) {
                         case Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW:
@@ -87,12 +62,12 @@ class Interpreter {
                     break;
             }
         });
-        window.addEventListener(logo.parser.statusEvent.name, e => {
-            if (e.detail.status === logo.parser.statusEvent.values.END_PARSING) {
+        window.addEventListener(Parser.events.statusEvent.name, e => {
+            if (e.detail.status === Parser.events.statusEvent.values.END_PARSING) {
                 this.editor.focus();
             }
         });
-        window.addEventListener(logo.parser.turtleDrawingEvent.name, e => {
+        window.addEventListener(Parser.events.turtleDrawingEvent.name, e => {
             let arg = e.detail.arg;
             switch (e.detail.primitive) {
                 case Tokenizer.primitives.FORWARD:
@@ -175,7 +150,7 @@ class Interpreter {
         select.addEventListener('change', (event) => {
             let selectedLanguage = event.target.value;
 
-            this.locale = logo.i18n[selectedLanguage];
+            this.locale = this.i18n[selectedLanguage];
             
             this.locale.UI.forEach(uiElement => {
                 let control = document.getElementById(uiElement.id);
@@ -221,7 +196,31 @@ class Parser {
         "EXPECTED_NUMBER_OR_VARIABLE": 4,
         "PROCEDURE_NOT_DEFINED": 5
     };
-
+    static events = {
+        "statusEvent": {
+            "name": "PARSER_STATUS_EVENT",
+            "values": {
+                "NONE": 0,
+                "START_PARSING": 1,
+                "END_PARSING": 2
+            }
+        },
+        "turtleDrawingEvent": {
+            "name": "PARSER_TURTLE_DRAWING_EVENT"
+        },
+        "logEvent": {
+            "name": "PARSER_LOG_EVENT",
+            "types": {
+                "NONE": 0,
+                "INFO": 1,
+                "ERROR": 2
+            }           
+        }
+    };
+    constructor() {
+        this.fps = 10;
+        this.maxProcedureCallStack = 100;
+    }
     assignVariable(variableName) {
         let item = this.peekLastProcedureCallStackItem();
         let inputs = item.inputs;
@@ -430,7 +429,7 @@ class Parser {
         if (this.currentTokenIndex < this.tokens.length) {
             this.currentToken = this.tokens[this.currentTokenIndex];
             this.raiseLogEvent(
-                logo.parser.logEvent.types.INFO,
+                Parser.events.logEvent.types.INFO,
                 `Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
         } else {
             this.currentToken = new Token(this.currentTokenIndex, "", Tokenizer.tokenTypes.END_OF_TOKEN_STREAM);
@@ -448,18 +447,18 @@ class Parser {
     parse(tokens) {
         this.initializeParsing(tokens);        
 
-        this.raiseStatusEvent(logo.parser.statusEvent.values.START_PARSING);
+        this.raiseStatusEvent(Parser.events.statusEvent.values.START_PARSING);
 
         this.parsingLoop = setInterval(() => {
-            this.raiseLogEvent(logo.parser.logEvent.types.INFO, "⌛️💓"); // heartbeat
+            this.raiseLogEvent(Parser.events.logEvent.types.INFO, "⌛️💓"); // heartbeat
             if (this.currentToken.tokenType !== Tokenizer.tokenTypes.END_OF_TOKEN_STREAM &&
                 !this.stopParsingRequested) {
                 this.parsingStep();
             } else {
                 clearInterval(this.parsingLoop);
-                this.raiseStatusEvent(logo.parser.statusEvent.values.END_PARSING);
+                this.raiseStatusEvent(Parser.events.statusEvent.values.END_PARSING);
             }
-        }, 1000 / logo.parser.fps);
+        }, 1000 / this.fps);
     }
     parsingStep() {
         this.getNextToken();
@@ -524,33 +523,33 @@ class Parser {
         });
         window.dispatchEvent(event);
     }
-    raiseLogEvent(type = logo.parser.logEvent.types.NONE, message = "") {
-        this.raiseEvent(logo.parser.logEvent.name, {
-            type: logo.parser.logEvent.types.INFO,
+    raiseLogEvent(type = Parser.events.logEvent.types.NONE, message = "") {
+        this.raiseEvent(Parser.events.logEvent.name, {
+            type: Parser.events.logEvent.types.INFO,
             message: message
         });
     }
     raiseErrorEvent(errorCode = Parser.errors.NONE, args = []) {
-        this.raiseEvent(logo.parser.logEvent.name, {
-            type: logo.parser.logEvent.types.ERROR,
+        this.raiseEvent(Parser.events.logEvent.name, {
+            type: Parser.events.logEvent.types.ERROR,
             errorCode: errorCode,
             args: args
         });
     }    
-    raiseStatusEvent(status = logo.parser.statusEvent.values.NONE) {
-        this.raiseEvent(logo.parser.statusEvent.name, { status: status });
+    raiseStatusEvent(status = Parser.events.statusEvent.values.NONE) {
+        this.raiseEvent(Parser.events.statusEvent.name, { status: status });
     }
     raiseTurtleDrawingEvent(primitive = Tokenizer.primitives.NONE, arg = 0) {
-        this.raiseEvent(logo.parser.turtleDrawingEvent.name, {
+        this.raiseEvent(Parser.events.turtleDrawingEvent.name, {
             primitive: primitive,
             arg: arg
         });
     }
     jumpToProcedure(name) {
         if (this.procedures[name] !== undefined) {
-            if (this.procedureCallStack.length + 1 > logo.parser.maxProcedureCallStack) {
+            if (this.procedureCallStack.length + 1 > this.maxProcedureCallStack) {
                 this.stopParsing();
-                this.raiseErrorEvent(Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW, [logo.parser.maxProcedureCallStack]);
+                this.raiseErrorEvent(Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW, [this.maxProcedureCallStack]);
                 return;
             }
 
