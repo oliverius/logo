@@ -19,20 +19,9 @@ const logo = {
                 "NONE": 0,
                 "INFO": 1,
                 "ERROR": 2              
-            },
-            "errors": {
-                "NONE": 0,
-                "PROCEDURE_CALL_STACK_OVERFLOW": 1,
-                "UNMATCHED_CLOSING_BRACKET": 2,
-                "CODEBLOCK_EXPECTED_OPENING_BRACKET": 3,
-                "EXPECTED_NUMBER_OR_VARIABLE": 4,
-                "PROCEDURE_NOT_DEFINED": 5
-            }
+            }           
         }
-    },
-    "interpreter": {
-        "storageKey": "oliverius_logo"        
-    }   
+    }
 };
 
 class Procedure {
@@ -46,6 +35,8 @@ class Procedure {
 class Interpreter {
     constructor(editorId, canvasId, statusBarId, examplesDropdownId, languageDropdownId, i18n, defaultLanguage) {
         
+        this.storageKey = "oliverius_logo";
+
         logo.i18n = i18n;
         this.locale = logo.i18n[defaultLanguage];
 
@@ -72,21 +63,21 @@ class Interpreter {
                 case logo.parser.logEvent.types.ERROR:
                     let message = "";
                     switch (e.detail.errorCode) {
-                        case logo.parser.logEvent.errors.PROCEDURE_CALL_STACK_OVERFLOW:
+                        case Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW:
                             message = this.locale.errors.PROCEDURE_CALL_STACK_OVERFLOW;
                             message = message.replace("{0}", e.detail.args[0]);
                             break;
-                        case logo.parser.logEvent.errors.UNMATCHED_CLOSING_BRACKET:
+                        case Parser.errors.UNMATCHED_CLOSING_BRACKET:
                             message = this.locale.errors.UNMATCHED_CLOSING_BRACKET;
                             break;
-                        case logo.parser.logEvent.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET:
+                        case Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET:
                             message = this.locale.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET;
                             break;
-                        case logo.parser.logEvent.errors.EXPECTED_NUMBER_OR_VARIABLE:
+                        case Parser.errors.EXPECTED_NUMBER_OR_VARIABLE:
                             message = this.locale.errors.EXPECTED_NUMBER_OR_VARIABLE;
                             message = message.replace("{0}", e.detail.args[0]);
                             break;
-                        case logo.parser.logEvent.errors.PROCEDURE_NOT_DEFINED:
+                        case Parser.errors.PROCEDURE_NOT_DEFINED:
                             message = this.locale.errors.PROCEDURE_NOT_DEFINED;
                             message = message.replace("{0}", e.detail.args[0]);
                             break;
@@ -134,7 +125,7 @@ class Interpreter {
         this.turtle.execute_clearscreen();
     }
     getLatestScriptRun() {
-        return localStorage.getItem(logo.interpreter.storageKey) ?? "";
+        return localStorage.getItem(this.storageKey) ?? "";
     }
     populateExamples(dropdownId, language, title, examples) {
         let select = document.getElementById(dropdownId);
@@ -168,7 +159,7 @@ class Interpreter {
         });        
     }
     saveLatestScriptRun(script) {
-        localStorage.setItem(logo.interpreter.storageKey, script);
+        localStorage.setItem(this.storageKey, script);
     }
     setEditor(text) {
         this.editor.value = text;
@@ -221,7 +212,15 @@ class Interpreter {
     }
 }
 
-class Parser {    
+class Parser {
+    static errors = {
+        "NONE": 0,
+        "PROCEDURE_CALL_STACK_OVERFLOW": 1,
+        "UNMATCHED_CLOSING_BRACKET": 2,
+        "CODEBLOCK_EXPECTED_OPENING_BRACKET": 3,
+        "EXPECTED_NUMBER_OR_VARIABLE": 4,
+        "PROCEDURE_NOT_DEFINED": 5
+    };
 
     assignVariable(variableName) {
         let item = this.peekLastProcedureCallStackItem();
@@ -251,7 +250,7 @@ class Parser {
                     break;
             }
         } else {
-            this.raiseErrorEvent(logo.parser.logEvent.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET, []);
+            this.raiseErrorEvent(Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET, []);
         }
     }
     endCodeBlock() {
@@ -269,7 +268,7 @@ class Parser {
                     break;
             }
         } else {
-            this.raiseErrorEvent(logo.parser.logEvent.errors.UNMATCHED_CLOSING_BRACKET, []);
+            this.raiseErrorEvent(Parser.errors.UNMATCHED_CLOSING_BRACKET, []);
         }
     }
     execute_if() {
@@ -422,7 +421,7 @@ class Parser {
                 this.getNextToken();
                 break;
             default:
-                this.raiseErrorEvent(logo.parser.logEvent.errors.EXPECTED_NUMBER_OR_VARIABLE, [ this.currentToken.text ]);
+                this.raiseErrorEvent(Parser.errors.EXPECTED_NUMBER_OR_VARIABLE, [ this.currentToken.text ]);
                 break;
         }
     }
@@ -531,7 +530,7 @@ class Parser {
             message: message
         });
     }
-    raiseErrorEvent(errorCode = logo.parser.logEvent.errors.NONE, args = []) {
+    raiseErrorEvent(errorCode = Parser.errors.NONE, args = []) {
         this.raiseEvent(logo.parser.logEvent.name, {
             type: logo.parser.logEvent.types.ERROR,
             errorCode: errorCode,
@@ -551,7 +550,7 @@ class Parser {
         if (this.procedures[name] !== undefined) {
             if (this.procedureCallStack.length + 1 > logo.parser.maxProcedureCallStack) {
                 this.stopParsing();
-                this.raiseErrorEvent(logo.parser.logEvent.errors.PROCEDURE_CALL_STACK_OVERFLOW, [logo.parser.maxProcedureCallStack]);
+                this.raiseErrorEvent(Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW, [logo.parser.maxProcedureCallStack]);
                 return;
             }
 
@@ -575,7 +574,7 @@ class Parser {
 
             this.setCurrentTokenIndex(procedure.procedureBodyFirstTokenIndex - 1);
         } else {
-            this.raiseErrorEvent(logo.parser.logEvent.errors.PROCEDURE_NOT_DEFINED, [ name ]);
+            this.raiseErrorEvent(Parser.errors.PROCEDURE_NOT_DEFINED, [ name ]);
         }
     }
     setCurrentTokenIndex(index) {
