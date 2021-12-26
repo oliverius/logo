@@ -22,7 +22,7 @@ class Interpreter {
         this.tokenizer = new Tokenizer(this.locale.primitiveAliases);
         this.parser = new Parser();
 
-        //runTokenizerTests(i18n);
+        runTokenizerTests(i18n);
         runParserTests(Tokenizer, Parser, i18n);
 
         this.setUI(examplesDropdownId, languageDropdownId);
