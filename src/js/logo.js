@@ -99,7 +99,7 @@ class Interpreter {
         this.setStatusBar("");
         this.turtle.execute_clearscreen();
     }
-    getLatestScriptRun() {
+    getLatestScriptRun() {        
         return localStorage.getItem(this.storageKey) ?? "";
     }
     populateExamples(dropdownId, language, title, examples) {
@@ -144,8 +144,6 @@ class Interpreter {
         this.statusbar.innerText = message;
     }
     setUI(examplesDropdownId, languageDropdownId) {
-        this.setEditor(this.getLatestScriptRun());
-
         let select = document.getElementById(languageDropdownId);
         select.addEventListener('change', (event) => {
             let selectedLanguage = event.target.value;
@@ -170,6 +168,8 @@ class Interpreter {
         });
 
         this.triggerChange(select); // To populate it for the first time
+
+        this.setEditor(this.getLatestScriptRun());
     }
     triggerChange(element) {
         let changeEvent = new Event('change');
