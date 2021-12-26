@@ -1,59 +1,87 @@
-function runParserTests(i18n) {
-    const tokenizer = new Tokenizer(i18n['English'].primitiveAliases); // Tests only with English primitives
-    const parser = new Parser();
+function runParserTests(Tokenizer, Parser, i18n) {    
+    let testPassed = (testName) => {
+        console.log(`%cTEST %cPASSED %c${testName}`, 'color: black;', 'color: green; font-weight:bold;', 'color: grey;');
+    };
+    let testFailed = (testName) => {
+        console.log(`%cTEST %cFAILED %c${testName}`, 'color: black;', 'color: red; font-weight:bold;', 'color: grey;');
+    };
     let assertExpression = (expression = "", expectedValue = 0) => {
+        let tokenizer = new Tokenizer(i18n['English'].primitiveAliases); // Tests only with English primitives for expressions
+        let parser = new Parser();
+        
         let tokens = tokenizer.tokenize(expression);
         parser.initializeParsing(tokens);
 
         let actualValue = parser.getExpression();
 
         let success = expectedValue === actualValue;
-        let testResult = success ? "PASSED" : `FAILED with value ${actualValue}`;
-        console.log(`TEST expression "${expression}": ${testResult}`);
+
+        if (success) {
+            testPassed(`Expression "${expression}"`);
+        } else {
+            testFailed(`Expression "${expression}"`);
+        }
 
         return success;
     };
-    let assertTurtleDrawingEvent = (testName = "", expectedTurtleDrawingEvent = {}, actualTurtleDrawingEvent = {}) => {
-        let success = expectedTurtleDrawingEvent[0] === actualTurtleDrawingEvent.primitive &&
-            expectedTurtleDrawingEvent[1] === actualTurtleDrawingEvent.arg;
-        if (success) {
-            console.log(`TEST ${testName} PASSED`);
-        } else {
-            throw `TEST ${testName} FAILED`;
-        }
-        return success;
-    };
-    let assertTurtleDrawingEvents = (testName = "", script = "", expectedTurtleDrawingEvents = []) => {
-        let tokens = tokenizer.tokenize(script);
+    let assertScript = (
+        testName = "",
+        language = "English",
+        script = "",
+        expectedTurtleDrawingEvents = [],
+        expectedErrorCode = Parser.errors.NONE) => {
+
+        let tokenizer = new Tokenizer(i18n[language].primitiveAliases);
+        let parser = new Parser();
         let actualTurtleDrawingEvents = [];
+        let actualErrorCode = Parser.errors.NONE;
+        
+        window.addEventListener(Parser.events.logEvent.name, (event) => {
+            let payload = event.detail;
+            if (payload.type === Parser.events.logEvent.types.ERROR) {
+                actualErrorCode = payload.errorCode;
+            }
+        }, false);
 
         window.addEventListener(Parser.events.turtleDrawingEvent.name, (event) => {
             actualTurtleDrawingEvents.push(event.detail);
         }, false);
 
-        // This parser is blocking, the process will continue after the do-while loop fininshes.
-        // This is a workaround to avoid having an event based parsing with a clock (timer)
-        // This will also run as fast as it can instead of waiting for the tick of the clock every 500ms
+        let tokens = tokenizer.tokenize(script);
         parser.initializeParsing(tokens);
         do {
             parser.parsingStep();
         } while(parser.currentToken.tokenType !== Tokenizer.tokenTypes.END_OF_TOKEN_STREAM &&
             !parser.stopParsingRequested)
 
-        if (expectedTurtleDrawingEvents.length !== actualTurtleDrawingEvents.length) {
-            console.table(actualTurtleDrawingEvents);
-            throw "Expected and actual events are different";
+        if (assertTurtleDrawingEvents(expectedTurtleDrawingEvents, actualTurtleDrawingEvents) === true
+            && assertParserError(expectedErrorCode, actualErrorCode) === true) {
+            testPassed(testName);
+        } else {
+            testFailed(testName);
+            if (expectedTurtleDrawingEvents.length !== actualTurtleDrawingEvents.length) {
+                console.log(expectedTurtleDrawingEvents, actualTurtleDrawingEvents);
+                console.table(expectedTurtleDrawingEvents, actualTurtleDrawingEvents);
+                throw "Expected and actual turtle drawing events are different";
+            }
         }
 
-        let success = expectedTurtleDrawingEvents.every( (expectedTurtleDrawingEvent, index) => {
-            assertTurtleDrawingEvent(testName, expectedTurtleDrawingEvent, actualTurtleDrawingEvents[index]);
-        });
-
+        window.removeEventListener(Parser.events.logEvent.name, this);
         window.removeEventListener(Parser.events.turtleDrawingEvent.name, this);
-
-        return success;
     };
-
+    let assertTurtleDrawingEvent = (expectedTurtleDrawingEvent = {}, actualTurtleDrawingEvent = {}) => {
+        return expectedTurtleDrawingEvent[0] === actualTurtleDrawingEvent.primitive
+            && expectedTurtleDrawingEvent[1] === actualTurtleDrawingEvent.arg;
+    };
+    let assertTurtleDrawingEvents = (expectedTurtleDrawingEvents = [], actualTurtleDrawingEvents = []) => {
+        return expectedTurtleDrawingEvents.every( (expectedTurtleDrawingEvent, index) =>
+            assertTurtleDrawingEvent(expectedTurtleDrawingEvent, actualTurtleDrawingEvents[index])
+        );
+    };
+    let assertParserError = (expectedErrorCode = Parser.errors.NONE, actualErrorCode = Parser.errors.NONE) => {
+        return expectedErrorCode === actualErrorCode;
+    };
+    
     let lines = (arr) => arr.join('\n');
 
     let tests = [];
@@ -64,244 +92,305 @@ function runParserTests(i18n) {
     tests.push(assertExpression("100 / 2 + 10", 60));
     tests.push(assertExpression("2 * 10 + 50 - 70 / 7", 60));
 
-    assertTurtleDrawingEvents(
-        "Forward and right only",
-        "fd 60 rt 90",
-        [
-            [Tokenizer.primitives.FORWARD, 60],
-            [Tokenizer.primitives.RIGHT, 90]
-        ]
-    );
-    assertTurtleDrawingEvents(
-        "Square with REPEAT primitive",
-        "repeat 4 [fd 60 rt 90]",
-        [
-            [Tokenizer.primitives.FORWARD, 60],
-            [Tokenizer.primitives.RIGHT, 90],
-            [Tokenizer.primitives.FORWARD, 60],
-            [Tokenizer.primitives.RIGHT, 90],
-            [Tokenizer.primitives.FORWARD, 60],
-            [Tokenizer.primitives.RIGHT, 90],
-            [Tokenizer.primitives.FORWARD, 60],
-            [Tokenizer.primitives.RIGHT, 90]
-        ]
-    );
-    assertTurtleDrawingEvents(
-        "Double REPEAT with inside one in the middle of the primitives of the first one",
-        "repeat 3 [fd 60 repeat 4 [lt 90 bk 20] rt 120]",
-        [
-            [Tokenizer.primitives.FORWARD, 60],
-
-            [Tokenizer.primitives.LEFT, 90],
-            [Tokenizer.primitives.BACK, 20],
-            [Tokenizer.primitives.LEFT, 90],
-            [Tokenizer.primitives.BACK, 20],
-            [Tokenizer.primitives.LEFT, 90],
-            [Tokenizer.primitives.BACK, 20],
-            [Tokenizer.primitives.LEFT, 90],
-            [Tokenizer.primitives.BACK, 20],
-
-            [Tokenizer.primitives.RIGHT, 120],
-
-            [Tokenizer.primitives.FORWARD, 60],
-
-            [Tokenizer.primitives.LEFT, 90],
-            [Tokenizer.primitives.BACK, 20],
-            [Tokenizer.primitives.LEFT, 90],
-            [Tokenizer.primitives.BACK, 20],
-            [Tokenizer.primitives.LEFT, 90],
-            [Tokenizer.primitives.BACK, 20],
-            [Tokenizer.primitives.LEFT, 90],
-            [Tokenizer.primitives.BACK, 20],
-
-            [Tokenizer.primitives.RIGHT, 120],
-
-            [Tokenizer.primitives.FORWARD, 60],
-
-            [Tokenizer.primitives.LEFT, 90],
-            [Tokenizer.primitives.BACK, 20],
-            [Tokenizer.primitives.LEFT, 90],
-            [Tokenizer.primitives.BACK, 20],
-            [Tokenizer.primitives.LEFT, 90],
-            [Tokenizer.primitives.BACK, 20],
-            [Tokenizer.primitives.LEFT, 90],
-            [Tokenizer.primitives.BACK, 20],
-
-            [Tokenizer.primitives.RIGHT, 120]
-        ]
+    tests.push(
+        assertScript(
+            "Drawing forward and turn right",
+            "English",
+            "fd 60 rt 90",
+            [
+                [Tokenizer.primitives.FORWARD, 60],
+                [Tokenizer.primitives.RIGHT, 90]
+            ]
+        )
     );
 
-    assertTurtleDrawingEvents(
-        "Recursive tree",
-        lines([
-            "to tree :length",
-            "  if :length < 15 [stop]",
-            "  fd :length",
-            "  lt 45",
-            "  tree :length/2",
-            "  rt 90",
-            "  tree :length/2",
-            "  lt 45",
-            "  bk :length",
+    tests.push(
+        assertScript(
+            "Square with REPEAT primitive",
+            "English",
+            "repeat 4 [fd 60 rt 90]",
+            [
+                [Tokenizer.primitives.FORWARD, 60],
+                [Tokenizer.primitives.RIGHT, 90],
+                [Tokenizer.primitives.FORWARD, 60],
+                [Tokenizer.primitives.RIGHT, 90],
+                [Tokenizer.primitives.FORWARD, 60],
+                [Tokenizer.primitives.RIGHT, 90],
+                [Tokenizer.primitives.FORWARD, 60],
+                [Tokenizer.primitives.RIGHT, 90]
+            ]
+        )
+    );
+
+    tests.push(
+        assertScript(
+            "Double REPEAT with inside one in the middle of the primitives of the first one",
+            "English",
+            "repeat 3 [fd 60 repeat 4 [lt 90 bk 20] rt 120]",
+            [
+                [Tokenizer.primitives.FORWARD, 60],
+
+                [Tokenizer.primitives.LEFT, 90],
+                [Tokenizer.primitives.BACK, 20],
+                [Tokenizer.primitives.LEFT, 90],
+                [Tokenizer.primitives.BACK, 20],
+                [Tokenizer.primitives.LEFT, 90],
+                [Tokenizer.primitives.BACK, 20],
+                [Tokenizer.primitives.LEFT, 90],
+                [Tokenizer.primitives.BACK, 20],
+
+                [Tokenizer.primitives.RIGHT, 120],
+
+                [Tokenizer.primitives.FORWARD, 60],
+
+                [Tokenizer.primitives.LEFT, 90],
+                [Tokenizer.primitives.BACK, 20],
+                [Tokenizer.primitives.LEFT, 90],
+                [Tokenizer.primitives.BACK, 20],
+                [Tokenizer.primitives.LEFT, 90],
+                [Tokenizer.primitives.BACK, 20],
+                [Tokenizer.primitives.LEFT, 90],
+                [Tokenizer.primitives.BACK, 20],
+
+                [Tokenizer.primitives.RIGHT, 120],
+
+                [Tokenizer.primitives.FORWARD, 60],
+
+                [Tokenizer.primitives.LEFT, 90],
+                [Tokenizer.primitives.BACK, 20],
+                [Tokenizer.primitives.LEFT, 90],
+                [Tokenizer.primitives.BACK, 20],
+                [Tokenizer.primitives.LEFT, 90],
+                [Tokenizer.primitives.BACK, 20],
+                [Tokenizer.primitives.LEFT, 90],
+                [Tokenizer.primitives.BACK, 20],
+
+                [Tokenizer.primitives.RIGHT, 120]
+            ]
+        )
+    );
+
+    tests.push(
+        assertScript(
+            "Recursive tree",
+            "English",
+            lines([
+                "to tree :length",
+                "  if :length < 15 [stop]",
+                "  fd :length",
+                "  lt 45",
+                "  tree :length/2",
+                "  rt 90",
+                "  tree :length/2",
+                "  lt 45",
+                "  bk :length",
+                "end",
+                "cs",
+                "bk 100",
+                "tree 160"
+            ]),
+            [
+                [Tokenizer.primitives.CLEARSCREEN, 0],
+                [Tokenizer.primitives.BACK, 100],
+
+                // start tree 160 --------------------------------------------------------------
+                [Tokenizer.primitives.FORWARD, 160],                                          //
+                [Tokenizer.primitives.LEFT, 45],                                              //
+                //                                                                            //
+                // start tree 80 ---------------------------------------------------          //
+                [Tokenizer.primitives.FORWARD, 80],                               //          //
+                [Tokenizer.primitives.LEFT, 45],                                  //          //
+                //                                                                //          //
+                // start tree 40 ---------------------------------------          //          //
+                [Tokenizer.primitives.FORWARD, 40],                   //          //          //
+                [Tokenizer.primitives.LEFT, 45],                      //          //          //
+                //                                                    //          //          //
+                // start tree 20 ---------------------------          //          //          //
+                [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                [Tokenizer.primitives.BACK, 20],          //          //          //          //
+                // end tree 20 -----------------------------          //          //          //
+                //                                                    //          //          //
+                [Tokenizer.primitives.RIGHT, 90],                     //          //          //
+                //                                                    //          //          //
+                // start tree 20 ---------------------------          //          //          //
+                [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                [Tokenizer.primitives.BACK, 20],          //          //          //          //
+                // end tree 20 -----------------------------          //          //          //
+                //                                                    //          //          //
+                [Tokenizer.primitives.LEFT, 45],                      //          //          //
+                [Tokenizer.primitives.BACK, 40],                      //          //          //
+                // end tree 40 -----------------------------------------          //          //
+                //                                                                //          //
+                [Tokenizer.primitives.RIGHT, 90],                                 //          //
+                //                                                                //          //
+                // start tree 40 ---------------------------------------          //          //
+                [Tokenizer.primitives.FORWARD, 40],                   //          //          //
+                [Tokenizer.primitives.LEFT, 45],                      //          //          //
+                //                                                    //          //          //
+                // start tree 20 ---------------------------          //          //          //
+                [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                [Tokenizer.primitives.BACK, 20],          //          //          //          //
+                // end tree 20 -----------------------------          //          //          //
+                //                                                    //          //          //
+                [Tokenizer.primitives.RIGHT, 90],                     //          //          //
+                //                                                    //          //          //
+                // start tree 20 ---------------------------          //          //          //
+                [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                [Tokenizer.primitives.BACK, 20],          //          //          //          //
+                // end tree 20 -----------------------------          //          //          //
+                //                                                    //          //          //
+                [Tokenizer.primitives.LEFT, 45],                      //          //          //
+                [Tokenizer.primitives.BACK, 40],                      //          //          //
+                // end tree 40 -----------------------------------------          //          //
+                //                                                                //          //
+                [Tokenizer.primitives.LEFT, 45],                                  //          //
+                [Tokenizer.primitives.BACK, 80],                                  //          //
+                // end tree 80 -----------------------------------------------------          //
+                //                                                                            //
+                [Tokenizer.primitives.RIGHT, 90],                                             //
+                //                                                                            //
+                // start tree 80 ---------------------------------------------------          //
+                [Tokenizer.primitives.FORWARD, 80],                               //          //
+                [Tokenizer.primitives.LEFT, 45],                                  //          //
+                //                                                                //          //
+                // start tree 40 ---------------------------------------          //          //
+                [Tokenizer.primitives.FORWARD, 40],                   //          //          //
+                [Tokenizer.primitives.LEFT, 45],                      //          //          //
+                //                                                    //          //          //
+                // start tree 20 ---------------------------          //          //          //
+                [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                [Tokenizer.primitives.BACK, 20],          //          //          //          //
+                // end tree 20 -----------------------------          //          //          //
+                //                                                    //          //          //
+                [Tokenizer.primitives.RIGHT, 90],                     //          //          //
+                //                                                    //          //          //
+                // start tree 20 ---------------------------          //          //          //
+                [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                [Tokenizer.primitives.BACK, 20],          //          //          //          //
+                // end tree 20 -----------------------------          //          //          //
+                //                                                    //          //          //
+                [Tokenizer.primitives.LEFT, 45],                      //          //          //
+                [Tokenizer.primitives.BACK, 40],                      //          //          //
+                // end tree 40 -----------------------------------------          //          //
+                //                                                                //          //
+                [Tokenizer.primitives.RIGHT, 90],                                 //          //
+                //                                                                //          //
+                // start tree 40 ---------------------------------------          //          //
+                [Tokenizer.primitives.FORWARD, 40],                   //          //          //
+                [Tokenizer.primitives.LEFT, 45],                      //          //          //
+                //                                                    //          //          //
+                // start tree 20 ---------------------------          //          //          //
+                [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                [Tokenizer.primitives.BACK, 20],          //          //          //          //
+                // end tree 20 -----------------------------          //          //          //
+                //                                                    //          //          //
+                [Tokenizer.primitives.RIGHT, 90],                     //          //          //
+                //                                                    //          //          //
+                // start tree 20 ---------------------------          //          //          //
+                [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                //                                        //          //          //          //
+                [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
+                [Tokenizer.primitives.LEFT, 45],          //          //          //          //
+                [Tokenizer.primitives.BACK, 20],          //          //          //          //
+                // end tree 20 -----------------------------          //          //          //
+                //                                                    //          //          //
+                [Tokenizer.primitives.LEFT, 45],                      //          //          //
+                [Tokenizer.primitives.BACK, 40],                      //          //          //
+                // end tree 40 -----------------------------------------          //          //
+                //                                                                //          //
+                [Tokenizer.primitives.LEFT, 45],                                  //          //
+                [Tokenizer.primitives.BACK, 80],                                  //          //
+                // end tree 80 -----------------------------------------------------          //
+                //                                                                            //
+                [Tokenizer.primitives.LEFT, 45],                                              //
+                [Tokenizer.primitives.BACK, 160]                                              //
+                // end tree 160 ----------------------------------------------------------------
+            ]
+        )
+    );
+    
+    assertScript(
+        "Trigger error PROCEDURE_CALL_STACK_OVERFLOW",
+         "English",
+         lines([
+            "to getoverflow",
+            "  getoverflow",
             "end",
-            "cs",
-            "bk 100",
-            "tree 160"
+            "getoverflow"
         ]),
-        [
-            [Tokenizer.primitives.CLEARSCREEN, 0],
-            [Tokenizer.primitives.BACK, 100],
-
-            // start tree 160 --------------------------------------------------------------
-            [Tokenizer.primitives.FORWARD, 160],                                          //
-            [Tokenizer.primitives.LEFT, 45],                                              //
-            //                                                                            //
-            // start tree 80 ---------------------------------------------------          //
-            [Tokenizer.primitives.FORWARD, 80],                               //          //
-            [Tokenizer.primitives.LEFT, 45],                                  //          //
-            //                                                                //          //
-            // start tree 40 ---------------------------------------          //          //
-            [Tokenizer.primitives.FORWARD, 40],                   //          //          //
-            [Tokenizer.primitives.LEFT, 45],                      //          //          //
-            //                                                    //          //          //
-            // start tree 20 ---------------------------          //          //          //
-            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            [Tokenizer.primitives.BACK, 20],          //          //          //          //
-            // end tree 20 -----------------------------          //          //          //
-            //                                                    //          //          //
-            [Tokenizer.primitives.RIGHT, 90],                     //          //          //
-            //                                                    //          //          //
-            // start tree 20 ---------------------------          //          //          //
-            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            [Tokenizer.primitives.BACK, 20],          //          //          //          //
-            // end tree 20 -----------------------------          //          //          //
-            //                                                    //          //          //
-            [Tokenizer.primitives.LEFT, 45],                      //          //          //
-            [Tokenizer.primitives.BACK, 40],                      //          //          //
-            // end tree 40 -----------------------------------------          //          //
-            //                                                                //          //
-            [Tokenizer.primitives.RIGHT, 90],                                 //          //
-            //                                                                //          //
-            // start tree 40 ---------------------------------------          //          //
-            [Tokenizer.primitives.FORWARD, 40],                   //          //          //
-            [Tokenizer.primitives.LEFT, 45],                      //          //          //
-            //                                                    //          //          //
-            // start tree 20 ---------------------------          //          //          //
-            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            [Tokenizer.primitives.BACK, 20],          //          //          //          //
-            // end tree 20 -----------------------------          //          //          //
-            //                                                    //          //          //
-            [Tokenizer.primitives.RIGHT, 90],                     //          //          //
-            //                                                    //          //          //
-            // start tree 20 ---------------------------          //          //          //
-            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            [Tokenizer.primitives.BACK, 20],          //          //          //          //
-            // end tree 20 -----------------------------          //          //          //
-            //                                                    //          //          //
-            [Tokenizer.primitives.LEFT, 45],                      //          //          //
-            [Tokenizer.primitives.BACK, 40],                      //          //          //
-            // end tree 40 -----------------------------------------          //          //
-            //                                                                //          //
-            [Tokenizer.primitives.LEFT, 45],                                  //          //
-            [Tokenizer.primitives.BACK, 80],                                  //          //
-            // end tree 80 -----------------------------------------------------          //
-            //                                                                            //
-            [Tokenizer.primitives.RIGHT, 90],                                             //
-            //                                                                            //
-            // start tree 80 ---------------------------------------------------          //
-            [Tokenizer.primitives.FORWARD, 80],                               //          //
-            [Tokenizer.primitives.LEFT, 45],                                  //          //
-            //                                                                //          //
-            // start tree 40 ---------------------------------------          //          //
-            [Tokenizer.primitives.FORWARD, 40],                   //          //          //
-            [Tokenizer.primitives.LEFT, 45],                      //          //          //
-            //                                                    //          //          //
-            // start tree 20 ---------------------------          //          //          //
-            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            [Tokenizer.primitives.BACK, 20],          //          //          //          //
-            // end tree 20 -----------------------------          //          //          //
-            //                                                    //          //          //
-            [Tokenizer.primitives.RIGHT, 90],                     //          //          //
-            //                                                    //          //          //
-            // start tree 20 ---------------------------          //          //          //
-            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            [Tokenizer.primitives.BACK, 20],          //          //          //          //
-            // end tree 20 -----------------------------          //          //          //
-            //                                                    //          //          //
-            [Tokenizer.primitives.LEFT, 45],                      //          //          //
-            [Tokenizer.primitives.BACK, 40],                      //          //          //
-            // end tree 40 -----------------------------------------          //          //
-            //                                                                //          //
-            [Tokenizer.primitives.RIGHT, 90],                                 //          //
-            //                                                                //          //
-            // start tree 40 ---------------------------------------          //          //
-            [Tokenizer.primitives.FORWARD, 40],                   //          //          //
-            [Tokenizer.primitives.LEFT, 45],                      //          //          //
-            //                                                    //          //          //
-            // start tree 20 ---------------------------          //          //          //
-            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            [Tokenizer.primitives.BACK, 20],          //          //          //          //
-            // end tree 20 -----------------------------          //          //          //
-            //                                                    //          //          //
-            [Tokenizer.primitives.RIGHT, 90],                     //          //          //
-            //                                                    //          //          //
-            // start tree 20 ---------------------------          //          //          //
-            [Tokenizer.primitives.FORWARD, 20],       //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            //                                        //          //          //          //
-            [Tokenizer.primitives.RIGHT, 90],         //          //          //          //
-            [Tokenizer.primitives.LEFT, 45],          //          //          //          //
-            [Tokenizer.primitives.BACK, 20],          //          //          //          //
-            // end tree 20 -----------------------------          //          //          //
-            //                                                    //          //          //
-            [Tokenizer.primitives.LEFT, 45],                      //          //          //
-            [Tokenizer.primitives.BACK, 40],                      //          //          //
-            // end tree 40 -----------------------------------------          //          //
-            //                                                                //          //
-            [Tokenizer.primitives.LEFT, 45],                                  //          //
-            [Tokenizer.primitives.BACK, 80],                                  //          //
-            // end tree 80 -----------------------------------------------------          //
-            //                                                                            //                    
-            [Tokenizer.primitives.LEFT, 45],                                              //
-            [Tokenizer.primitives.BACK, 160]                                              //
-            // end tree 160 ----------------------------------------------------------------
-        ]
+        [],
+        Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW
     );
 
+    assertScript(
+        "Trigger error UNMATCHED_CLOSING_BRACKET",
+         "English",
+        "fd 60 ]",
+        [
+            [Tokenizer.primitives.FORWARD, 60]
+        ],
+        Parser.errors.UNMATCHED_CLOSING_BRACKET
+    );
+
+    assertScript(
+        "Trigger error CODEBLOCK_EXPECTED_OPENING_BRACKET",
+         "English",
+        "repeat 4 fd 60",
+        [],
+        Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET
+    );
+
+    assertScript(
+        "Trigger error EXPECTED_NUMBER_OR_VARIABLE",
+         "English",
+        "repeat [",
+        [],
+        Parser.errors.EXPECTED_NUMBER_OR_VARIABLE
+    );
+
+    assertScript(
+        "Trigger error PROCEDURE_NOT_DEFINED",
+         "English",
+        "potato fd 60",
+        [],
+        Parser.errors.PROCEDURE_NOT_DEFINED
+    );
+    
     return tests.every(test => test);
 }
