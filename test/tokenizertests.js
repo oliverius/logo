@@ -59,6 +59,18 @@ function runTokenizerTests(i18n) {
     );
     tests.push(
         assertTokens(
+            'Unknown token found',
+            [
+                new Token(0, "fd", Tokenizer.tokenTypes.PRIMITIVE, Tokenizer.primitives.FORWARD),
+                new Token(3, "2", Tokenizer.tokenTypes.NUMBER, Tokenizer.primitives.NONE),
+                new Token(4, "^", Tokenizer.tokenTypes.UNKNOWN_TOKEN, Tokenizer.primitives.NONE),
+                new Token(5, "3", Tokenizer.tokenTypes.NUMBER, Tokenizer.primitives.NONE)
+            ],
+            tokenizer.tokenize("fd 2^3")
+        )
+    );
+    tests.push(
+        assertTokens(
             'Square without REPEAT primitive',
             [
                 new Token(0, "fd", Tokenizer.tokenTypes.PRIMITIVE, Tokenizer.primitives.FORWARD),
@@ -342,7 +354,7 @@ function runTokenizerTests(i18n) {
                 new Token(0, "fd", Tokenizer.tokenTypes.PRIMITIVE, Tokenizer.primitives.FORWARD),
                 new Token(3, "10", Tokenizer.tokenTypes.NUMBER, Tokenizer.primitives.NONE),
                 new Token(6, "*", Tokenizer.tokenTypes.DELIMITER, Tokenizer.primitives.NONE),
-                new Token(8, "5", Tokenizer.tokenTypes.NUMBER, Tokenizer.primitives.NONE)            
+                new Token(8, "5", Tokenizer.tokenTypes.NUMBER, Tokenizer.primitives.NONE)
             ],
             tokenizer.tokenize("fd 10 * 5")
         )
@@ -354,7 +366,7 @@ function runTokenizerTests(i18n) {
                 new Token(0, "fd", Tokenizer.tokenTypes.PRIMITIVE, Tokenizer.primitives.FORWARD),
                 new Token(3, "100", Tokenizer.tokenTypes.NUMBER, Tokenizer.primitives.NONE),
                 new Token(7, "/", Tokenizer.tokenTypes.DELIMITER, Tokenizer.primitives.NONE),
-                new Token(9, "5", Tokenizer.tokenTypes.NUMBER, Tokenizer.primitives.NONE)            
+                new Token(9, "5", Tokenizer.tokenTypes.NUMBER, Tokenizer.primitives.NONE)
             ],
             tokenizer.tokenize("fd 100 / 5")
         )
@@ -480,5 +492,5 @@ function runTokenizerTests(i18n) {
         )
     );
 
-  return tests.every(test => test);
+    return tests.every(test => test);
 }

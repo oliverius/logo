@@ -179,7 +179,8 @@ const i18n = {
             "UNMATCHED_CLOSING_BRACKET": "A closing bracket ] was found without a matching opening bracket [ first",
             "CODEBLOCK_EXPECTED_OPENING_BRACKET": "Expected opening bracket [ after an 'IF' or 'REPEAT'",
             "EXPECTED_NUMBER_OR_VARIABLE": "Expected a number or a variable and instead we have: {0}",
-            "PROCEDURE_NOT_DEFINED": "The procedure {0} hasn't been defined yet before using it"
+            "PROCEDURE_NOT_DEFINED": "The procedure {0} hasn't been defined yet before using it",
+            "UNKNOWN_TOKEN_FOUND": "Found a symbol that wasn't recognized"
         }
     },
     "Spanish": {
@@ -362,7 +363,8 @@ const i18n = {
             "UNMATCHED_CLOSING_BRACKET": "Un corchete ] fue encontrado sin encontrar primero un corchete [",
             "CODEBLOCK_EXPECTED_OPENING_BRACKET": "Esperábamos un corchete abierto [ en un 'SI' o 'REPITE'",
             "EXPECTED_NUMBER_OR_VARIABLE": "Esperábamos un número o una variable y en vez de eso tenemos: {0}",
-            "PROCEDURE_NOT_DEFINED": "El procedimiento {0} tiene que ser definido antes de usarlo"
+            "PROCEDURE_NOT_DEFINED": "El procedimiento {0} tiene que ser definido antes de usarlo",
+            "UNKNOWN_TOKEN_FOUND": "Hemos encontrado un símbolo que no hemos reconocido"
         }
     }
 };

@@ -56,6 +56,9 @@ class Interpreter {
                             message = this.locale.errors.PROCEDURE_NOT_DEFINED;
                             message = message.replace("{0}", e.detail.args[0]);
                             break;
+                        case Parser.errors.UNKNOWN_TOKEN_FOUND:
+                            message = this.locale.errors.UNKNOWN_TOKEN_FOUND;
+                            break;
                     }
                     this.setStatusBar(message);
                     this.stop();
@@ -194,7 +197,8 @@ class Parser {
         "UNMATCHED_CLOSING_BRACKET": 2,
         "CODEBLOCK_EXPECTED_OPENING_BRACKET": 3,
         "EXPECTED_NUMBER_OR_VARIABLE": 4,
-        "PROCEDURE_NOT_DEFINED": 5
+        "PROCEDURE_NOT_DEFINED": 5,
+        "UNKNOWN_TOKEN_FOUND": 6
     };
     static events = {
         "statusEvent": {
@@ -221,11 +225,11 @@ class Parser {
         this.fps = 10;
         this.maxProcedureCallStack = 100;
     }
-    assignVariable(variableName) {
+    assignVariable(variableName) {        
         let item = this.peekLastProcedureCallStackItem();
         let inputs = item.inputs;
-        let input  = inputs.find(i => i.name === variableName);
-        let value = parseInt(input.value); // TODO check value should be a number
+        let input  = inputs.find(i => i.name === variableName);        
+        let value = parseInt(input.value);
         return value;
     }
     beginCodeBlock(primitive = Tokenizer.primitives.NONE, arg = 0) {
@@ -297,7 +301,7 @@ class Parser {
                 this.getNextToken();
             }
         } else {
-            throw "malformed code block";
+            throw "malformed code block TODO";
         }
     }
     skipUntilEndOfProcedure() {
@@ -389,8 +393,10 @@ class Parser {
                 break;
             case Tokenizer.delimiters.DIVIDEDBY:
                 result.value /= hold.value;
-            default:
-                break; // TODO will be an error
+                break;
+            default:                
+                //console.log("TODO Error here", operation);
+                break;
         }
     }
     getExpression_MultiplicationOrDivision(result) {
@@ -443,6 +449,11 @@ class Parser {
         this.stopParsingRequested = false;
     }
     parse(tokens) {
+        if (tokens.some(token => token.tokenType === Tokenizer.tokenTypes.UNKNOWN_TOKEN)) {
+            this.raiseErrorEvent(Parser.errors.UNKNOWN_TOKEN_FOUND, []);
+            return;
+        }
+
         this.initializeParsing(tokens);        
 
         this.raiseStatusEvent(Parser.events.statusEvent.values.START_PARSING);
@@ -636,7 +647,8 @@ class Tokenizer {
         "PRIMITIVE": 3,
         "VARIABLE": 4,
         "PROCEDURE_NAME": 5,
-        "END_OF_TOKEN_STREAM": 6
+        "END_OF_TOKEN_STREAM": 6,
+        "UNKNOWN_TOKEN": 7
     };    
     LF = "\n";
     NUL = "\0";
@@ -757,7 +769,9 @@ class Tokenizer {
                 this.tokens.push(token);
             } else {
                 if (!this.isEndOfFile(this.currentCharacter)) {
-                    console.log(`Unexpected character: "${this.currentCharacter}" ${this.currentCharacter.charCodeAt(0)}`);
+                    let startIndex = this.currentIndex;
+                    let token = new Token(startIndex, this.currentCharacter, Tokenizer.tokenTypes.UNKNOWN_TOKEN);
+                    this.tokens.push(token);                    
                 }
             }
         } while (!this.isEndOfFile(this.currentCharacter))

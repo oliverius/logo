@@ -391,6 +391,14 @@ function runParserTests(Tokenizer, Parser, i18n) {
         [],
         Parser.errors.PROCEDURE_NOT_DEFINED
     );
+
+    // assertScript(
+    //     "Trigger error UNKNOWN_TOKEN_FOUND",
+    //      "English",
+    //     "fd 2^3",
+    //     [],
+    //     Parser.errors.PROCEDURE_NOT_DEFINED
+    // );
     
     return tests.every(test => test);
 }
