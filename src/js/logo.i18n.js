@@ -2,67 +2,68 @@ const i18n = {
     "English": {
         "primitiveAliases": [
             {
-                "primitive": "FORWARD",
-                "aliases": [ "forward", "fd" ]
-            },
-            {
                 "primitive": "BACK",
                 "aliases": [ "back", "bk" ]
             },
             {
-                "primitive": "LEFT",
-                "aliases": [ "left", "lt" ]
-            },
-            {
-                "primitive": "RIGHT",
-                "aliases": [ "right", "rt" ]
-            },
-            {
-                "primitive": "PENUP",
-                "aliases": [ "penup", "pu" ]
-            },
-            {
-                "primitive": "PENDOWN",
-                "aliases": [ "pendown", "pd" ]
-            },
-            {
-                "primitive": "REPEAT",
-                "aliases": [ "repeat" ]
+                "primitive": "CLEAN",
+                "aliases": [ "clean" ]
             },
             {
                 "primitive": "CLEARSCREEN",
                 "aliases": [ "clearscreen", "cs" ]
             },
             {
-                "primitive": "TO",
-                "aliases": [ "to" ]
-            },
-            {
                 "primitive": "END",
                 "aliases": [ "end" ]
-            }, {
-                "primitive": "IF",
-                "aliases": [ "if" ]
             },
             {
-                "primitive": "STOP",
-                "aliases": [ "stop" ]
-            },
-            {
-                "primitive": "SETPENCOLOR",
-                "aliases": [ "setpencolor", "setpc" ]
-            },
-            {
-                "primitive": "SETBACKGROUND",
-                "aliases": [ "setbackground", "setbg" ]
+                "primitive": "FORWARD",
+                "aliases": [ "forward", "fd" ]
             },
             {
                 "primitive": "HOME",
                 "aliases": [ "home" ]
             },
             {
-                "primitive": "CLEAN",
-                "aliases": [ "clean" ]
+                "primitive": "IF",
+                "aliases": [ "if" ]
+            },
+            {
+                "primitive": "LEFT",
+                "aliases": [ "left", "lt" ]
+            },
+            {
+                "primitive": "PENDOWN",
+                "aliases": [ "pendown", "pd" ]
+            },
+            {
+                "primitive": "PENUP",
+                "aliases": [ "penup", "pu" ]
+            },
+            {
+                "primitive": "REPEAT",
+                "aliases": [ "repeat" ]
+            },
+            {
+                "primitive": "RIGHT",
+                "aliases": [ "right", "rt" ]
+            },
+            {
+                "primitive": "SETBACKGROUND",
+                "aliases": [ "setbackground", "setbg" ]
+            },
+            {
+                "primitive": "SETPENCOLOR",
+                "aliases": [ "setpencolor", "setpc" ]
+            },
+            {
+                "primitive": "STOP",
+                "aliases": [ "stop" ]
+            },
+            {
+                "primitive": "TO",
+                "aliases": [ "to" ]
             }
         ],
         "UI": [
@@ -209,78 +210,79 @@ const i18n = {
             }
         ],
         "errors": {
-            "PROCEDURE_CALL_STACK_OVERFLOW": "You have called a procedure more than {0} times and we stop the program",
-            "UNMATCHED_CLOSING_BRACKET": "A closing bracket ] was found without a matching opening bracket [ first",
             "CODEBLOCK_EXPECTED_OPENING_BRACKET": "Expected opening bracket [ after an 'IF' or 'REPEAT'",
             "EXPECTED_NUMBER_OR_VARIABLE": "Expected a number or a variable and instead we have: {0}",
+            "PROCEDURE_CALL_STACK_OVERFLOW": "You have called a procedure more than {0} times and we stop the program",
             "PROCEDURE_NOT_DEFINED": "The procedure {0} hasn't been defined yet before using it",
-            "UNKNOWN_TOKEN_FOUND": "Found a symbol '{0}' that wasn't recognized"
+            "UNKNOWN_TOKEN_FOUND": "Found a symbol '{0}' that wasn't recognized",
+            "UNMATCHED_CLOSING_BRACKET": "A closing bracket ] was found without a matching opening bracket [ first"
         }
     },
     "Spanish": {
         "primitiveAliases": [
             {
-                "primitive": "FORWARD",
-                "aliases": [ "avanza", "av" ]
-            },
-            {
                 "primitive": "BACK",
                 "aliases": [ "retrocede", "re" ]
             },
             {
-                "primitive": "LEFT",
-                "aliases": [ "giraizquierda", "gi"]
-            },
-            {
-                "primitive": "RIGHT",
-                "aliases": [ "giraderecha", "gd"]
-            },
-            {
-                "primitive": "PENUP",
-                "aliases": [ "subelapiz", "sl"]
-            },
-            {
-                "primitive": "PENDOWN",
-                "aliases": [ "bajalapiz", "pd", "bl"]
-            },
-            {
-                "primitive": "REPEAT",
-                "aliases": [ "repite" ]
+                "primitive": "CLEAN",
+                "aliases": [ "limpia" ]
             },
             {
                 "primitive": "CLEARSCREEN",
                 "aliases": [ "borrapantalla", "bp"]
             },
             {
-                "primitive": "TO",
-                "aliases": [ "para" ]
-            },
-            {
                 "primitive": "END",
                 "aliases": [ "fin" ]
-            }, {
-                "primitive": "IF",
-                "aliases": [ "si" ]
             },
             {
-                "primitive": "STOP",
-                "aliases": [ "alto" ]
-            },
-            {
-                "primitive": "SETPENCOLOR",
-                "aliases": [ "poncolorlapiz", "poncl" ]
-            },
-            {
-                "primitive": "SETBACKGROUND",
-                "aliases": [ "ponfondo" ]
+                "primitive": "FORWARD",
+                "aliases": [ "avanza", "av" ]
             },
             {
                 "primitive": "HOME",
                 "aliases": [ "centro" ]
             },
             {
-                "primitive": "CLEAN",
-                "aliases": [ "limpia" ]
+                "primitive": "IF",
+                "aliases": [ "si" ]
+            },
+            {
+                "primitive": "LEFT",
+                "aliases": [ "giraizquierda", "gi"]
+            },
+            {
+                "primitive": "PENDOWN",
+                "aliases": [ "bajalapiz", "pd", "bl"]
+            },
+            {
+                "primitive": "PENUP",
+                "aliases": [ "subelapiz", "sl"]
+            },
+            {
+                "primitive": "REPEAT",
+                "aliases": [ "repite" ]
+            },
+            {
+                "primitive": "RIGHT",
+                "aliases": [ "giraderecha", "gd"]
+            },
+            {
+                "primitive": "SETBACKGROUND",
+                "aliases": [ "ponfondo" ]
+            },
+            {
+                "primitive": "SETPENCOLOR",
+                "aliases": [ "poncolorlapiz", "poncl" ]
+            },
+            {
+                "primitive": "STOP",
+                "aliases": [ "alto" ]
+            },
+            {
+                "primitive": "TO",
+                "aliases": [ "para" ]
             }
         ],
         "UI": [
@@ -427,12 +429,12 @@ const i18n = {
             }
         ],
         "errors": {
-            "PROCEDURE_CALL_STACK_OVERFLOW": "Has llamado un procedimiento mas de {0} veces y hemos parado el programa",
-            "UNMATCHED_CLOSING_BRACKET": "Un corchete ] fue encontrado sin encontrar primero un corchete [",
             "CODEBLOCK_EXPECTED_OPENING_BRACKET": "Esperábamos un corchete abierto [ en un 'SI' o 'REPITE'",
             "EXPECTED_NUMBER_OR_VARIABLE": "Esperábamos un número o una variable y en vez de eso tenemos: {0}",
+            "PROCEDURE_CALL_STACK_OVERFLOW": "Has llamado un procedimiento mas de {0} veces y hemos parado el programa",
             "PROCEDURE_NOT_DEFINED": "El procedimiento {0} tiene que ser definido antes de usarlo",
-            "UNKNOWN_TOKEN_FOUND": "Hemos encontrado un símbolo '{0}' que no hemos reconocido"
+            "UNKNOWN_TOKEN_FOUND": "Hemos encontrado un símbolo '{0}' que no hemos reconocido",
+            "UNMATCHED_CLOSING_BRACKET": "Un corchete ] fue encontrado sin encontrar primero un corchete ["
         }
     }
 };

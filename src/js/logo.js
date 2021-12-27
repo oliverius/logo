@@ -105,19 +105,16 @@ class Interpreter {
                     break;
                 case Parser.events.logEvent.types.ERROR:
                     let message = "";
-                    switch (e.detail.errorCode) {
-                        case Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW:
-                            message = this.locale.errors.PROCEDURE_CALL_STACK_OVERFLOW;
-                            message = message.replace("{0}", e.detail.args[0]);
-                            break;
-                        case Parser.errors.UNMATCHED_CLOSING_BRACKET:
-                            message = this.locale.errors.UNMATCHED_CLOSING_BRACKET;
-                            break;
+                    switch (e.detail.errorCode) {                        
                         case Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET:
                             message = this.locale.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET;
                             break;
                         case Parser.errors.EXPECTED_NUMBER_OR_VARIABLE:
                             message = this.locale.errors.EXPECTED_NUMBER_OR_VARIABLE;
+                            message = message.replace("{0}", e.detail.args[0]);
+                            break;
+                        case Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW:
+                            message = this.locale.errors.PROCEDURE_CALL_STACK_OVERFLOW;
                             message = message.replace("{0}", e.detail.args[0]);
                             break;
                         case Parser.errors.PROCEDURE_NOT_DEFINED:
@@ -127,6 +124,9 @@ class Interpreter {
                         case Parser.errors.UNKNOWN_TOKEN_FOUND:
                             message = this.locale.errors.UNKNOWN_TOKEN_FOUND;
                             message = message.replace("{0}", e.detail.args[0]);
+                            break;
+                        case Parser.errors.UNMATCHED_CLOSING_BRACKET:
+                            message = this.locale.errors.UNMATCHED_CLOSING_BRACKET;
                             break;
                     }
                     this.setStatusBar(message);
@@ -142,26 +142,32 @@ class Interpreter {
         window.addEventListener(Parser.events.turtleDrawingEvent.name, e => {
             let arg = e.detail.arg;
             switch (e.detail.primitive) {
-                case Tokenizer.primitives.FORWARD:
-                    this.turtle.execute_forward(arg);
-                    break;
                 case Tokenizer.primitives.BACK:
                     this.turtle.execute_back(arg);
                     break;
+                case Tokenizer.primitives.CLEAN:
+                    this.turtle.execute_clean();
+                    break;
+                case Tokenizer.primitives.CLEARSCREEN:
+                    this.turtle.execute_clearscreen();
+                    break;
+                case Tokenizer.primitives.FORWARD:
+                    this.turtle.execute_forward(arg);
+                    break;
+                case Tokenizer.primitives.HOME:
+                    this.turtle.execute_home();
+                    break;
                 case Tokenizer.primitives.LEFT:
                     this.turtle.execute_left(arg);
-                    break;
-                case Tokenizer.primitives.RIGHT:
-                    this.turtle.execute_right(arg);
+                    break;                
+                case Tokenizer.primitives.PENDOWN:
+                    this.turtle.execute_pendown();
                     break;
                 case Tokenizer.primitives.PENUP:
                     this.turtle.execute_penup();
                     break;
-                case Tokenizer.primitives.PENDOWN:
-                    this.turtle.execute_pendown();
-                    break;
-                case Tokenizer.primitives.CLEARSCREEN:
-                    this.turtle.execute_clearscreen();
+                case Tokenizer.primitives.RIGHT:
+                    this.turtle.execute_right(arg);
                     break;
                 case Tokenizer.primitives.SETPENCOLOR:
                     this.turtle.execute_setpencolor(this.getColor(arg));
@@ -169,12 +175,7 @@ class Interpreter {
                 case Tokenizer.primitives.SETBACKGROUND:
                     this.turtle.execute_setbackground(this.getColor(arg));
                     break;
-                case Tokenizer.primitives.HOME:
-                    this.turtle.execute_home();
-                    break;
-                case Tokenizer.primitives.CLEAN:
-                    this.turtle.execute_clean();
-                    break;
+                
             }
         });
     }
@@ -280,12 +281,12 @@ class Interpreter {
 class Parser {
     static errors = {
         "NONE": 0,
-        "PROCEDURE_CALL_STACK_OVERFLOW": 1,
-        "UNMATCHED_CLOSING_BRACKET": 2,
-        "CODEBLOCK_EXPECTED_OPENING_BRACKET": 3,
-        "EXPECTED_NUMBER_OR_VARIABLE": 4,
-        "PROCEDURE_NOT_DEFINED": 5,
-        "UNKNOWN_TOKEN_FOUND": 6
+        "CODEBLOCK_EXPECTED_OPENING_BRACKET": 1,
+        "EXPECTED_NUMBER_OR_VARIABLE": 2,
+        "PROCEDURE_CALL_STACK_OVERFLOW": 3,
+        "PROCEDURE_NOT_DEFINED": 4,
+        "UNKNOWN_TOKEN_FOUND": 5,
+        "UNMATCHED_CLOSING_BRACKET": 6
     };
     static events = {
         "statusEvent": {
@@ -361,6 +362,10 @@ class Parser {
             this.raiseErrorEvent(Parser.errors.UNMATCHED_CLOSING_BRACKET, []);
         }
     }
+    execute_end() {
+        let item = this.procedureCallStack.pop();
+        this.setCurrentTokenIndex(item.procedureCallLastTokenIndex);
+    }
     execute_if() {
         let left = this.getExpression();
         this.getNextToken();
@@ -381,9 +386,12 @@ class Parser {
             this.skipCodeBlock();
         }
     }
-    execute_end() {
-        let item = this.procedureCallStack.pop();
-        this.setCurrentTokenIndex(item.procedureCallLastTokenIndex);
+    execute_repeat(n = 0) {
+        this.beginCodeBlock(Tokenizer.primitives.REPEAT, n);
+    }
+    execute_stop() {
+        this.skipUntilEndOfProcedure(); // The STOP will be inside a procedure, so we don't do anything until we reach the end
+        this.putBackToken(); // So the END primitive will be the next one read in the next parsing step and we execute the END primitive code.
     }
     execute_to() {
         /*
@@ -419,13 +427,6 @@ class Parser {
 
             this.procedures[procedure.name] = procedure;
         }
-    }
-    execute_repeat(n = 0) {
-        this.beginCodeBlock(Tokenizer.primitives.REPEAT, n);
-    }
-    execute_stop() {
-        this.skipUntilEndOfProcedure(); // The STOP will be inside a procedure, so we don't do anything until we reach the end
-        this.putBackToken(); // So the END primitive will be the next one read in the next parsing step and we execute the END primitive code.
     }
     getExpression() {
         let result = {
@@ -670,6 +671,9 @@ class Parser {
             arg: arg
         });
     }
+    setCurrentTokenIndex(index) {
+        this.currentTokenIndex = index;
+    }
     skipCodeBlock() {
         this.getNextToken();
         if (this.currentToken.text === Tokenizer.delimiters.OPENING_BRACKET) {
@@ -684,9 +688,6 @@ class Parser {
         while (this.currentToken.primitive !== Tokenizer.primitives.END) {
             this.getNextToken();
         }
-    }
-    setCurrentTokenIndex(index) {
-        this.currentTokenIndex = index;
     }
     stopParsing() {
         this.stopParsingRequested = true;
@@ -886,6 +887,8 @@ class Tokenizer {
 }
 
 class Turtle {
+    DEFAULT_PENCOLOR = "#000000";       // black
+    DEFAULT_BACKGROUNDCOLOR = "#E8E8E8" // Light grey;
     DEGREE_TO_RADIAN = Math.PI / 180;
     toRadians = (deg = 0) => Number(deg * this.DEGREE_TO_RADIAN);
 
@@ -909,8 +912,8 @@ class Turtle {
 
         this.state = {
             isPenDown: true,
-            penColor: "#000000",       // Black
-            backgroundColor: "#E8E8E8" // Light grey
+            penColor: this.DEFAULT_PENCOLOR,
+            backgroundColor: this.DEFAULT_BACKGROUNDCOLOR
         };
 
         this.execute_clearscreen();
@@ -983,7 +986,6 @@ class Turtle {
         this.drawingCtx.lineTo(x1, y1);
         if (this.state.isPenDown) {
             this.drawingCtx.strokeStyle = this.state.penColor;
-            console.log(this.state.penColor, this.drawingCtx.strokeStyle);
             this.drawingCtx.stroke();
         }
         this.updateTurtlePosition(x1, y1);
