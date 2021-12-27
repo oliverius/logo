@@ -8,6 +8,74 @@ class Procedure {
 }
 
 class Interpreter {
+    // Color names taken from Berkely LOGO 6.1 manual
+    // Colors taken from css colors, except Grey which matches our grey background
+    // The values are the index in the array 0..15
+    static colors = [
+        {   "name": "black",
+            "color": "#000000"
+        },
+        {
+            "name": "blue",
+            "color": "#0000FF"
+        },
+        {
+            "name": "green",
+            "color": "#008000"
+        },
+        {
+            "name": "cyan",
+            "color": "#00FFFF"
+        },
+        {
+            "name": "red",
+            "color": "#FF0000"
+        },
+        {
+            "name": "magenta",
+            "color": "#FF00FF"
+        },
+        {
+            "name": "yellow",
+            "color": "#FFFF00"
+        },
+        {
+            "name": "white",
+            "color": "#FFFFFF"
+        },
+        {
+            "name": "brown",
+            "color": "#A52A2A"
+        },
+        {
+            "name": "tan",
+            "color": "#D2B48C"
+        },
+        {
+            "name": "forest",
+            "color": "#228B22" // ForestGreen in css
+        },
+        {
+            "name": "aqua",
+            "color": "#00FFFF" // Same as cyan in css
+        },
+        {
+            "name": "salmon",
+            "color": "#FA8072"
+        },
+        {
+            "name": "purple",
+            "color": "#800080"
+        },
+        {
+            "name": "orange",
+            "color": "#FFA500"
+        },
+        {
+            "name": "grey",
+            "color": "#E8E8E8" // Different than css, this one matches our background color
+        }
+    ];
     constructor(editorId, canvasId, statusBarId, examplesDropdownId, languageDropdownId, i18n, defaultLanguage) {
         
         this.storageKey = "oliverius_logo";
@@ -95,6 +163,12 @@ class Interpreter {
                 case Tokenizer.primitives.CLEARSCREEN:
                     this.turtle.execute_clearscreen();
                     break;
+                case Tokenizer.primitives.SETPENCOLOR:
+                    this.turtle.execute_setpencolor(this.getColor(arg));
+                    break;
+                case Tokenizer.primitives.SETBACKGROUND:
+                    this.turtle.execute_setbackground(this.getColor(arg));
+                    break;
             }
         });
     }
@@ -102,6 +176,12 @@ class Interpreter {
         this.setEditor("");
         this.setStatusBar("");
         this.turtle.execute_clearscreen();
+    }
+    getColor(value = 0) {
+        if (value < 0 || value > Interpreter.colors.length) {
+            // TODO Error if color not found or if we find more than one
+        }        
+        return Interpreter.colors[value].color;
     }
     getLatestScriptRun() {        
         return localStorage.getItem(this.storageKey) ?? "";
@@ -527,6 +607,12 @@ class Parser {
                 case Tokenizer.primitives.STOP:
                     this.execute_stop();
                     break;
+                case Tokenizer.primitives.SETPENCOLOR:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETPENCOLOR, this.getExpression());
+                    break;
+                case Tokenizer.primitives.SETBACKGROUND:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETBACKGROUND, this.getExpression());
+                    break;
             }
         } else if (this.currentToken.tokenType === Tokenizer.tokenTypes.DELIMITER) {
             if (this.currentToken.text === Tokenizer.delimiters.CLOSING_BRACKET) {
@@ -640,7 +726,9 @@ class Tokenizer {
         "TO": 9,
         "END": 10,
         "IF": 11,
-        "STOP": 12
+        "STOP": 12,
+        "SETPENCOLOR": 13,
+        "SETBACKGROUND": 14
     };
     static tokenTypes = {
         "NONE": 0,
@@ -804,6 +892,12 @@ class Turtle {
         virtualDrawingCanvas.height = this.height;
         this.drawingCtx = virtualDrawingCanvas.getContext('2d');
 
+        this.state = {
+            isPenDown: true,
+            penColor: "#000000",       // Black
+            backgroundColor: "#E8E8E8" // Light grey
+        };
+
         this.execute_clearscreen();
         this.execute_pendown()
     }
@@ -845,7 +939,9 @@ class Turtle {
         this.drawingCtx.beginPath();
         this.drawingCtx.moveTo(this.x, this.y);
         this.drawingCtx.lineTo(x1, y1);
-        if (this.isPenDown) {
+        if (this.state.isPenDown) {
+            this.drawingCtx.strokeStyle = this.state.penColor;
+            console.log(this.state.penColor, this.drawingCtx.strokeStyle);
             this.drawingCtx.stroke();
         }
         this.updateTurtlePosition(x1, y1);
@@ -858,10 +954,10 @@ class Turtle {
         this.execute_right(-deg);
     }
     execute_pendown() {
-        this.isPenDown = true;
+        this.state.isPenDown = true;
     }
     execute_penup() {
-        this.isPenDown = false;
+        this.state.isPenDown = false;
     }
     execute_right(deg = 0) {
         this.incrementTurtleOrientation(deg);
@@ -869,6 +965,12 @@ class Turtle {
         this.deleteTurtle();
         this.drawTurtle();
         this.renderFrame();
+    }
+    execute_setbackground(color = "") {
+        this.state.backgroundColor = color;
+    }
+    execute_setpencolor(color = "") {
+        this.state.penColor = color;
     }
     drawTurtle() {
         let vertexAngleInDeg = 40;

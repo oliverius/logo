@@ -47,6 +47,14 @@ const i18n = {
             {
                 "primitive": "STOP",
                 "aliases": [ "stop" ]
+            },
+            {
+                "primitive": "SETPENCOLOR",
+                "aliases": [ "setpencolor", "setpc" ]
+            },
+            {
+                "primitive": "SETBACKGROUND",
+                "aliases": [ "setbackground", "setbg" ]
             }
         ],
         "UI": [
@@ -233,6 +241,14 @@ const i18n = {
             {
                 "primitive": "STOP",
                 "aliases": [ "alto" ]
+            },
+            {
+                "primitive": "SETPENCOLOR",
+                "aliases": [ "poncolorlapiz", "setpc" ]
+            },
+            {
+                "primitive": "SETBACKGROUND",
+                "aliases": [ "ponfondo" ]
             }
         ],
         "UI": [
