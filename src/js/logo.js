@@ -728,22 +728,22 @@ class Tokenizer {
     };
     static primitives = {
         "NONE": 0,
-        "FORWARD": 1,
-        "BACK": 2,
-        "LEFT": 3,
-        "RIGHT": 4,
-        "PENUP": 5,
-        "PENDOWN": 6,
-        "REPEAT": 7,
-        "CLEARSCREEN": 8,
-        "TO": 9,
-        "END": 10,
-        "IF": 11,
-        "STOP": 12,
+        "BACK": 1,
+        "CLEAN": 2,
+        "CLEARSCREEN": 3,
+        "END": 4,
+        "FORWARD": 5,
+        "HOME": 6,
+        "IF": 7,
+        "LEFT": 8,
+        "PENDOWN": 9,
+        "PENUP": 10,
+        "REPEAT": 11,
+        "RIGHT": 12,
         "SETPENCOLOR": 13,
         "SETBACKGROUND": 14,
-        "HOME": 15,
-        "CLEAN": 16,
+        "STOP": 15,
+        "TO": 16
 
     };
     static tokenTypes = {
@@ -898,7 +898,7 @@ class Turtle {
         this.height = canvasObject.height;
         this.centerX = parseInt(this.width / 2);
         this.centerY = parseInt(this.height / 2);
-        this.orientation = 0;
+        this.heading = 0;
 
         let virtualTurtleCanvas = document.createElement('canvas');
         virtualTurtleCanvas.width = this.width;
@@ -943,7 +943,7 @@ class Turtle {
 
         this.turtleCtx.resetTransform();;
         this.turtleCtx.translate(this.x, this.y);
-        this.turtleCtx.rotate(this.toRadians(this.orientation));
+        this.turtleCtx.rotate(this.toRadians(this.heading));
         this.turtleCtx.translate(-this.x, -this.y);
 
         this.turtleCtx.beginPath();
@@ -976,7 +976,7 @@ class Turtle {
             x1 = x + r·sin(α)
             y1 = y - r·cos(α)
         */
-        let alpha = this.toRadians(this.orientation);
+        let alpha = this.toRadians(this.heading);
         let x1 = this.x + n * Math.sin(alpha);
         let y1 = this.y - n * Math.cos(alpha);
 
@@ -997,7 +997,7 @@ class Turtle {
     execute_home() {
         this.deleteTurtle();
         this.updateTurtlePosition(this.centerX, this.centerY);
-        this.incrementTurtleOrientation(-this.orientation);
+        this.increaseTurtleHeading(-this.heading);
         this.drawTurtle();
         this.renderFrame();
     }
@@ -1011,7 +1011,7 @@ class Turtle {
         this.state.isPenDown = false;
     }
     execute_right(deg = 0) {
-        this.incrementTurtleOrientation(deg);
+        this.increaseTurtleHeading(deg);
 
         this.deleteTurtle();
         this.drawTurtle();
@@ -1026,8 +1026,8 @@ class Turtle {
     execute_setpencolor(color = "") {
         this.state.penColor = color;
     }
-    incrementTurtleOrientation(deg = 0) {
-        this.orientation += deg;
+    increaseTurtleHeading(deg = 0) {
+        this.heading += deg;
     }
     renderFrame() {
         this.ctx.clearRect(0, 0, this.width, this.height);
