@@ -169,6 +169,12 @@ class Interpreter {
                 case Tokenizer.primitives.SETBACKGROUND:
                     this.turtle.execute_setbackground(this.getColor(arg));
                     break;
+                case Tokenizer.primitives.HOME:
+                    this.turtle.execute_home();
+                    break;
+                case Tokenizer.primitives.CLEAN:
+                    this.turtle.execute_clean();
+                    break;
             }
         });
     }
@@ -613,6 +619,12 @@ class Parser {
                 case Tokenizer.primitives.SETBACKGROUND:
                     this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETBACKGROUND, this.getExpression());
                     break;
+                case Tokenizer.primitives.HOME:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.HOME);
+                    break;
+                case Tokenizer.primitives.CLEAN:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.CLEAN);
+                    break;
             }
         } else if (this.currentToken.tokenType === Tokenizer.tokenTypes.DELIMITER) {
             if (this.currentToken.text === Tokenizer.delimiters.CLOSING_BRACKET) {
@@ -728,7 +740,10 @@ class Tokenizer {
         "IF": 11,
         "STOP": 12,
         "SETPENCOLOR": 13,
-        "SETBACKGROUND": 14
+        "SETBACKGROUND": 14,
+        "HOME": 15,
+        "CLEAN": 16,
+
     };
     static tokenTypes = {
         "NONE": 0,
@@ -910,15 +925,13 @@ class Turtle {
     execute_back(n = 0) {
         this.execute_forward(-n);
     }
-    execute_clearscreen() {
+    execute_clean() {
         this.deleteGraphics();
-        this.deleteTurtle();
-
-        this.updateTurtlePosition(this.centerX, this.centerY);
-        this.incrementTurtleOrientation(-this.orientation);
-        this.drawTurtle();
-
         this.renderFrame();
+    }
+    execute_clearscreen() {
+        this.execute_home();
+        this.execute_clean();
     }
     execute_forward(n = 0) {
         /*
@@ -947,6 +960,13 @@ class Turtle {
         this.updateTurtlePosition(x1, y1);
 
         this.deleteTurtle();
+        this.drawTurtle();
+        this.renderFrame();
+    }
+    execute_home() {
+        this.deleteTurtle();
+        this.updateTurtlePosition(this.centerX, this.centerY);
+        this.incrementTurtleOrientation(-this.orientation);
         this.drawTurtle();
         this.renderFrame();
     }

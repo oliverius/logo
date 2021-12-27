@@ -55,6 +55,14 @@ const i18n = {
             {
                 "primitive": "SETBACKGROUND",
                 "aliases": [ "setbackground", "setbg" ]
+            },
+            {
+                "primitive": "HOME",
+                "aliases": [ "home" ]
+            },
+            {
+                "primitive": "CLEAN",
+                "aliases": [ "clean" ]
             }
         ],
         "UI": [
@@ -182,6 +190,22 @@ const i18n = {
                     "rightchairinposition",
                     "rightchair"
                 ]
+            },
+            {
+                "name": "Colorful star",
+                "code": [
+                    "to colorfulstar :length :counter",
+                    "  if :counter>15 [stop]",
+                    "  home",
+                    "  rt :counter*360/16",
+                    "  setpc :counter",
+                    "  fd :length",
+                    "  colorfulstar :length :counter+1",
+                    "end",
+                    "clean",
+                    "colorfulstar 100 0",
+                    "home"
+                ]
             }
         ],
         "errors": {
@@ -244,11 +268,19 @@ const i18n = {
             },
             {
                 "primitive": "SETPENCOLOR",
-                "aliases": [ "poncolorlapiz", "setpc" ]
+                "aliases": [ "poncolorlapiz", "poncl" ]
             },
             {
                 "primitive": "SETBACKGROUND",
                 "aliases": [ "ponfondo" ]
+            },
+            {
+                "primitive": "HOME",
+                "aliases": [ "centro" ]
+            },
+            {
+                "primitive": "CLEAN",
+                "aliases": [ "limpia" ]
             }
         ],
         "UI": [
@@ -375,6 +407,22 @@ const i18n = {
                     "mesa",
                     "posicionsilladerecha",
                     "silladerecha"
+                ]
+            },
+            {
+                "name": "Estrella de colores",
+                "code": [
+                    "para estrelladecolores :rayo :contador",
+                    "  si :contador>15 [alto]",
+                    "  centro",
+                    "  gd :contador*360/16",
+                    "  poncl :contador",
+                    "  av :rayo",
+                    "  estrelladecolores :rayo :contador+1",
+                    "fin",
+                    "limpia",
+                    "estrelladecolores 100 0",
+                    "centro"
                 ]
             }
         ],
