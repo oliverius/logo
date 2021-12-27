@@ -80,6 +80,7 @@ const i18n = {
                     "to square :side",
                     "  repeat 4 [fd :side rt 90]",
                     "end",
+                    "cs",
                     "square 60"
                 ]
             },
@@ -100,6 +101,7 @@ const i18n = {
                     "  fd :side rt 90",
                     "  spiral :side + 3",
                     "end",
+                    "cs",
                     "spiral 10"
                 ]
             },
@@ -180,7 +182,7 @@ const i18n = {
             "CODEBLOCK_EXPECTED_OPENING_BRACKET": "Expected opening bracket [ after an 'IF' or 'REPEAT'",
             "EXPECTED_NUMBER_OR_VARIABLE": "Expected a number or a variable and instead we have: {0}",
             "PROCEDURE_NOT_DEFINED": "The procedure {0} hasn't been defined yet before using it",
-            "UNKNOWN_TOKEN_FOUND": "Found a symbol that wasn't recognized"
+            "UNKNOWN_TOKEN_FOUND": "Found a symbol '{0}' that wasn't recognized"
         }
     },
     "Spanish": {
@@ -264,6 +266,7 @@ const i18n = {
                     "para cuadrado :lado",
                     "  repite 4 [av :lado gd 90]",
                     "fin",
+                    "bp",
                     "cuadrado 60"
                 ]
             },
@@ -284,6 +287,7 @@ const i18n = {
                     "  av :lado gd 90",
                     "  espiral :lado + 3",
                     "fin",
+                    "bp",
                     "espiral 10"
                 ]
             },
@@ -364,7 +368,7 @@ const i18n = {
             "CODEBLOCK_EXPECTED_OPENING_BRACKET": "Esperábamos un corchete abierto [ en un 'SI' o 'REPITE'",
             "EXPECTED_NUMBER_OR_VARIABLE": "Esperábamos un número o una variable y en vez de eso tenemos: {0}",
             "PROCEDURE_NOT_DEFINED": "El procedimiento {0} tiene que ser definido antes de usarlo",
-            "UNKNOWN_TOKEN_FOUND": "Hemos encontrado un símbolo que no hemos reconocido"
+            "UNKNOWN_TOKEN_FOUND": "Hemos encontrado un símbolo '{0}' que no hemos reconocido"
         }
     }
 };

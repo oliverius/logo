@@ -58,6 +58,7 @@ class Interpreter {
                             break;
                         case Parser.errors.UNKNOWN_TOKEN_FOUND:
                             message = this.locale.errors.UNKNOWN_TOKEN_FOUND;
+                            message = message.replace("{0}", e.detail.args[0]);
                             break;
                     }
                     this.setStatusBar(message);
@@ -394,8 +395,7 @@ class Parser {
             case Tokenizer.delimiters.DIVIDEDBY:
                 result.value /= hold.value;
                 break;
-            default:                
-                //console.log("TODO Error here", operation);
+            default:
                 break;
         }
     }
@@ -440,6 +440,13 @@ class Parser {
         }
     }
     initializeParsing(tokens = []) {
+        // The check for unknown token is here and not in 'parse(tokens)' because for tests we override 'parse(tokens)'
+        // with another method that doesn't require a timer (so tests work as fast as they can)
+        // and this is the method that will be called always when parsing
+        let firstUnknownToken = tokens.find(token => token.tokenType === Tokenizer.tokenTypes.UNKNOWN_TOKEN);
+        if (firstUnknownToken !== undefined) {
+            this.raiseErrorEvent(Parser.errors.UNKNOWN_TOKEN_FOUND, [ firstUnknownToken.text ]);
+        }
         this.tokens = tokens;
         this.currentToken = {};
         this.currentTokenIndex = -1; // So when we get the first token, it will be 0, first index in an array.
@@ -449,11 +456,6 @@ class Parser {
         this.stopParsingRequested = false;
     }
     parse(tokens) {
-        if (tokens.some(token => token.tokenType === Tokenizer.tokenTypes.UNKNOWN_TOKEN)) {
-            this.raiseErrorEvent(Parser.errors.UNKNOWN_TOKEN_FOUND, []);
-            return;
-        }
-
         this.initializeParsing(tokens);        
 
         this.raiseStatusEvent(Parser.events.statusEvent.values.START_PARSING);

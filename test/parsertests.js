@@ -1,9 +1,9 @@
 function runParserTests(Tokenizer, Parser, i18n) {    
     let testPassed = (testName) => {
-        console.log(`%cTEST %cPASSED %c${testName}`, 'color: black;', 'color: green; font-weight:bold;', 'color: grey;');
+        console.log(`%cTEST %cPASSED %cParser ${testName}`, 'color: black;', 'color: green; font-weight:bold;', 'color: grey;');
     };
     let testFailed = (testName) => {
-        console.log(`%cTEST %cFAILED %c${testName}`, 'color: black;', 'color: red; font-weight:bold;', 'color: grey;');
+        console.log(`%cTEST %cFAILED %cParser ${testName}`, 'color: black;', 'color: red; font-weight:bold;', 'color: grey;');
     };
     let assertExpression = (expression = "", expectedValue = 0) => {
         let tokenizer = new Tokenizer(i18n['English'].primitiveAliases); // Tests only with English primitives for expressions
@@ -17,9 +17,9 @@ function runParserTests(Tokenizer, Parser, i18n) {
         let success = expectedValue === actualValue;
 
         if (success) {
-            testPassed(`Expression "${expression}"`);
+            testPassed(`Expression "${expression} = ${expectedValue}"`);
         } else {
-            testFailed(`Expression "${expression}"`);
+            testFailed(`Expression "${expression} = ${expectedValue}" but we get ${actualValue} instead`);
         }
 
         return success;
@@ -58,9 +58,8 @@ function runParserTests(Tokenizer, Parser, i18n) {
             && assertParserError(expectedErrorCode, actualErrorCode) === true) {
             testPassed(testName);
         } else {
-            testFailed(testName);
+            testFailed(testName);            
             if (expectedTurtleDrawingEvents.length !== actualTurtleDrawingEvents.length) {
-                console.log(expectedTurtleDrawingEvents, actualTurtleDrawingEvents);
                 console.table(expectedTurtleDrawingEvents, actualTurtleDrawingEvents);
                 throw "Expected and actual turtle drawing events are different";
             }
@@ -103,7 +102,6 @@ function runParserTests(Tokenizer, Parser, i18n) {
             ]
         )
     );
-
     tests.push(
         assertScript(
             "Square with REPEAT primitive",
@@ -121,7 +119,6 @@ function runParserTests(Tokenizer, Parser, i18n) {
             ]
         )
     );
-
     tests.push(
         assertScript(
             "Double REPEAT with inside one in the middle of the primitives of the first one",
@@ -169,7 +166,6 @@ function runParserTests(Tokenizer, Parser, i18n) {
             ]
         )
     );
-
     tests.push(
         assertScript(
             "Recursive tree",
@@ -344,61 +340,68 @@ function runParserTests(Tokenizer, Parser, i18n) {
             ]
         )
     );
-    
-    assertScript(
-        "Trigger error PROCEDURE_CALL_STACK_OVERFLOW",
-         "English",
-         lines([
-            "to getoverflow",
-            "  getoverflow",
-            "end",
-            "getoverflow"
-        ]),
-        [],
-        Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW
+    tests.push(
+        assertScript(
+            "Trigger error PROCEDURE_CALL_STACK_OVERFLOW",
+            "English",
+            lines([
+                "to getoverflow",
+                "  getoverflow",
+                "end",
+                "getoverflow"
+            ]),
+            [],
+            Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW
+        )
     );
-
-    assertScript(
-        "Trigger error UNMATCHED_CLOSING_BRACKET",
-         "English",
-        "fd 60 ]",
-        [
-            [Tokenizer.primitives.FORWARD, 60]
-        ],
-        Parser.errors.UNMATCHED_CLOSING_BRACKET
+    tests.push(
+        assertScript(
+            "Trigger error UNMATCHED_CLOSING_BRACKET",
+            "English",
+            "fd 60 ]",
+            [
+                [Tokenizer.primitives.FORWARD, 60]
+            ],
+            Parser.errors.UNMATCHED_CLOSING_BRACKET
+        )
     );
-
-    assertScript(
-        "Trigger error CODEBLOCK_EXPECTED_OPENING_BRACKET",
-         "English",
-        "repeat 4 fd 60",
-        [],
-        Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET
+    tests.push(
+        assertScript(
+            "Trigger error CODEBLOCK_EXPECTED_OPENING_BRACKET",
+            "English",
+            "repeat 4 fd 60",
+            [],
+            Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET
+        )
     );
-
-    assertScript(
-        "Trigger error EXPECTED_NUMBER_OR_VARIABLE",
-         "English",
-        "repeat [",
-        [],
-        Parser.errors.EXPECTED_NUMBER_OR_VARIABLE
+    tests.push(
+        assertScript(
+            "Trigger error EXPECTED_NUMBER_OR_VARIABLE",
+            "English",
+            "repeat [",
+            [],
+            Parser.errors.EXPECTED_NUMBER_OR_VARIABLE
+        )
     );
-
-    assertScript(
-        "Trigger error PROCEDURE_NOT_DEFINED",
-         "English",
-        "potato fd 60",
-        [],
-        Parser.errors.PROCEDURE_NOT_DEFINED
+    tests.push(
+        assertScript(
+            "Trigger error PROCEDURE_NOT_DEFINED",
+            "English",
+            "potato fd 60",
+            [],
+            Parser.errors.PROCEDURE_NOT_DEFINED
+        )
     );
-
-    // assertScript(
-    //     "Trigger error UNKNOWN_TOKEN_FOUND",
-    //      "English",
-    //     "fd 2^3",
-    //     [],
-    //     Parser.errors.PROCEDURE_NOT_DEFINED
-    // );
-    
+    tests.push(
+        assertScript(
+            "Trigger error UNKNOWN_TOKEN_FOUND",
+            "English",
+            "fd 2^3",
+            [
+                [Tokenizer.primitives.FORWARD, 2]              
+            ],
+            Parser.errors.UNKNOWN_TOKEN_FOUND
+        )
+    );
     return tests.every(test => test);
 }
