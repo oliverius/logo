@@ -367,9 +367,18 @@ function runParserTests(Tokenizer, Parser, i18n) {
     );
     tests.push(
         assertScript(
-            "Trigger error CODEBLOCK_EXPECTED_OPENING_BRACKET",
+            "Trigger error CODEBLOCK_EXPECTED_OPENING_BRACKET when missing opening bracket",
             "English",
             "repeat 4 fd 60",
+            [],
+            Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET
+        )
+    );
+    tests.push(
+        assertScript(
+            "Trigger error CODEBLOCK_EXPECTED_OPENING_BRACKET when missing opening bracket skipping a code block",
+            "English",
+            "if 3>5 fd 60",
             [],
             Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET
         )

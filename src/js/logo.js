@@ -295,21 +295,6 @@ class Parser {
             this.skipCodeBlock();
         }
     }
-    skipCodeBlock() {
-        this.getNextToken();
-        if (this.currentToken.text === Tokenizer.delimiters.OPENING_BRACKET) {
-            while (this.currentToken.text !== Tokenizer.delimiters.CLOSING_BRACKET) {
-                this.getNextToken();
-            }
-        } else {
-            throw "malformed code block TODO";
-        }
-    }
-    skipUntilEndOfProcedure() {
-        while (this.currentToken.primitive !== Tokenizer.primitives.END) {
-            this.getNextToken();
-        }
-    }
     execute_end() {
         let item = this.procedureCallStack.pop();
         this.setCurrentTokenIndex(item.procedureCallLastTokenIndex);
@@ -455,6 +440,37 @@ class Parser {
         this.procedureCallStack = [];
         this.stopParsingRequested = false;
     }
+    jumpToProcedure(name) {
+        if (this.procedures[name] !== undefined) {
+            if (this.procedureCallStack.length + 1 > this.maxProcedureCallStack) {
+                this.stopParsing();
+                this.raiseErrorEvent(Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW, [this.maxProcedureCallStack]);
+                return;
+            }
+
+            let procedure = this.procedures[name];
+
+            let assignedInputs = [];
+            procedure.inputs.forEach(input => {
+                assignedInputs.push({
+                    name: input,
+                    value: this.getExpression()
+                });
+            });
+
+            let procedureCallStackItem = {
+                name : procedure.name,
+                inputs: assignedInputs,
+                procedureCallLastTokenIndex: this.currentTokenIndex
+            };
+
+            this.procedureCallStack.push(procedureCallStackItem);
+
+            this.setCurrentTokenIndex(procedure.procedureBodyFirstTokenIndex - 1);
+        } else {
+            this.raiseErrorEvent(Parser.errors.PROCEDURE_NOT_DEFINED, [ name ]);
+        }
+    }
     parse(tokens) {
         this.initializeParsing(tokens);        
 
@@ -556,35 +572,19 @@ class Parser {
             arg: arg
         });
     }
-    jumpToProcedure(name) {
-        if (this.procedures[name] !== undefined) {
-            if (this.procedureCallStack.length + 1 > this.maxProcedureCallStack) {
-                this.stopParsing();
-                this.raiseErrorEvent(Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW, [this.maxProcedureCallStack]);
-                return;
+    skipCodeBlock() {
+        this.getNextToken();
+        if (this.currentToken.text === Tokenizer.delimiters.OPENING_BRACKET) {
+            while (this.currentToken.text !== Tokenizer.delimiters.CLOSING_BRACKET) {
+                this.getNextToken();
             }
-
-            let procedure = this.procedures[name];
-
-            let assignedInputs = [];
-            procedure.inputs.forEach(input => {
-                assignedInputs.push({
-                    name: input,
-                    value: this.getExpression()
-                });
-            });
-
-            let procedureCallStackItem = {
-                name : procedure.name,
-                inputs: assignedInputs,
-                procedureCallLastTokenIndex: this.currentTokenIndex
-            };
-
-            this.procedureCallStack.push(procedureCallStackItem);
-
-            this.setCurrentTokenIndex(procedure.procedureBodyFirstTokenIndex - 1);
         } else {
-            this.raiseErrorEvent(Parser.errors.PROCEDURE_NOT_DEFINED, [ name ]);
+            this.raiseErrorEvent(Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET, []);
+        }
+    }
+    skipUntilEndOfProcedure() {
+        while (this.currentToken.primitive !== Tokenizer.primitives.END) {
+            this.getNextToken();
         }
     }
     setCurrentTokenIndex(index) {
