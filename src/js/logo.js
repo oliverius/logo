@@ -922,11 +922,40 @@ class Turtle {
     deleteTurtle() {
         this.turtleCtx.clearRect(0, 0, this.width, this.height);
     }
+    drawTurtle() {
+        let vertexAngleInDeg = 40;
+        let alpha = vertexAngleInDeg / 2;
+        let angle = this.toRadians(270 + alpha);
+
+        let r = 20;
+        let halfbase = r * Math.sin(this.toRadians(alpha));
+        let height = r * Math.cos(this.toRadians(alpha));
+
+        let x1 = this.x;
+        let y1 = this.y - height / 2;
+        let x2 = x1 + r * Math.cos(angle);
+        let y2 = y1 - r * Math.sin(angle);
+        let x3 = x2 - 2 * halfbase;
+        let y3 = y2;
+
+        this.turtleCtx.resetTransform();;
+        this.turtleCtx.translate(this.x, this.y);
+        this.turtleCtx.rotate(this.toRadians(this.orientation));
+        this.turtleCtx.translate(-this.x, -this.y);
+
+        this.turtleCtx.beginPath();
+        this.turtleCtx.moveTo(x1, y1);
+        this.turtleCtx.lineTo(x2, y2);
+        this.turtleCtx.lineTo(x3, y3);
+        this.turtleCtx.lineTo(x1, y1);
+        this.turtleCtx.stroke();
+    }
     execute_back(n = 0) {
         this.execute_forward(-n);
     }
     execute_clean() {
         this.deleteGraphics();
+        this.execute_setbackground(this.state.backgroundColor);
         this.renderFrame();
     }
     execute_clearscreen() {
@@ -988,37 +1017,12 @@ class Turtle {
     }
     execute_setbackground(color = "") {
         this.state.backgroundColor = color;
+        this.drawingCtx.fillStyle = this.state.backgroundColor;
+        this.drawingCtx.fillRect(0, 0, this.width, this.height);
+        this.renderFrame();
     }
     execute_setpencolor(color = "") {
         this.state.penColor = color;
-    }
-    drawTurtle() {
-        let vertexAngleInDeg = 40;
-        let alpha = vertexAngleInDeg / 2;
-        let angle = this.toRadians(270 + alpha);
-
-        let r = 20;
-        let halfbase = r * Math.sin(this.toRadians(alpha));
-        let height = r * Math.cos(this.toRadians(alpha));
-
-        let x1 = this.x;
-        let y1 = this.y - height / 2;
-        let x2 = x1 + r * Math.cos(angle);
-        let y2 = y1 - r * Math.sin(angle);
-        let x3 = x2 - 2 * halfbase;
-        let y3 = y2;
-
-        this.turtleCtx.resetTransform();;
-        this.turtleCtx.translate(this.x, this.y);
-        this.turtleCtx.rotate(this.toRadians(this.orientation));
-        this.turtleCtx.translate(-this.x, -this.y);
-
-        this.turtleCtx.beginPath();
-        this.turtleCtx.moveTo(x1, y1);
-        this.turtleCtx.lineTo(x2, y2);
-        this.turtleCtx.lineTo(x3, y3);
-        this.turtleCtx.lineTo(x1, y1);
-        this.turtleCtx.stroke();
     }
     incrementTurtleOrientation(deg = 0) {
         this.orientation += deg;
