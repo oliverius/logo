@@ -999,7 +999,7 @@ class Turtle {
         let x3 = x2 - 2 * halfbase;
         let y3 = y2;
 
-        this.turtleCtx.resetTransform();;
+        this.turtleCtx.resetTransform();
         this.turtleCtx.translate(this.x, this.y);
         this.turtleCtx.rotate(this.toRadians(this.heading));
         this.turtleCtx.translate(-this.x, -this.y);
@@ -1064,8 +1064,17 @@ class Turtle {
 
         let oldFillStyle = this.drawingCtx.fillStyle;
 
+        this.drawingCtx.save();
+
+        this.drawingCtx.translate(this.x, this.y);
+        this.drawingCtx.rotate(this.toRadians(this.heading));
+        this.drawingCtx.translate(-this.x, -this.y);
+
+        this.drawingCtx.textAlign = "center";
         this.drawingCtx.fillStyle = this.state.penColor;      
         this.drawingCtx.fillText(text, this.x, this.y);
+
+        this.drawingCtx.restore();
 
         this.drawingCtx.fillStyle = oldFillStyle;
 

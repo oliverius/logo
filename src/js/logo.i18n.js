@@ -243,9 +243,8 @@ const i18n = {
                     "end",
                     "cs",
                     "setbg 9",
-                    "moveleft 60",
                     "pooemoji 100",
-                    "moveleft 100",
+                    "moveleft 130",
                     "rt 30",
                     "pu hexagon 130 pd"
                 ]
@@ -490,7 +489,7 @@ const i18n = {
                 ]
             },
             {
-                "name": "Un 💩 para gobernarlos a todos",
+                "name": "Una 💩 para gobernarlos a todos",
                 "code": [
                     "para caca :tamano",
                     "  pf :tamano",
@@ -504,9 +503,8 @@ const i18n = {
                     "fin",
                     "bp",
                     "ponfondo 9",
-                    "mueveizquierda 60",
                     "caca 100",
-                    "mueveizquierda 100",
+                    "mueveizquierda 130",
                     "gd 30",
                     "sl hexagono 130 bl"
                 ]
