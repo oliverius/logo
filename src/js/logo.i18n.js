@@ -66,6 +66,10 @@ const i18n = {
                 "aliases": [ "setpencolor", "setpc" ]
             },
             {
+                "primitive": "SETPENSIZE",
+                "aliases": [ "setpensize" ]
+            },
+            {
                 "primitive": "STOP",
                 "aliases": [ "stop" ]
             },
@@ -313,6 +317,10 @@ const i18n = {
             {
                 "primitive": "SETPENCOLOR",
                 "aliases": [ "poncolorlapiz", "poncl" ]
+            },
+            {
+                "primitive": "SETPENSIZE",
+                "aliases": [ "pongrosor", "pong" ]
             },
             {
                 "primitive": "STOP",

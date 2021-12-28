@@ -176,7 +176,10 @@ class Interpreter {
                     break;
                 case Tokenizer.primitives.SETPENCOLOR:
                     this.turtle.execute_setpencolor(this.getColor(arg));
-                    break;                
+                    break;
+                case Tokenizer.primitives.SETPENSIZE:
+                    this.turtle.execute_setpensize(arg);
+                    break;              
             }
         });
     }
@@ -632,6 +635,9 @@ class Parser {
                 case Tokenizer.primitives.SETPENCOLOR:
                     this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETPENCOLOR, this.getExpression());
                     break;
+                case Tokenizer.primitives.SETPENSIZE:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETPENSIZE, this.getExpression());
+                    break;
                 case Tokenizer.primitives.STOP:
                     this.execute_stop();
                     break;      
@@ -746,9 +752,9 @@ class Tokenizer {
         "SETBACKGROUND": 14,
         "SETLABELHEIGHT": 15,
         "SETPENCOLOR": 16,
-        "STOP": 17,
-        "TO": 18
-
+        "SETPENSIZE": 17,
+        "STOP": 18,
+        "TO": 19
     };
     static tokenTypes = {
         "NONE": 0,
@@ -910,7 +916,8 @@ class Turtle {
     defaults = {
         backgroundColor: "#E8E8E8", // light grey
         fontSize: 20,
-        pencolor: "#000000"         // black
+        penColor: "#000000",        // black
+        penSize: 1
     };
 
     DEGREE_TO_RADIAN = Math.PI / 180;
@@ -936,7 +943,8 @@ class Turtle {
 
         this.state = {
             isPenDown: true,
-            penColor: this.defaults.pencolor,
+            penColor: this.defaults.penColor,
+            penSize: this.defaults.penSize,
             backgroundColor: this.defaults.backgroundColor,
             fontSize: this.defaults.fontSize
         };
@@ -1005,11 +1013,11 @@ class Turtle {
         let x1 = this.x + n * Math.sin(alpha);
         let y1 = this.y - n * Math.cos(alpha);
 
-        this.drawingCtx.lineWidth = 1;
-        this.drawingCtx.beginPath();
-        this.drawingCtx.moveTo(this.x, this.y);
-        this.drawingCtx.lineTo(x1, y1);
         if (this.state.isPenDown) {
+            this.drawingCtx.lineWidth = this.state.penSize;
+            this.drawingCtx.beginPath();
+            this.drawingCtx.moveTo(this.x, this.y);
+            this.drawingCtx.lineTo(x1, y1);
             this.drawingCtx.strokeStyle = this.state.penColor;
             this.drawingCtx.stroke();
         }
@@ -1028,10 +1036,12 @@ class Turtle {
     }
     execute_label(text = "") {
         this.drawingCtx.font = `${this.state.fontSize}px sans-serif`;
+
         let oldFillStyle = this.drawingCtx.fillStyle;
 
         this.drawingCtx.fillStyle = this.state.penColor;      
         this.drawingCtx.fillText(text, this.x, this.y);
+
         this.drawingCtx.fillStyle = oldFillStyle;
 
         this.renderFrame();
@@ -1063,6 +1073,9 @@ class Turtle {
     }
     execute_setpencolor(color = "") {
         this.state.penColor = color;
+    }
+    execute_setpensize(size = this.defaults.penSize) {
+        this.state.penSize = size;
     }
     increaseTurtleHeading(deg = 0) {
         this.heading += deg;
