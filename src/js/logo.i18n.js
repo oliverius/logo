@@ -30,6 +30,10 @@ const i18n = {
                 "aliases": [ "if" ]
             },
             {
+                "primitive": "LABEL",
+                "aliases": [ "label" ]
+            },
+            {
                 "primitive": "LEFT",
                 "aliases": [ "left", "lt" ]
             },
@@ -247,6 +251,10 @@ const i18n = {
             {
                 "primitive": "IF",
                 "aliases": [ "si" ]
+            },
+            {
+                "primitive": "LABEL",
+                "aliases": [ "etiqueta" ]
             },
             {
                 "primitive": "LEFT",

@@ -157,6 +157,9 @@ class Interpreter {
                 case Tokenizer.primitives.HOME:
                     this.turtle.execute_home();
                     break;
+                case Tokenizer.primitives.LABEL:
+                    this.turtle.execute_label(arg);
+                    break;
                 case Tokenizer.primitives.LEFT:
                     this.turtle.execute_left(arg);
                     break;                
@@ -511,6 +514,13 @@ class Parser {
             this.currentToken = new Token(this.currentTokenIndex, "", Tokenizer.tokenTypes.END_OF_TOKEN_STREAM);
         }
     }
+    getText() {
+        this.getNextToken();
+        if (this.currentToken.tokenType !== Tokenizer.tokenTypes.TEXT) {
+            // TODO raise error, it should be text
+        }
+        return this.currentToken.text;
+    }
     initializeParsing(tokens = []) {
         // The check for unknown token is here and not in 'parse(tokens)' because for tests we override 'parse(tokens)'
         // with another method that doesn't require a timer (so tests work as fast as they can)
@@ -578,53 +588,56 @@ class Parser {
         this.getNextToken();
         if (this.currentToken.tokenType === Tokenizer.tokenTypes.PRIMITIVE) {
             switch (this.currentToken.primitive) {
-                case Tokenizer.primitives.FORWARD:
-                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.FORWARD, this.getExpression());
-                    break;
                 case Tokenizer.primitives.BACK:
                     this.raiseTurtleDrawingEvent(Tokenizer.primitives.BACK, this.getExpression());
                     break;
-                case Tokenizer.primitives.LEFT:
-                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.LEFT, this.getExpression());
-                    break;
-                case Tokenizer.primitives.RIGHT:
-                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.RIGHT, this.getExpression());
-                    break;
-                case Tokenizer.primitives.PENUP:
-                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.PENUP);
-                    break;
-                case Tokenizer.primitives.PENDOWN:
-                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.PENDOWN);
-                    break;
-                case Tokenizer.primitives.REPEAT:
-                    this.execute_repeat(this.getExpression());
+                case Tokenizer.primitives.CLEAN:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.CLEAN);
                     break;
                 case Tokenizer.primitives.CLEARSCREEN:
                     this.raiseTurtleDrawingEvent(Tokenizer.primitives.CLEARSCREEN);
                     break;
-                case Tokenizer.primitives.TO:
-                    this.execute_to();
-                    break;
                 case Tokenizer.primitives.END:
                     this.execute_end();
                     break;
-                case Tokenizer.primitives.IF:
-                    this.execute_if()
-                    break;
-                case Tokenizer.primitives.STOP:
-                    this.execute_stop();
-                    break;
-                case Tokenizer.primitives.SETPENCOLOR:
-                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETPENCOLOR, this.getExpression());
-                    break;
-                case Tokenizer.primitives.SETBACKGROUND:
-                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETBACKGROUND, this.getExpression());
+                case Tokenizer.primitives.FORWARD:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.FORWARD, this.getExpression());
                     break;
                 case Tokenizer.primitives.HOME:
                     this.raiseTurtleDrawingEvent(Tokenizer.primitives.HOME);
                     break;
-                case Tokenizer.primitives.CLEAN:
-                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.CLEAN);
+                case Tokenizer.primitives.IF:
+                    this.execute_if()
+                    break;
+                case Tokenizer.primitives.LABEL:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.LABEL, this.getText());
+                    break;
+                case Tokenizer.primitives.LEFT:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.LEFT, this.getExpression());
+                    break;
+                case Tokenizer.primitives.PENDOWN:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.PENDOWN);
+                    break;
+                case Tokenizer.primitives.PENUP:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.PENUP);
+                    break;
+                case Tokenizer.primitives.REPEAT:
+                    this.execute_repeat(this.getExpression());
+                    break;
+                case Tokenizer.primitives.RIGHT:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.RIGHT, this.getExpression());
+                    break;
+                case Tokenizer.primitives.SETBACKGROUND:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETBACKGROUND, this.getExpression());
+                    break;
+                case Tokenizer.primitives.SETPENCOLOR:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETPENCOLOR, this.getExpression());
+                    break;
+                case Tokenizer.primitives.STOP:
+                    this.execute_stop();
+                    break;      
+                case Tokenizer.primitives.TO:
+                    this.execute_to();
                     break;
             }
         } else if (this.currentToken.tokenType === Tokenizer.tokenTypes.DELIMITER) {
@@ -735,15 +748,16 @@ class Tokenizer {
         "FORWARD": 5,
         "HOME": 6,
         "IF": 7,
-        "LEFT": 8,
-        "PENDOWN": 9,
-        "PENUP": 10,
-        "REPEAT": 11,
-        "RIGHT": 12,
-        "SETPENCOLOR": 13,
-        "SETBACKGROUND": 14,
-        "STOP": 15,
-        "TO": 16
+        "LABEL": 8, // TODO
+        "LEFT": 9,
+        "PENDOWN": 10,
+        "PENUP": 11,
+        "REPEAT": 12,
+        "RIGHT": 13,
+        "SETPENCOLOR": 14,
+        "SETBACKGROUND": 15,
+        "STOP": 16,
+        "TO": 17
 
     };
     static tokenTypes = {
@@ -752,12 +766,14 @@ class Tokenizer {
         "NUMBER": 2,
         "PRIMITIVE": 3,
         "VARIABLE": 4,
-        "PROCEDURE_NAME": 5,
-        "END_OF_TOKEN_STREAM": 6,
-        "UNKNOWN_TOKEN": 7
+        "TEXT": 5,
+        "PROCEDURE_NAME": 6,
+        "END_OF_TOKEN_STREAM": 7,
+        "UNKNOWN_TOKEN": 8,
     };    
     LF = "\n";
     NUL = "\0";
+    TEXT_PREFIX = '"';
     VARIABLE_PREFIX = ":";
     
     constructor(primitiveAliases = []) {
@@ -797,6 +813,9 @@ class Tokenizer {
     }
     isNumber(c) {
         return "0123456789".indexOf(c) !== -1;
+    }
+    isTextPrefix(c) {
+        return c === this.TEXT_PREFIX;
     }
     isVariablePrefix(c) {
         return c === this.VARIABLE_PREFIX;
@@ -872,6 +891,17 @@ class Tokenizer {
                 }
                 this.putBackCharacter();
                 let token = new Token(startIndex, variable, Tokenizer.tokenTypes.VARIABLE);
+                this.tokens.push(token);
+            } else if (this.isTextPrefix(this.currentCharacter)) {
+                this.getNextCharacter();
+                let text = "";
+                let startIndex = this.currentIndex;
+                while (!this.isNewLine(this.currentCharacter) && !(this.isEndOfFile(this.currentCharacter))) {
+                    text += this.currentCharacter;
+                    this.getNextCharacter();
+                }
+                this.putBackCharacter();
+                let token = new Token(startIndex, text, Tokenizer.tokenTypes.TEXT);
                 this.tokens.push(token);
             } else {
                 if (!this.isEndOfFile(this.currentCharacter)) {
@@ -999,6 +1029,15 @@ class Turtle {
         this.updateTurtlePosition(this.centerX, this.centerY);
         this.increaseTurtleHeading(-this.heading);
         this.drawTurtle();
+        this.renderFrame();
+    }
+    execute_label(text = "") {
+        this.drawingCtx.font = "20px sans-serif";
+        let oldFillStyle = this.drawingCtx.fillStyle;
+        console.log(oldFillStyle, this.state.penColor);
+        this.drawingCtx.fillStyle = this.state.penColor;      
+        this.drawingCtx.fillText(text, this.x, this.y);
+        this.drawingCtx.fillStyle = oldFillStyle;
         this.renderFrame();
     }
     execute_left(deg = 0) {
