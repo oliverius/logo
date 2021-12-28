@@ -98,41 +98,37 @@ class Interpreter {
         this.addWindowEventListeners();
     }
     addWindowEventListeners() {
-        window.addEventListener(Parser.events.logEvent.name, e => {
-            switch(e.detail.type) {
-                case Parser.events.logEvent.types.INFO:
-                    console.log(`%c${e.detail.message}`, "color:blue");
+        window.addEventListener(Parser.events.errorEvent.name, e => {  
+            let message = "";
+            switch (e.detail.errorCode) {                        
+                case Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET:
+                    message = this.locale.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET;
                     break;
-                case Parser.events.logEvent.types.ERROR:
-                    let message = "";
-                    switch (e.detail.errorCode) {                        
-                        case Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET:
-                            message = this.locale.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET;
-                            break;
-                        case Parser.errors.EXPECTED_NUMBER_OR_VARIABLE:
-                            message = this.locale.errors.EXPECTED_NUMBER_OR_VARIABLE;
-                            message = message.replace("{0}", e.detail.args[0]);
-                            break;
-                        case Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW:
-                            message = this.locale.errors.PROCEDURE_CALL_STACK_OVERFLOW;
-                            message = message.replace("{0}", e.detail.args[0]);
-                            break;
-                        case Parser.errors.PROCEDURE_NOT_DEFINED:
-                            message = this.locale.errors.PROCEDURE_NOT_DEFINED;
-                            message = message.replace("{0}", e.detail.args[0]);
-                            break;
-                        case Parser.errors.UNKNOWN_TOKEN_FOUND:
-                            message = this.locale.errors.UNKNOWN_TOKEN_FOUND;
-                            message = message.replace("{0}", e.detail.args[0]);
-                            break;
-                        case Parser.errors.UNMATCHED_CLOSING_BRACKET:
-                            message = this.locale.errors.UNMATCHED_CLOSING_BRACKET;
-                            break;
-                    }
-                    this.setStatusBar(message);
-                    this.stop();
+                case Parser.errors.EXPECTED_NUMBER_OR_VARIABLE:
+                    message = this.locale.errors.EXPECTED_NUMBER_OR_VARIABLE;
+                    message = message.replace("{0}", e.detail.args[0]);
+                    break;
+                case Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW:
+                    message = this.locale.errors.PROCEDURE_CALL_STACK_OVERFLOW;
+                    message = message.replace("{0}", e.detail.args[0]);
+                    break;
+                case Parser.errors.PROCEDURE_NOT_DEFINED:
+                    message = this.locale.errors.PROCEDURE_NOT_DEFINED;
+                    message = message.replace("{0}", e.detail.args[0]);
+                    break;
+                case Parser.errors.UNKNOWN_TOKEN_FOUND:
+                    message = this.locale.errors.UNKNOWN_TOKEN_FOUND;
+                    message = message.replace("{0}", e.detail.args[0]);
+                    break;
+                case Parser.errors.UNMATCHED_CLOSING_BRACKET:
+                    message = this.locale.errors.UNMATCHED_CLOSING_BRACKET;
                     break;
             }
+            this.setStatusBar(message);
+            this.stop();
+        });
+        window.addEventListener(Parser.events.logEvent.name, e => {
+            console.log(`%c${e.detail.message}`, "color:blue");
         });
         window.addEventListener(Parser.events.statusEvent.name, e => {
             if (e.detail.status === Parser.events.statusEvent.values.END_PARSING) {
@@ -189,7 +185,8 @@ class Interpreter {
     }
     getColor(value = 0) {
         if (value < 0 || value > Interpreter.colors.length) {
-            // TODO Error if color not found or if we find more than one
+            // TODO Error if color not found or if we find more than one, this will be an interpreter error, not a
+            // parser error, maybe send colors as parameter in parser, so the parser has a copy of them?
         }        
         return Interpreter.colors[value].color;
     }
@@ -292,6 +289,12 @@ class Parser {
         "UNMATCHED_CLOSING_BRACKET": 6
     };
     static events = {
+        "errorEvent": {
+            "name": "PARSER_ERROR_EVENT"
+        },
+        "logEvent": {
+            "name": "PARSER_LOG_EVENT"
+        },
         "statusEvent": {
             "name": "PARSER_STATUS_EVENT",
             "values": {
@@ -302,14 +305,6 @@ class Parser {
         },
         "turtleDrawingEvent": {
             "name": "PARSER_TURTLE_DRAWING_EVENT"
-        },
-        "logEvent": {
-            "name": "PARSER_LOG_EVENT",
-            "types": {
-                "NONE": 0,
-                "INFO": 1,
-                "ERROR": 2
-            }           
         }
     };
     constructor() {
@@ -508,7 +503,6 @@ class Parser {
         if (this.currentTokenIndex < this.tokens.length) {
             this.currentToken = this.tokens[this.currentTokenIndex];
             this.raiseLogEvent(
-                Parser.events.logEvent.types.INFO,
                 `Current token: ${this.currentTokenIndex.toString().padStart(2, '0')} - ${this.currentToken}`);
         } else {
             this.currentToken = new Token(this.currentTokenIndex, "", Tokenizer.tokenTypes.END_OF_TOKEN_STREAM);
@@ -574,7 +568,7 @@ class Parser {
         this.raiseStatusEvent(Parser.events.statusEvent.values.START_PARSING);
 
         this.parsingLoop = setInterval(() => {
-            this.raiseLogEvent(Parser.events.logEvent.types.INFO, "⌛️💓"); // heartbeat
+            this.raiseLogEvent("⌛️💓"); // heartbeat
             if (this.currentToken.tokenType !== Tokenizer.tokenTypes.END_OF_TOKEN_STREAM &&
                 !this.stopParsingRequested) {
                 this.parsingStep();
@@ -662,27 +656,17 @@ class Parser {
         });
         window.dispatchEvent(event);
     }
-    raiseLogEvent(type = Parser.events.logEvent.types.NONE, message = "") {
-        this.raiseEvent(Parser.events.logEvent.name, {
-            type: Parser.events.logEvent.types.INFO,
-            message: message
-        });
+    raiseLogEvent(message = "") {
+        this.raiseEvent(Parser.events.logEvent.name, { message: message });
     }
     raiseErrorEvent(errorCode = Parser.errors.NONE, args = []) {
-        this.raiseEvent(Parser.events.logEvent.name, {
-            type: Parser.events.logEvent.types.ERROR,
-            errorCode: errorCode,
-            args: args
-        });
+        this.raiseEvent(Parser.events.errorEvent.name, { errorCode: errorCode, args: args });
     }    
     raiseStatusEvent(status = Parser.events.statusEvent.values.NONE) {
         this.raiseEvent(Parser.events.statusEvent.name, { status: status });
     }
     raiseTurtleDrawingEvent(primitive = Tokenizer.primitives.NONE, arg = 0) {
-        this.raiseEvent(Parser.events.turtleDrawingEvent.name, {
-            primitive: primitive,
-            arg: arg
-        });
+        this.raiseEvent(Parser.events.turtleDrawingEvent.name, { primitive: primitive, arg: arg });
     }
     setCurrentTokenIndex(index) {
         this.currentTokenIndex = index;

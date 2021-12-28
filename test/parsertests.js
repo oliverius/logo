@@ -36,15 +36,12 @@ function runParserTests(Tokenizer, Parser, i18n) {
         let actualTurtleDrawingEvents = [];
         let actualErrorCode = Parser.errors.NONE;
         
-        window.addEventListener(Parser.events.logEvent.name, (event) => {
-            let payload = event.detail;
-            if (payload.type === Parser.events.logEvent.types.ERROR) {
-                actualErrorCode = payload.errorCode;
-            }
+        window.addEventListener(Parser.events.errorEvent.name, (e) => {
+            actualErrorCode = e.detail.errorCode;
         }, false);
 
-        window.addEventListener(Parser.events.turtleDrawingEvent.name, (event) => {
-            actualTurtleDrawingEvents.push(event.detail);
+        window.addEventListener(Parser.events.turtleDrawingEvent.name, (e) => {
+            actualTurtleDrawingEvents.push(e.detail);
         }, false);
 
         let tokens = tokenizer.tokenize(script);
@@ -65,7 +62,7 @@ function runParserTests(Tokenizer, Parser, i18n) {
             }
         }
 
-        window.removeEventListener(Parser.events.logEvent.name, this);
+        window.removeEventListener(Parser.events.errorEvent.name, this);
         window.removeEventListener(Parser.events.turtleDrawingEvent.name, this);
     };
     let assertTurtleDrawingEvent = (expectedTurtleDrawingEvent = {}, actualTurtleDrawingEvent = {}) => {
