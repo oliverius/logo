@@ -58,6 +58,10 @@ const i18n = {
                 "aliases": [ "setbackground", "setbg" ]
             },
             {
+                "primitive": "SETHEADING",
+                "aliases": [ "setheading", "seth" ]
+            },
+            {
                 "primitive": "SETLABELHEIGHT",
                 "aliases": [ "setlabelheight" ]
             },
@@ -313,6 +317,10 @@ const i18n = {
             {
                 "primitive": "SETBACKGROUND",
                 "aliases": [ "ponfondo" ]
+            },
+            {
+                "primitive": "SETHEADING",
+                "aliases": [ "ponrumbo", "ponr" ]
             },
             {
                 "primitive": "SETLABELHEIGHT",

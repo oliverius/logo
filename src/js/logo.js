@@ -171,6 +171,9 @@ class Interpreter {
                 case Tokenizer.primitives.SETBACKGROUND:
                     this.turtle.execute_setbackground(this.getColor(arg));
                     break;
+                case Tokenizer.primitives.SETHEADING:
+                    this.turtle.execute_setheading(arg);
+                    break;
                 case Tokenizer.primitives.SETLABELHEIGHT:
                     this.turtle.execute_setlabelheight(arg);
                     break;
@@ -637,6 +640,9 @@ class Parser {
                 case Tokenizer.primitives.SETBACKGROUND:
                     this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETBACKGROUND, this.getExpression());
                     break;
+                case Tokenizer.primitives.SETHEADING:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETHEADING, this.getExpression());
+                    break;
                 case Tokenizer.primitives.SETLABELHEIGHT:
                     this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETLABELHEIGHT, this.getExpression());
                     break;
@@ -767,12 +773,13 @@ class Tokenizer {
         "REPEAT": 12,
         "RIGHT": 13,
         "SETBACKGROUND": 14,
-        "SETLABELHEIGHT": 15,
-        "SETPENCOLOR": 16,
-        "SETPENSIZE": 17,
-        "STOP": 18,
-        "TO": 19,
-        "WAIT": 20
+        "SETHEADING": 15,
+        "SETLABELHEIGHT": 16,
+        "SETPENCOLOR": 17,
+        "SETPENSIZE": 18,
+        "STOP": 19,
+        "TO": 20,
+        "WAIT": 21
     };
     static tokenTypes = {
         "NONE": 0,
@@ -1085,6 +1092,9 @@ class Turtle {
         this.drawingCtx.fillStyle = this.state.backgroundColor;
         this.drawingCtx.fillRect(0, 0, this.width, this.height);
         this.renderFrame();
+    }
+    execute_setheading(deg = 0) {
+        this.execute_right(-this.heading + deg);
     }
     execute_setlabelheight(height = this.defaults.fontSize) {
         this.state.fontSize = height;
