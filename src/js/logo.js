@@ -956,12 +956,12 @@ class Turtle {
         this.centerY = parseInt(this.height / 2);
         this.heading = 0;
 
-        let virtualTurtleCanvas = document.createElement('canvas');
+        let virtualTurtleCanvas = canvasObject.ownerDocument.createElement('canvas');
         virtualTurtleCanvas.width = this.width;
         virtualTurtleCanvas.height = this.height;
         this.turtleCtx = virtualTurtleCanvas.getContext('2d');
 
-        let virtualDrawingCanvas = document.createElement('canvas');
+        let virtualDrawingCanvas = canvasObject.ownerDocument.createElement('canvas');
         virtualDrawingCanvas.width = this.width;
         virtualDrawingCanvas.height = this.height;
         this.drawingCtx = virtualDrawingCanvas.getContext('2d');
