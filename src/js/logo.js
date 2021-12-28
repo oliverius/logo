@@ -431,6 +431,10 @@ class Parser {
             this.procedures[procedure.name] = procedure;
         }
     }
+    execute_wait(centiseconds = 0) {
+        this.pauseParsing();
+        setTimeout(() => this.resumeParsing(), centiseconds*10);
+    }
     getExpression() {
         let result = {
             value: 0
@@ -534,6 +538,7 @@ class Parser {
         this.codeBlockStack = [];
         this.procedures = {};
         this.procedureCallStack = [];
+        this.pauseParsingRequested = false;
         this.stopParsingRequested = false;
     }
     jumpToProcedure(name) {
@@ -584,6 +589,9 @@ class Parser {
         }, 1000 / this.fps);
     }
     parsingStep() {
+        if (this.pauseParsingRequested) {
+            return;
+        }
         this.getNextToken();
         if (this.currentToken.tokenType === Tokenizer.tokenTypes.PRIMITIVE) {
             switch (this.currentToken.primitive) {
@@ -644,6 +652,9 @@ class Parser {
                 case Tokenizer.primitives.TO:
                     this.execute_to();
                     break;
+                case Tokenizer.primitives.WAIT:
+                    this.execute_wait(this.getExpression());
+                    break;
             }
         } else if (this.currentToken.tokenType === Tokenizer.tokenTypes.DELIMITER) {
             if (this.currentToken.text === Tokenizer.delimiters.CLOSING_BRACKET) {
@@ -696,6 +707,12 @@ class Parser {
         while (this.currentToken.primitive !== Tokenizer.primitives.END) {
             this.getNextToken();
         }
+    }
+    pauseParsing() {
+        this.pauseParsingRequested = true;
+    }
+    resumeParsing() {
+        this.pauseParsingRequested = false;
     }
     stopParsing() {
         this.stopParsingRequested = true;
@@ -754,7 +771,8 @@ class Tokenizer {
         "SETPENCOLOR": 16,
         "SETPENSIZE": 17,
         "STOP": 18,
-        "TO": 19
+        "TO": 19,
+        "WAIT": 20
     };
     static tokenTypes = {
         "NONE": 0,

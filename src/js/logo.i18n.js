@@ -76,6 +76,10 @@ const i18n = {
             {
                 "primitive": "TO",
                 "aliases": [ "to" ]
+            },
+            {
+                "primitive": "WAIT",
+                "aliases": [ "wait" ]
             }
         ],
         "UI": [
@@ -329,6 +333,10 @@ const i18n = {
             {
                 "primitive": "TO",
                 "aliases": [ "para" ]
+            },
+            {
+                "primitive": "WAIT",
+                "aliases": [ "espera" ]
             }
         ],
         "UI": [
