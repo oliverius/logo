@@ -58,6 +58,10 @@ const i18n = {
                 "aliases": [ "setbackground", "setbg" ]
             },
             {
+                "primitive": "SETLABELHEIGHT",
+                "aliases": [ "setlabelheight" ]
+            },
+            {
                 "primitive": "SETPENCOLOR",
                 "aliases": [ "setpencolor", "setpc" ]
             },
@@ -211,6 +215,28 @@ const i18n = {
                     "colorfulstar 100 0",
                     "home"
                 ]
+            },
+            {
+                "name": "One 💩 to rule them all",
+                "code": [
+                    "to pooemoji :size",
+                    "  setlabelheight :size",
+                    '  label "💩',
+                    "end",
+                    "to hexagon :side",
+                    "  repeat 6 [fd :side pooemoji 40 rt 60]",
+                    "end",
+                    "to moveleft :length",
+                    "  lt 90 pu fd :length pd rt 90",
+                    "end",
+                    "cs",
+                    "setbg 9",
+                    "moveleft 60",
+                    "pooemoji 100",
+                    "moveleft 100",
+                    "rt 30",
+                    "pu hexagon 130 pd"
+                ]
             }
         ],
         "errors": {
@@ -279,6 +305,10 @@ const i18n = {
             {
                 "primitive": "SETBACKGROUND",
                 "aliases": [ "ponfondo" ]
+            },
+            {
+                "primitive": "SETLABELHEIGHT",
+                "aliases": [ "ponfuente", "pf" ]
             },
             {
                 "primitive": "SETPENCOLOR",
@@ -433,6 +463,28 @@ const i18n = {
                     "limpia",
                     "estrelladecolores 100 0",
                     "centro"
+                ]
+            },
+            {
+                "name": "Un 💩 para gobernarlos a todos",
+                "code": [
+                    "para caca :tamano",
+                    "  pf :tamano",
+                    '  etiqueta "💩',
+                    "fin",
+                    "para hexagono :lado",
+                    "  repite 6 [av :lado caca 40 gd 60]",
+                    "fin",
+                    "para mueveizquierda :longitud",
+                    "  gi 90 sl av :longitud bl gd 90",
+                    "fin",
+                    "bp",
+                    "ponfondo 9",
+                    "mueveizquierda 60",
+                    "caca 100",
+                    "mueveizquierda 100",
+                    "gd 30",
+                    "sl hexagono 130 bl"
                 ]
             }
         ],
