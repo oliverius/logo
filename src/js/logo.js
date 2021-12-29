@@ -151,6 +151,9 @@ class Interpreter {
                 case Tokenizer.primitives.FORWARD:
                     this.turtle.execute_forward(arg);
                     break;
+                case Tokenizer.primitives.HIDETURTLE:
+                    this.turtle.execute_hideturtle();
+                    break;
                 case Tokenizer.primitives.HOME:
                     this.turtle.execute_home();
                     break;
@@ -183,7 +186,10 @@ class Interpreter {
                     break;
                 case Tokenizer.primitives.SETPENSIZE:
                     this.turtle.execute_setpensize(arg);
-                    break;              
+                    break;
+                case Tokenizer.primitives.SHOWTURTLE:
+                    this.turtle.execute_showturtle();
+                    break;
             }
         });
     }
@@ -620,6 +626,9 @@ class Parser {
                 case Tokenizer.primitives.FORWARD:
                     this.raiseTurtleDrawingEvent(Tokenizer.primitives.FORWARD, this.getExpression());
                     break;
+                case Tokenizer.primitives.HIDETURTLE:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.HIDETURTLE);
+                    break;
                 case Tokenizer.primitives.HOME:
                     this.raiseTurtleDrawingEvent(Tokenizer.primitives.HOME);
                     break;
@@ -658,6 +667,9 @@ class Parser {
                     break;
                 case Tokenizer.primitives.SETPENSIZE:
                     this.raiseTurtleDrawingEvent(Tokenizer.primitives.SETPENSIZE, this.getExpression());
+                    break;
+                case Tokenizer.primitives.SHOWTURTLE:
+                    this.raiseTurtleDrawingEvent(Tokenizer.primitives.SHOWTURTLE);
                     break;
                 case Tokenizer.primitives.STOP:
                     this.execute_stop();
@@ -767,26 +779,28 @@ class Tokenizer {
     static primitives = {
         "NONE": 0,
         "BACK": 1,
-        "CLEAN": 2,
+        "CLEAN": 2, 
         "CLEARSCREEN": 3,
         "END": 4,
         "FORWARD": 5,
-        "HOME": 6,
-        "IF": 7,
-        "LABEL": 8,
-        "LEFT": 9,
-        "PENDOWN": 10,
-        "PENUP": 11,
-        "REPEAT": 12,
-        "RIGHT": 13,
-        "SETBACKGROUND": 14,
-        "SETHEADING": 15,
-        "SETLABELHEIGHT": 16,
-        "SETPENCOLOR": 17,
-        "SETPENSIZE": 18,
-        "STOP": 19,
-        "TO": 20,
-        "WAIT": 21
+        "HIDETURTLE": 6,
+        "HOME": 7,
+        "IF": 8,
+        "LABEL": 9,
+        "LEFT": 10,
+        "PENDOWN": 11,
+        "PENUP": 12,
+        "REPEAT": 13,
+        "RIGHT": 14,
+        "SETBACKGROUND": 15,
+        "SETHEADING": 16,
+        "SETLABELHEIGHT": 17,
+        "SETPENCOLOR": 18,
+        "SETPENSIZE": 19,
+        "SHOWTURTLE": 20,
+        "STOP": 21,
+        "TO": 22,
+        "WAIT": 23
     };
     static tokenTypes = {
         "NONE": 0,
@@ -946,6 +960,8 @@ class Tokenizer {
 
 class Turtle {
     defaults = {
+        isPenDown: true,
+        isTurtleVisible: true,
         backgroundColor: "#E8E8E8", // light grey
         fontSize: 20,
         penColor: "#000000",        // black
@@ -973,13 +989,7 @@ class Turtle {
         virtualDrawingCanvas.height = this.height;
         this.drawingCtx = virtualDrawingCanvas.getContext('2d');
 
-        this.state = {
-            isPenDown: true,
-            penColor: this.defaults.penColor,
-            penSize: this.defaults.penSize,
-            backgroundColor: this.defaults.backgroundColor,
-            fontSize: this.defaults.fontSize
-        };
+        this.state = Object.assign({}, this.defaults);
 
         this.execute_clearscreen();
         this.execute_pendown()
@@ -991,6 +1001,9 @@ class Turtle {
         this.turtleCtx.clearRect(0, 0, this.width, this.height);
     }
     drawTurtle() {
+        if (!this.state.isTurtleVisible) {
+            return;
+        }
         let vertexAngleInDeg = 40;
         let alpha = vertexAngleInDeg / 2;
         let angle = this.toRadians(270 + alpha);
@@ -1066,6 +1079,12 @@ class Turtle {
         this.drawTurtle();
         this.renderFrame();
     }
+    execute_hideturtle() {
+        this.state.isTurtleVisible = false;
+
+        this.deleteTurtle();
+        this.renderFrame();
+    }
     execute_label(text = "") {
         this.drawingCtx.font = `${this.state.fontSize}px sans-serif`;
 
@@ -1120,6 +1139,14 @@ class Turtle {
     }
     execute_setpensize(size = this.defaults.penSize) {
         this.state.penSize = size;
+    }
+    execute_showturtle()
+    {
+        this.state.isTurtleVisible = true;
+
+        this.deleteTurtle();
+        this.drawTurtle();
+        this.renderFrame();
     }
     increaseTurtleHeading(deg = 0) {
         this.heading += deg;

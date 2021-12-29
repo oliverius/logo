@@ -22,6 +22,10 @@ const i18n = {
                 "aliases": [ "forward", "fd" ]
             },
             {
+                "primitive": "HIDETURTLE",
+                "aliases": [ "hideturtle", "ht" ]
+            },
+            {
                 "primitive": "HOME",
                 "aliases": [ "home" ]
             },
@@ -72,6 +76,10 @@ const i18n = {
             {
                 "primitive": "SETPENSIZE",
                 "aliases": [ "setpensize" ]
+            },
+            {
+                "primitive": "SHOWTURTLE",
+                "aliases": [ "showturtle", "st" ]
             },
             {
                 "primitive": "STOP",
@@ -282,6 +290,10 @@ const i18n = {
                 "aliases": [ "avanza", "av" ]
             },
             {
+                "primitive": "HIDETURTLE",
+                "aliases": [ "ocultatortuga", "ot" ]
+            },
+            {
                 "primitive": "HOME",
                 "aliases": [ "centro" ]
             },
@@ -332,6 +344,10 @@ const i18n = {
             {
                 "primitive": "SETPENSIZE",
                 "aliases": [ "pongrosor", "pong" ]
+            },
+            {
+                "primitive": "SHOWTURTLE",
+                "aliases": [ "muestratortuga", "mt" ]
             },
             {
                 "primitive": "STOP",
