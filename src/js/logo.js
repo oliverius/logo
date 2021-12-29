@@ -1,4 +1,240 @@
 // LOGO
+
+//
+//      ████████  ██████  ██   ██ ███████ ███    ██ 
+//         ██    ██    ██ ██  ██  ██      ████   ██ 
+//         ██    ██    ██ █████   █████   ██ ██  ██ 
+//         ██    ██    ██ ██  ██  ██      ██  ██ ██ 
+//         ██     ██████  ██   ██ ███████ ██   ████ 
+//
+class Token {
+    constructor(startIndex = 0, text = "", tokenType = Tokenizer.tokenTypes.NONE, primitive = Tokenizer.primitives.NONE) {
+        this.startIndex = startIndex;
+        this.text = text;
+        this.endIndex = startIndex + text.length - 1;
+        this.tokenType = tokenType;
+        this.primitive = primitive;
+    }
+    getKey = (value, jsonObject) => Object.keys(jsonObject).find(key => jsonObject[key] === value);
+    get[Symbol.toStringTag]() {
+        let tokenTypeKey = this.getKey(this.tokenType, Tokenizer.tokenTypes);
+        let primitiveKey = this.getKey(this.primitive, Tokenizer.primitives);
+
+        let paddedStartIndex = this.startIndex.toString().padStart(3, '0');
+        let paddedEndIndex = this.endIndex.toString().padStart(3, '0');
+
+        let tokenWithEscapedCharacters = this.text !== "\n" ? this.text : "\\n";
+
+        return `Token (${paddedStartIndex}-${paddedEndIndex}) "${tokenWithEscapedCharacters}" ${tokenTypeKey} {${primitiveKey}}`;
+    }
+}
+//
+//      ████████  ██████  ██   ██ ███████ ███    ██ ██ ███████ ███████ ██████  
+//         ██    ██    ██ ██  ██  ██      ████   ██ ██    ███  ██      ██   ██ 
+//         ██    ██    ██ █████   █████   ██ ██  ██ ██   ███   █████   ██████  
+//         ██    ██    ██ ██  ██  ██      ██  ██ ██ ██  ███    ██      ██   ██ 
+//         ██     ██████  ██   ██ ███████ ██   ████ ██ ███████ ███████ ██   ██ 
+//
+//       
+class Tokenizer {
+    static delimiters = {
+        "OPENING_BRACKET": "[",
+        "CLOSING_BRACKET": "]",
+        "PLUS": "+",
+        "MINUS": "-",
+        "MULTIPLIEDBY": "*",
+        "DIVIDEDBY": "/",
+        "GREATERTHAN": ">",
+        "LESSERTHAN": "<"
+    };
+    static primitives = {
+        "NONE": 0,
+        "BACK": 1,
+        "CLEAN": 2, 
+        "CLEARSCREEN": 3,
+        "END": 4,
+        "FORWARD": 5,
+        "HIDETURTLE": 6,
+        "HOME": 7,
+        "IF": 8,
+        "LABEL": 9,
+        "LEFT": 10,
+        "PENDOWN": 11,
+        "PENUP": 12,
+        "REPEAT": 13,
+        "RIGHT": 14,
+        "SETBACKGROUND": 15,
+        "SETHEADING": 16,
+        "SETLABELHEIGHT": 17,
+        "SETPENCOLOR": 18,
+        "SETPENSIZE": 19,
+        "SHOWTURTLE": 20,
+        "STOP": 21,
+        "TO": 22,
+        "WAIT": 23
+    };
+    static tokenTypes = {
+        "NONE": 0,
+        "DELIMITER": 1,
+        "NUMBER": 2,
+        "PRIMITIVE": 3,
+        "VARIABLE": 4,
+        "TEXT": 5,
+        "PROCEDURE_NAME": 6,
+        "END_OF_TOKEN_STREAM": 7,
+        "UNKNOWN_TOKEN": 8,
+    };    
+    LF = "\n";
+    NUL = "\0";
+    TEXT_PREFIX = '"';
+    VARIABLE_PREFIX = ":";
+    
+    constructor(primitiveAliases = []) {
+        this.aliases = this.populatePrimitiveAliasesDictionary(primitiveAliases);
+    }
+    getNextCharacter() {
+        this.currentIndex++;
+        if (this.currentIndex < this.script.length) {
+            this.currentCharacter = this.script[this.currentIndex];
+        } else {
+            this.currentCharacter = this.NUL;
+        }
+        //console.log(`Current character: ${this.currentIndex.toString().padStart(2, '0')} - ${this.currentCharacter}`);
+    }
+    getPrimitive(primitiveAlias = "") {
+        let key = this.aliases[primitiveAlias.toLowerCase()];
+        let primitive = Tokenizer.primitives[key] ?? Tokenizer.primitives.NONE;
+        return primitive;
+    }
+    initialize(script) {
+        this.script = script;
+        this.tokens = [];
+        this.currentIndex = -1; // So when we get the first character, it will be script[0]
+        this.currentCharacter = '';
+    }
+    isDelimiter(c) {
+        return Object.values(Tokenizer.delimiters).includes(c);
+    }
+    isEndOfFile(c) {
+        return c === this.NUL;
+    }
+    isLetter(c) {
+        return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".indexOf(c) !== -1;
+    }
+    isNewLine(c) {
+        return this.LF.indexOf(c) !== -1;
+    }
+    isNumber(c) {
+        return "0123456789".indexOf(c) !== -1;
+    }
+    isTextPrefix(c) {
+        return c === this.TEXT_PREFIX;
+    }
+    isVariablePrefix(c) {
+        return c === this.VARIABLE_PREFIX;
+    }
+    isWhiteSpace(c) {
+        return c === " " || c === "\t";
+    }
+    populatePrimitiveAliasesDictionary(primitiveAliases = []) {
+        let dictionary = {};
+        primitiveAliases.forEach(item => {
+          item.aliases.forEach(alias => {
+            dictionary[alias] = item.primitive;
+          });
+        });
+        return dictionary;
+      }
+    putBackCharacter() {
+        this.currentIndex--;
+        this.currentCharacter = this.script[this.currentIndex];
+    }
+    tokenize(script = "") {
+        this.initialize(script);
+
+        do {
+            this.getNextCharacter();
+            if (this.isWhiteSpace(this.currentCharacter)) {
+                this.getNextCharacter();
+                while (this.isWhiteSpace(this.currentCharacter)) {
+                    this.getNextCharacter();
+                }
+                this.putBackCharacter();
+            } else if (this.isNewLine(this.currentCharacter)) {
+                let token = new Token(this.currentIndex, this.currentCharacter, Tokenizer.tokenTypes.DELIMITER);
+                this.tokens.push(token);
+            } else if (this.isDelimiter(this.currentCharacter)) {
+                let token = new Token(this.currentIndex, this.currentCharacter, Tokenizer.tokenTypes.DELIMITER);
+                this.tokens.push(token);
+            } else if (this.isNumber(this.currentCharacter)) {
+                let number = this.currentCharacter;
+                let startIndex = this.currentIndex;
+                this.getNextCharacter();
+                while (this.isNumber(this.currentCharacter)) {
+                    number += this.currentCharacter;
+                    this.getNextCharacter();
+                }
+                let token = new Token(startIndex, number, Tokenizer.tokenTypes.NUMBER);
+                this.tokens.push(token);
+                this.putBackCharacter();
+            } else if (this.isLetter(this.currentCharacter)) {
+                let word = this.currentCharacter;
+                let startIndex = this.currentIndex;
+                this.getNextCharacter();
+                while (this.isLetter(this.currentCharacter)) {
+                    word += this.currentCharacter;
+                    this.getNextCharacter();
+                }
+                this.putBackCharacter();
+                let primitive = this.getPrimitive(word);
+                if (primitive === Tokenizer.primitives.NONE) {
+                    let token = new Token(startIndex, word, Tokenizer.tokenTypes.PROCEDURE_NAME, primitive);
+                    this.tokens.push(token);
+                } else {
+                    let token = new Token(startIndex, word, Tokenizer.tokenTypes.PRIMITIVE, primitive);
+                    this.tokens.push(token);
+                }
+            } else if (this.isVariablePrefix(this.currentCharacter)) {
+                let variable = this.currentCharacter;
+                let startIndex = this.currentIndex;
+                this.getNextCharacter();
+                while (this.isLetter(this.currentCharacter)) {
+                    variable += this.currentCharacter;
+                    this.getNextCharacter();
+                }
+                this.putBackCharacter();
+                let token = new Token(startIndex, variable, Tokenizer.tokenTypes.VARIABLE);
+                this.tokens.push(token);
+            } else if (this.isTextPrefix(this.currentCharacter)) {
+                this.getNextCharacter();
+                let text = "";
+                let startIndex = this.currentIndex;
+                while (!this.isNewLine(this.currentCharacter) && !(this.isEndOfFile(this.currentCharacter))) {
+                    text += this.currentCharacter;
+                    this.getNextCharacter();
+                }
+                this.putBackCharacter();
+                let token = new Token(startIndex, text, Tokenizer.tokenTypes.TEXT);
+                this.tokens.push(token);
+            } else {
+                if (!this.isEndOfFile(this.currentCharacter)) {
+                    let startIndex = this.currentIndex;
+                    let token = new Token(startIndex, this.currentCharacter, Tokenizer.tokenTypes.UNKNOWN_TOKEN);
+                    this.tokens.push(token);                    
+                }
+            }
+        } while (!this.isEndOfFile(this.currentCharacter))
+
+        return this.tokens;
+    }
+}
+//
+//      ██████  ██████   ██████   ██████ ███████ ██████  ██    ██ ██████  ███████ 
+//      ██   ██ ██   ██ ██    ██ ██      ██      ██   ██ ██    ██ ██   ██ ██      
+//      ██████  ██████  ██    ██ ██      █████   ██   ██ ██    ██ ██████  █████   
+//      ██      ██   ██ ██    ██ ██      ██      ██   ██ ██    ██ ██   ██ ██      
+//      ██      ██   ██  ██████   ██████ ███████ ██████   ██████  ██   ██ ███████ 
+//
 class Procedure {
     name = "";
     inputs = [];
@@ -6,299 +242,13 @@ class Procedure {
     primitiveEndTokenIndex = 0;
     procedureBodyFirstTokenIndex = 0;
 }
-
-class Interpreter {
-    // Color names taken from Berkely LOGO 6.1 manual
-    // Colors taken from css colors, except Grey which matches our grey background
-    // The values are the index in the array 0..15
-    static colors = [
-        {   "name": "black",
-            "color": "#000000"
-        },
-        {
-            "name": "blue",
-            "color": "#0000FF"
-        },
-        {
-            "name": "green",
-            "color": "#008000"
-        },
-        {
-            "name": "cyan",
-            "color": "#00FFFF"
-        },
-        {
-            "name": "red",
-            "color": "#FF0000"
-        },
-        {
-            "name": "magenta",
-            "color": "#FF00FF"
-        },
-        {
-            "name": "yellow",
-            "color": "#FFFF00"
-        },
-        {
-            "name": "white",
-            "color": "#FFFFFF"
-        },
-        {
-            "name": "brown",
-            "color": "#A52A2A"
-        },
-        {
-            "name": "tan",
-            "color": "#D2B48C"
-        },
-        {
-            "name": "forest",
-            "color": "#228B22" // ForestGreen in css
-        },
-        {
-            "name": "aqua",
-            "color": "#00FFFF" // Same as cyan in css
-        },
-        {
-            "name": "salmon",
-            "color": "#FA8072"
-        },
-        {
-            "name": "purple",
-            "color": "#800080"
-        },
-        {
-            "name": "orange",
-            "color": "#FFA500"
-        },
-        {
-            "name": "grey",
-            "color": "#E8E8E8" // Different than css, this one matches our background color
-        }
-    ];
-    constructor(editorId, canvasId, statusBarId, examplesDropdownId, languageDropdownId, i18n, defaultLanguage) {
-        
-        this.storageKeyPrefix = "oliverius_logo";
-        this.setLocalizedStorageKey(defaultLanguage);
-
-        this.i18n = i18n;
-        this.locale = this.i18n[defaultLanguage];
-
-        this.editor = document.getElementById(editorId);
-        this.canvas = document.getElementById(canvasId);
-        this.statusbar = document.getElementById(statusBarId);
-        this.turtle = new Turtle(this.canvas);
-        this.tokenizer = new Tokenizer(this.locale.primitiveAliases);
-        this.parser = new Parser();
-
-        runTokenizerTests(i18n);
-        runParserTests(Tokenizer, Parser, i18n);
-
-        this.setUI(examplesDropdownId, languageDropdownId);
-        
-        this.addWindowEventListeners();
-    }
-    addWindowEventListeners() {
-        window.addEventListener(Parser.events.errorEvent.name, e => {  
-            let message = "";
-            switch (e.detail.errorCode) {                        
-                case Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET:
-                    message = this.locale.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET;
-                    break;
-                case Parser.errors.EXPECTED_NUMBER_OR_VARIABLE:
-                    message = this.locale.errors.EXPECTED_NUMBER_OR_VARIABLE;
-                    message = message.replace("{0}", e.detail.args[0]);
-                    break;
-                case Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW:
-                    message = this.locale.errors.PROCEDURE_CALL_STACK_OVERFLOW;
-                    message = message.replace("{0}", e.detail.args[0]);
-                    break;
-                case Parser.errors.PROCEDURE_NOT_DEFINED:
-                    message = this.locale.errors.PROCEDURE_NOT_DEFINED;
-                    message = message.replace("{0}", e.detail.args[0]);
-                    break;
-                case Parser.errors.UNKNOWN_TOKEN_FOUND:
-                    message = this.locale.errors.UNKNOWN_TOKEN_FOUND;
-                    message = message.replace("{0}", e.detail.args[0]);
-                    break;
-                case Parser.errors.UNMATCHED_CLOSING_BRACKET:
-                    message = this.locale.errors.UNMATCHED_CLOSING_BRACKET;
-                    break;
-            }
-            this.setStatusBar(message);
-            this.stop();
-        });
-        window.addEventListener(Parser.events.logEvent.name, e => {
-            console.log(`%c${e.detail.message}`, "color:blue");
-        });
-        window.addEventListener(Parser.events.statusEvent.name, e => {
-            if (e.detail.status === Parser.events.statusEvent.values.END_PARSING) {
-                this.editor.focus();
-            }
-        });
-        window.addEventListener(Parser.events.turtleDrawingEvent.name, e => {
-            let arg = e.detail.arg;
-            switch (e.detail.primitive) {
-                case Tokenizer.primitives.BACK:
-                    this.turtle.execute_back(arg);
-                    break;
-                case Tokenizer.primitives.CLEAN:
-                    this.turtle.execute_clean();
-                    break;
-                case Tokenizer.primitives.CLEARSCREEN:
-                    this.turtle.execute_clearscreen();
-                    break;
-                case Tokenizer.primitives.FORWARD:
-                    this.turtle.execute_forward(arg);
-                    break;
-                case Tokenizer.primitives.HIDETURTLE:
-                    this.turtle.execute_hideturtle();
-                    break;
-                case Tokenizer.primitives.HOME:
-                    this.turtle.execute_home();
-                    break;
-                case Tokenizer.primitives.LABEL:
-                    this.turtle.execute_label(arg);
-                    break;
-                case Tokenizer.primitives.LEFT:
-                    this.turtle.execute_left(arg);
-                    break;                
-                case Tokenizer.primitives.PENDOWN:
-                    this.turtle.execute_pendown();
-                    break;
-                case Tokenizer.primitives.PENUP:
-                    this.turtle.execute_penup();
-                    break;
-                case Tokenizer.primitives.RIGHT:
-                    this.turtle.execute_right(arg);
-                    break;
-                case Tokenizer.primitives.SETBACKGROUND:
-                    this.turtle.execute_setbackground(this.getColor(arg));
-                    break;
-                case Tokenizer.primitives.SETHEADING:
-                    this.turtle.execute_setheading(arg);
-                    break;
-                case Tokenizer.primitives.SETLABELHEIGHT:
-                    this.turtle.execute_setlabelheight(arg);
-                    break;
-                case Tokenizer.primitives.SETPENCOLOR:
-                    this.turtle.execute_setpencolor(this.getColor(arg));
-                    break;
-                case Tokenizer.primitives.SETPENSIZE:
-                    this.turtle.execute_setpensize(arg);
-                    break;
-                case Tokenizer.primitives.SHOWTURTLE:
-                    this.turtle.execute_showturtle();
-                    break;
-            }
-        });
-    }
-    clear() {
-        this.setEditor("");
-        this.setStatusBar("");
-        this.turtle.execute_clearscreen();
-    }
-    getColor(value = 0) {
-        if (value < 0 || value > Interpreter.colors.length) {
-            // TODO Error if color not found or if we find more than one, this will be an interpreter error, not a
-            // parser error, maybe send colors as parameter in parser, so the parser has a copy of them?
-        }        
-        return Interpreter.colors[value].color;
-    }
-    getLatestScriptRun() {  
-        return localStorage.getItem(this.storageKey) ?? "";
-    }
-    populateExamples(dropdownId, language, title, examples) {
-        let select = document.getElementById(dropdownId);
-
-        select.removeEventListener('change', this);
-
-        while (select.options.length > 0) {
-            select.remove(0);
-        }
-
-        let titleOption = document.createElement('option');
-        titleOption.value = title;
-        titleOption.text = title;
-        titleOption.disabled = true;
-        titleOption.selected = true;
-        select.appendChild(titleOption);
-
-        examples.forEach(example => {
-            let option = document.createElement('option');
-            option.value = example.name;
-            option.text = example.name;
-            select.appendChild(option);
-        });
-
-        select.addEventListener('change', (event) => {
-            let example = examples.find(ex => ex.name === event.target.value);
-            if (example !== undefined) {
-                let code = example.code.join('\n');
-                this.setEditor(code);
-            }
-        });        
-    }
-    saveLatestScriptRun(script) {
-        localStorage.setItem(this.storageKey, script);
-    }
-    setEditor(text) {
-        this.editor.value = text;
-        this.editor.focus();
-    }
-    setStatusBar(message) {
-        this.statusbar.innerText = message;
-    }
-    setLocalizedStorageKey(language = "") {
-        this.storageKey = this.storageKeyPrefix + "-" + language;
-    }
-    setUI(examplesDropdownId, languageDropdownId) {
-        let select = document.getElementById(languageDropdownId);
-        select.addEventListener('change', (event) => {
-            let selectedLanguage = event.target.value;
-
-            this.setLocalizedStorageKey(selectedLanguage);
-
-            this.locale = this.i18n[selectedLanguage];
-            
-            this.locale.UI.forEach(uiElement => {
-                let control = document.getElementById(uiElement.id);
-                switch(control.type) {
-                    case "button":
-                        control.innerText = uiElement.text;
-                        break;
-                    case "select-one":
-                        let title = uiElement.text;
-                        let examples = this.locale.examples;
-                        this.populateExamples(examplesDropdownId, selectedLanguage, title, examples);
-                        break;
-                }
-            });
-            this.tokenizer = new Tokenizer(this.locale.primitiveAliases);
-            this.clear();
-            this.setEditor(this.getLatestScriptRun());
-        });
-
-        this.triggerChange(select); // To populate it for the first time
-
-        this.setEditor(this.getLatestScriptRun());
-    }
-    triggerChange(element) {
-        let changeEvent = new Event('change');
-        element.dispatchEvent(changeEvent);
-    }
-    stop() {
-        this.parser.stopParsing();
-    }
-    run() {
-        let script = this.editor.value;
-        this.setStatusBar("");
-        this.saveLatestScriptRun(script);
-        let tokens = this.tokenizer.tokenize(script);
-        this.parser.parse(tokens);
-    }
-}
-
+//
+//      ██████   █████  ██████  ███████ ███████ ██████  
+//      ██   ██ ██   ██ ██   ██ ██      ██      ██   ██ 
+//      ██████  ███████ ██████  ███████ █████   ██████  
+//      ██      ██   ██ ██   ██      ██ ██      ██   ██ 
+//      ██      ██   ██ ██   ██ ███████ ███████ ██   ██
+//
 class Parser {
     static errors = {
         "NONE": 0,
@@ -743,221 +693,13 @@ class Parser {
         this.stopParsingRequested = true;
     }
 }
-class Token {
-    constructor(startIndex = 0, text = "", tokenType = Tokenizer.tokenTypes.NONE, primitive = Tokenizer.primitives.NONE) {
-        this.startIndex = startIndex;
-        this.text = text;
-        this.endIndex = startIndex + text.length - 1;
-        this.tokenType = tokenType;
-        this.primitive = primitive;
-    }
-    getKey = (value, jsonObject) => Object.keys(jsonObject).find(key => jsonObject[key] === value);
-    get[Symbol.toStringTag]() {
-        let tokenTypeKey = this.getKey(this.tokenType, Tokenizer.tokenTypes);
-        let primitiveKey = this.getKey(this.primitive, Tokenizer.primitives);
-
-        let paddedStartIndex = this.startIndex.toString().padStart(3, '0');
-        let paddedEndIndex = this.endIndex.toString().padStart(3, '0');
-
-        let tokenWithEscapedCharacters = this.text !== "\n" ? this.text : "\\n";
-
-        return `Token (${paddedStartIndex}-${paddedEndIndex}) "${tokenWithEscapedCharacters}" ${tokenTypeKey} {${primitiveKey}}`;
-    }
-}
-
-class Tokenizer {
-    static delimiters = {
-        "OPENING_BRACKET": "[",
-        "CLOSING_BRACKET": "]",
-        "PLUS": "+",
-        "MINUS": "-",
-        "MULTIPLIEDBY": "*",
-        "DIVIDEDBY": "/",
-        "GREATERTHAN": ">",
-        "LESSERTHAN": "<"
-    };
-    static primitives = {
-        "NONE": 0,
-        "BACK": 1,
-        "CLEAN": 2, 
-        "CLEARSCREEN": 3,
-        "END": 4,
-        "FORWARD": 5,
-        "HIDETURTLE": 6,
-        "HOME": 7,
-        "IF": 8,
-        "LABEL": 9,
-        "LEFT": 10,
-        "PENDOWN": 11,
-        "PENUP": 12,
-        "REPEAT": 13,
-        "RIGHT": 14,
-        "SETBACKGROUND": 15,
-        "SETHEADING": 16,
-        "SETLABELHEIGHT": 17,
-        "SETPENCOLOR": 18,
-        "SETPENSIZE": 19,
-        "SHOWTURTLE": 20,
-        "STOP": 21,
-        "TO": 22,
-        "WAIT": 23
-    };
-    static tokenTypes = {
-        "NONE": 0,
-        "DELIMITER": 1,
-        "NUMBER": 2,
-        "PRIMITIVE": 3,
-        "VARIABLE": 4,
-        "TEXT": 5,
-        "PROCEDURE_NAME": 6,
-        "END_OF_TOKEN_STREAM": 7,
-        "UNKNOWN_TOKEN": 8,
-    };    
-    LF = "\n";
-    NUL = "\0";
-    TEXT_PREFIX = '"';
-    VARIABLE_PREFIX = ":";
-    
-    constructor(primitiveAliases = []) {
-        this.aliases = this.populatePrimitiveAliasesDictionary(primitiveAliases);
-    }
-    getNextCharacter() {
-        this.currentIndex++;
-        if (this.currentIndex < this.script.length) {
-            this.currentCharacter = this.script[this.currentIndex];
-        } else {
-            this.currentCharacter = this.NUL;
-        }
-        //console.log(`Current character: ${this.currentIndex.toString().padStart(2, '0')} - ${this.currentCharacter}`);
-    }
-    getPrimitive(primitiveAlias = "") {
-        let key = this.aliases[primitiveAlias.toLowerCase()];
-        let primitive = Tokenizer.primitives[key] ?? Tokenizer.primitives.NONE;
-        return primitive;
-    }
-    initialize(script) {
-        this.script = script;
-        this.tokens = [];
-        this.currentIndex = -1; // So when we get the first character, it will be script[0]
-        this.currentCharacter = '';
-    }
-    isDelimiter(c) {
-        return Object.values(Tokenizer.delimiters).includes(c);
-    }
-    isEndOfFile(c) {
-        return c === this.NUL;
-    }
-    isLetter(c) {
-        return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".indexOf(c) !== -1;
-    }
-    isNewLine(c) {
-        return this.LF.indexOf(c) !== -1;
-    }
-    isNumber(c) {
-        return "0123456789".indexOf(c) !== -1;
-    }
-    isTextPrefix(c) {
-        return c === this.TEXT_PREFIX;
-    }
-    isVariablePrefix(c) {
-        return c === this.VARIABLE_PREFIX;
-    }
-    isWhiteSpace(c) {
-        return c === " " || c === "\t";
-    }
-    populatePrimitiveAliasesDictionary(primitiveAliases = []) {
-        let dictionary = {};
-        primitiveAliases.forEach(item => {
-          item.aliases.forEach(alias => {
-            dictionary[alias] = item.primitive;
-          });
-        });
-        return dictionary;
-      }
-    putBackCharacter() {
-        this.currentIndex--;
-        this.currentCharacter = this.script[this.currentIndex];
-    }
-    tokenize(script = "") {
-        this.initialize(script);
-
-        do {
-            this.getNextCharacter();
-            if (this.isWhiteSpace(this.currentCharacter)) {
-                this.getNextCharacter();
-                while (this.isWhiteSpace(this.currentCharacter)) {
-                    this.getNextCharacter();
-                }
-                this.putBackCharacter();
-            } else if (this.isNewLine(this.currentCharacter)) {
-                let token = new Token(this.currentIndex, this.currentCharacter, Tokenizer.tokenTypes.DELIMITER);
-                this.tokens.push(token);
-            } else if (this.isDelimiter(this.currentCharacter)) {
-                let token = new Token(this.currentIndex, this.currentCharacter, Tokenizer.tokenTypes.DELIMITER);
-                this.tokens.push(token);
-            } else if (this.isNumber(this.currentCharacter)) {
-                let number = this.currentCharacter;
-                let startIndex = this.currentIndex;
-                this.getNextCharacter();
-                while (this.isNumber(this.currentCharacter)) {
-                    number += this.currentCharacter;
-                    this.getNextCharacter();
-                }
-                let token = new Token(startIndex, number, Tokenizer.tokenTypes.NUMBER);
-                this.tokens.push(token);
-                this.putBackCharacter();
-            } else if (this.isLetter(this.currentCharacter)) {
-                let word = this.currentCharacter;
-                let startIndex = this.currentIndex;
-                this.getNextCharacter();
-                while (this.isLetter(this.currentCharacter)) {
-                    word += this.currentCharacter;
-                    this.getNextCharacter();
-                }
-                this.putBackCharacter();
-                let primitive = this.getPrimitive(word);
-                if (primitive === Tokenizer.primitives.NONE) {
-                    let token = new Token(startIndex, word, Tokenizer.tokenTypes.PROCEDURE_NAME, primitive);
-                    this.tokens.push(token);
-                } else {
-                    let token = new Token(startIndex, word, Tokenizer.tokenTypes.PRIMITIVE, primitive);
-                    this.tokens.push(token);
-                }
-            } else if (this.isVariablePrefix(this.currentCharacter)) {
-                let variable = this.currentCharacter;
-                let startIndex = this.currentIndex;
-                this.getNextCharacter();
-                while (this.isLetter(this.currentCharacter)) {
-                    variable += this.currentCharacter;
-                    this.getNextCharacter();
-                }
-                this.putBackCharacter();
-                let token = new Token(startIndex, variable, Tokenizer.tokenTypes.VARIABLE);
-                this.tokens.push(token);
-            } else if (this.isTextPrefix(this.currentCharacter)) {
-                this.getNextCharacter();
-                let text = "";
-                let startIndex = this.currentIndex;
-                while (!this.isNewLine(this.currentCharacter) && !(this.isEndOfFile(this.currentCharacter))) {
-                    text += this.currentCharacter;
-                    this.getNextCharacter();
-                }
-                this.putBackCharacter();
-                let token = new Token(startIndex, text, Tokenizer.tokenTypes.TEXT);
-                this.tokens.push(token);
-            } else {
-                if (!this.isEndOfFile(this.currentCharacter)) {
-                    let startIndex = this.currentIndex;
-                    let token = new Token(startIndex, this.currentCharacter, Tokenizer.tokenTypes.UNKNOWN_TOKEN);
-                    this.tokens.push(token);                    
-                }
-            }
-        } while (!this.isEndOfFile(this.currentCharacter))
-
-        return this.tokens;
-    }
-}
-
+//
+//      ████████ ██    ██ ██████  ████████ ██      ███████ 
+//         ██    ██    ██ ██   ██    ██    ██      ██      
+//         ██    ██    ██ ██████     ██    ██      █████   
+//         ██    ██    ██ ██   ██    ██    ██      ██      
+//         ██     ██████  ██   ██    ██    ███████ ███████
+//
 class Turtle {
     defaults = {
         isPenDown: true,
@@ -1161,6 +903,305 @@ class Turtle {
         this.y = y;
     }
 }
+//
+//      ██ ███    ██ ████████ ███████ ██████  ██████  ██████  ███████ ████████ ███████ ██████  
+//      ██ ████   ██    ██    ██      ██   ██ ██   ██ ██   ██ ██         ██    ██      ██   ██ 
+//      ██ ██ ██  ██    ██    █████   ██████  ██████  ██████  █████      ██    █████   ██████  
+//      ██ ██  ██ ██    ██    ██      ██   ██ ██      ██   ██ ██         ██    ██      ██   ██ 
+//      ██ ██   ████    ██    ███████ ██   ██ ██      ██   ██ ███████    ██    ███████ ██   ██
+//
+class Interpreter {
+    // Color names taken from Berkely LOGO 6.1 manual
+    // Colors taken from css colors, except Grey which matches our grey background
+    // The values are the index in the array 0..15
+    static colors = [
+        {   "name": "black",
+            "color": "#000000"
+        },
+        {
+            "name": "blue",
+            "color": "#0000FF"
+        },
+        {
+            "name": "green",
+            "color": "#008000"
+        },
+        {
+            "name": "cyan",
+            "color": "#00FFFF"
+        },
+        {
+            "name": "red",
+            "color": "#FF0000"
+        },
+        {
+            "name": "magenta",
+            "color": "#FF00FF"
+        },
+        {
+            "name": "yellow",
+            "color": "#FFFF00"
+        },
+        {
+            "name": "white",
+            "color": "#FFFFFF"
+        },
+        {
+            "name": "brown",
+            "color": "#A52A2A"
+        },
+        {
+            "name": "tan",
+            "color": "#D2B48C"
+        },
+        {
+            "name": "forest",
+            "color": "#228B22" // ForestGreen in css
+        },
+        {
+            "name": "aqua",
+            "color": "#00FFFF" // Same as cyan in css
+        },
+        {
+            "name": "salmon",
+            "color": "#FA8072"
+        },
+        {
+            "name": "purple",
+            "color": "#800080"
+        },
+        {
+            "name": "orange",
+            "color": "#FFA500"
+        },
+        {
+            "name": "grey",
+            "color": "#E8E8E8" // Different than css, this one matches our background color
+        }
+    ];
+    constructor(editorId, canvasId, statusBarId, examplesDropdownId, languageDropdownId, i18n, defaultLanguage) {
+        
+        this.storageKeyPrefix = "oliverius_logo";
+        this.setLocalizedStorageKey(defaultLanguage);
+
+        this.i18n = i18n;
+        this.locale = this.i18n[defaultLanguage];
+
+        this.editor = document.getElementById(editorId);
+        this.canvas = document.getElementById(canvasId);
+        this.statusbar = document.getElementById(statusBarId);
+        this.turtle = new Turtle(this.canvas);
+        this.tokenizer = new Tokenizer(this.locale.primitiveAliases);
+        this.parser = new Parser();
+
+        runTokenizerTests(i18n);
+        runParserTests(Tokenizer, Parser, i18n);
+
+        this.setUI(examplesDropdownId, languageDropdownId);
+        
+        this.addWindowEventListeners();
+    }
+    addWindowEventListeners() {
+        window.addEventListener(Parser.events.errorEvent.name, e => {  
+            let message = "";
+            switch (e.detail.errorCode) {                        
+                case Parser.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET:
+                    message = this.locale.errors.CODEBLOCK_EXPECTED_OPENING_BRACKET;
+                    break;
+                case Parser.errors.EXPECTED_NUMBER_OR_VARIABLE:
+                    message = this.locale.errors.EXPECTED_NUMBER_OR_VARIABLE;
+                    message = message.replace("{0}", e.detail.args[0]);
+                    break;
+                case Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW:
+                    message = this.locale.errors.PROCEDURE_CALL_STACK_OVERFLOW;
+                    message = message.replace("{0}", e.detail.args[0]);
+                    break;
+                case Parser.errors.PROCEDURE_NOT_DEFINED:
+                    message = this.locale.errors.PROCEDURE_NOT_DEFINED;
+                    message = message.replace("{0}", e.detail.args[0]);
+                    break;
+                case Parser.errors.UNKNOWN_TOKEN_FOUND:
+                    message = this.locale.errors.UNKNOWN_TOKEN_FOUND;
+                    message = message.replace("{0}", e.detail.args[0]);
+                    break;
+                case Parser.errors.UNMATCHED_CLOSING_BRACKET:
+                    message = this.locale.errors.UNMATCHED_CLOSING_BRACKET;
+                    break;
+            }
+            this.setStatusBar(message);
+            this.stop();
+        });
+        window.addEventListener(Parser.events.logEvent.name, e => {
+            console.log(`%c${e.detail.message}`, "color:blue");
+        });
+        window.addEventListener(Parser.events.statusEvent.name, e => {
+            if (e.detail.status === Parser.events.statusEvent.values.END_PARSING) {
+                this.editor.focus();
+            }
+        });
+        window.addEventListener(Parser.events.turtleDrawingEvent.name, e => {
+            let arg = e.detail.arg;
+            switch (e.detail.primitive) {
+                case Tokenizer.primitives.BACK:
+                    this.turtle.execute_back(arg);
+                    break;
+                case Tokenizer.primitives.CLEAN:
+                    this.turtle.execute_clean();
+                    break;
+                case Tokenizer.primitives.CLEARSCREEN:
+                    this.turtle.execute_clearscreen();
+                    break;
+                case Tokenizer.primitives.FORWARD:
+                    this.turtle.execute_forward(arg);
+                    break;
+                case Tokenizer.primitives.HIDETURTLE:
+                    this.turtle.execute_hideturtle();
+                    break;
+                case Tokenizer.primitives.HOME:
+                    this.turtle.execute_home();
+                    break;
+                case Tokenizer.primitives.LABEL:
+                    this.turtle.execute_label(arg);
+                    break;
+                case Tokenizer.primitives.LEFT:
+                    this.turtle.execute_left(arg);
+                    break;                
+                case Tokenizer.primitives.PENDOWN:
+                    this.turtle.execute_pendown();
+                    break;
+                case Tokenizer.primitives.PENUP:
+                    this.turtle.execute_penup();
+                    break;
+                case Tokenizer.primitives.RIGHT:
+                    this.turtle.execute_right(arg);
+                    break;
+                case Tokenizer.primitives.SETBACKGROUND:
+                    this.turtle.execute_setbackground(this.getColor(arg));
+                    break;
+                case Tokenizer.primitives.SETHEADING:
+                    this.turtle.execute_setheading(arg);
+                    break;
+                case Tokenizer.primitives.SETLABELHEIGHT:
+                    this.turtle.execute_setlabelheight(arg);
+                    break;
+                case Tokenizer.primitives.SETPENCOLOR:
+                    this.turtle.execute_setpencolor(this.getColor(arg));
+                    break;
+                case Tokenizer.primitives.SETPENSIZE:
+                    this.turtle.execute_setpensize(arg);
+                    break;
+                case Tokenizer.primitives.SHOWTURTLE:
+                    this.turtle.execute_showturtle();
+                    break;
+            }
+        });
+    }
+    clear() {
+        this.setEditor("");
+        this.setStatusBar("");
+        this.turtle.execute_clearscreen();
+    }
+    getColor(value = 0) {
+        if (value < 0 || value > Interpreter.colors.length) {
+            // TODO Error if color not found or if we find more than one, this will be an interpreter error, not a
+            // parser error, maybe send colors as parameter in parser, so the parser has a copy of them?
+        }        
+        return Interpreter.colors[value].color;
+    }
+    getLatestScriptRun() {  
+        return localStorage.getItem(this.storageKey) ?? "";
+    }
+    populateExamples(dropdownId, language, title, examples) {
+        let select = document.getElementById(dropdownId);
+
+        select.removeEventListener('change', this);
+
+        while (select.options.length > 0) {
+            select.remove(0);
+        }
+
+        let titleOption = document.createElement('option');
+        titleOption.value = title;
+        titleOption.text = title;
+        titleOption.disabled = true;
+        titleOption.selected = true;
+        select.appendChild(titleOption);
+
+        examples.forEach(example => {
+            let option = document.createElement('option');
+            option.value = example.name;
+            option.text = example.name;
+            select.appendChild(option);
+        });
+
+        select.addEventListener('change', (event) => {
+            let example = examples.find(ex => ex.name === event.target.value);
+            if (example !== undefined) {
+                let code = example.code.join('\n');
+                this.setEditor(code);
+            }
+        });        
+    }
+    saveLatestScriptRun(script) {
+        localStorage.setItem(this.storageKey, script);
+    }
+    setEditor(text) {
+        this.editor.value = text;
+        this.editor.focus();
+    }
+    setStatusBar(message) {
+        this.statusbar.innerText = message;
+    }
+    setLocalizedStorageKey(language = "") {
+        this.storageKey = this.storageKeyPrefix + "-" + language;
+    }
+    setUI(examplesDropdownId, languageDropdownId) {
+        let select = document.getElementById(languageDropdownId);
+        select.addEventListener('change', (event) => {
+            let selectedLanguage = event.target.value;
+
+            this.setLocalizedStorageKey(selectedLanguage);
+
+            this.locale = this.i18n[selectedLanguage];
+            
+            this.locale.UI.forEach(uiElement => {
+                let control = document.getElementById(uiElement.id);
+                switch(control.type) {
+                    case "button":
+                        control.innerText = uiElement.text;
+                        break;
+                    case "select-one":
+                        let title = uiElement.text;
+                        let examples = this.locale.examples;
+                        this.populateExamples(examplesDropdownId, selectedLanguage, title, examples);
+                        break;
+                }
+            });
+            this.tokenizer = new Tokenizer(this.locale.primitiveAliases);
+            this.clear();
+            this.setEditor(this.getLatestScriptRun());
+        });
+
+        this.triggerChange(select); // To populate it for the first time
+
+        this.setEditor(this.getLatestScriptRun());
+    }
+    triggerChange(element) {
+        let changeEvent = new Event('change');
+        element.dispatchEvent(changeEvent);
+    }
+    stop() {
+        this.parser.stopParsing();
+    }
+    run() {
+        let script = this.editor.value;
+        this.setStatusBar("");
+        this.saveLatestScriptRun(script);
+        let tokens = this.tokenizer.tokenize(script);
+        this.parser.parse(tokens);
+    }
+}
+
 const interpreter = new Interpreter(
     'logo-editor',
     'logo-graphics',
