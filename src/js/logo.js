@@ -78,7 +78,8 @@ class Interpreter {
     ];
     constructor(editorId, canvasId, statusBarId, examplesDropdownId, languageDropdownId, i18n, defaultLanguage) {
         
-        this.storageKey = "oliverius_logo";
+        this.storageKeyPrefix = "oliverius_logo";
+        this.setLocalizedStorageKey(defaultLanguage);
 
         this.i18n = i18n;
         this.locale = this.i18n[defaultLanguage];
@@ -198,7 +199,7 @@ class Interpreter {
         }        
         return Interpreter.colors[value].color;
     }
-    getLatestScriptRun() {        
+    getLatestScriptRun() {  
         return localStorage.getItem(this.storageKey) ?? "";
     }
     populateExamples(dropdownId, language, title, examples) {
@@ -242,10 +243,15 @@ class Interpreter {
     setStatusBar(message) {
         this.statusbar.innerText = message;
     }
+    setLocalizedStorageKey(language = "") {
+        this.storageKey = this.storageKeyPrefix + "-" + language;
+    }
     setUI(examplesDropdownId, languageDropdownId) {
         let select = document.getElementById(languageDropdownId);
         select.addEventListener('change', (event) => {
             let selectedLanguage = event.target.value;
+
+            this.setLocalizedStorageKey(selectedLanguage);
 
             this.locale = this.i18n[selectedLanguage];
             
@@ -264,6 +270,7 @@ class Interpreter {
             });
             this.tokenizer = new Tokenizer(this.locale.primitiveAliases);
             this.clear();
+            this.setEditor(this.getLatestScriptRun());
         });
 
         this.triggerChange(select); // To populate it for the first time
