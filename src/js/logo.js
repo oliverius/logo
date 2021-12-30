@@ -285,7 +285,7 @@ class Parser {
     assignVariable(variableName) {        
         let item = this.peekLastProcedureCallStackItem();
         let inputs = item.inputs;
-        let input  = inputs.find(i => i.name === variableName);        
+        let input = inputs.find(i => i.name === variableName);        
         let value = parseInt(input.value);
         return value;
     }
@@ -701,12 +701,81 @@ class Parser {
 //         ██     ██████  ██   ██    ██    ███████ ███████
 //
 class Turtle {
+    // Color names taken from Berkely LOGO 6.1 manual
+    // Colors taken from css colors, except Grey which matches our grey background
+    // The values are the indexes in the array 0..15
+    static colors = [
+        {
+            "name": "black",
+            "color": "#000000"
+        },
+        {
+            "name": "blue",
+            "color": "#0000FF"
+        },
+        {
+            "name": "green",
+            "color": "#008000"
+        },
+        {
+            "name": "cyan",
+            "color": "#00FFFF"
+        },
+        {
+            "name": "red",
+            "color": "#FF0000"
+        },
+        {
+            "name": "magenta",
+            "color": "#FF00FF"
+        },
+        {
+            "name": "yellow",
+            "color": "#FFFF00"
+        },
+        {
+            "name": "white",
+            "color": "#FFFFFF"
+        },
+        {
+            "name": "brown",
+            "color": "#A52A2A"
+        },
+        {
+            "name": "tan",
+            "color": "#D2B48C"
+        },
+        {
+            "name": "forest",
+            "color": "#228B22" // ForestGreen in css
+        },
+        {
+            "name": "aqua",
+            "color": "#00FFFF" // Same as cyan in css
+        },
+        {
+            "name": "salmon",
+            "color": "#FA8072"
+        },
+        {
+            "name": "purple",
+            "color": "#800080"
+        },
+        {
+            "name": "orange",
+            "color": "#FFA500"
+        },
+        {
+            "name": "grey",
+            "color": "#E8E8E8" // Different than css, this one matches our background color
+        }
+    ];
     defaults = {
         isPenDown: true,
         isTurtleVisible: true,
-        backgroundColor: "#E8E8E8", // light grey
+        backgroundColorIndex: 15, // light grey
         fontSize: 20,
-        penColor: "#000000",        // black
+        penColorIndex: 0,         // black
         penSize: 1
     };
 
@@ -778,7 +847,7 @@ class Turtle {
     }
     execute_clean() {
         this.deleteGraphics();
-        this.execute_setbackground(this.state.backgroundColor);
+        this.execute_setbackground(this.state.backgroundColorIndex);
         this.renderFrame();
     }
     execute_clearscreen() {
@@ -805,7 +874,7 @@ class Turtle {
             this.drawingCtx.beginPath();
             this.drawingCtx.moveTo(this.x, this.y);
             this.drawingCtx.lineTo(x1, y1);
-            this.drawingCtx.strokeStyle = this.state.penColor;
+            this.drawingCtx.strokeStyle = this.getColor(this.state.penColorIndex);
             this.drawingCtx.stroke();
         }
         this.updateTurtlePosition(x1, y1);
@@ -839,7 +908,7 @@ class Turtle {
         this.drawingCtx.translate(-this.x, -this.y);
 
         this.drawingCtx.textAlign = "center";
-        this.drawingCtx.fillStyle = this.state.penColor;      
+        this.drawingCtx.fillStyle = this.getColor(this.state.penColorIndex);
         this.drawingCtx.fillText(text, this.x, this.y);
 
         this.drawingCtx.restore();
@@ -864,9 +933,9 @@ class Turtle {
         this.drawTurtle();
         this.renderFrame();
     }
-    execute_setbackground(color = "") {
-        this.state.backgroundColor = color;
-        this.drawingCtx.fillStyle = this.state.backgroundColor;
+    execute_setbackground(colorIndex = 0) {
+        this.state.backgroundColorIndex = colorIndex;
+        this.drawingCtx.fillStyle = this.getColor(this.state.backgroundColorIndex);
         this.drawingCtx.fillRect(0, 0, this.width, this.height);
         this.renderFrame();
     }
@@ -876,8 +945,8 @@ class Turtle {
     execute_setlabelheight(height = this.defaults.fontSize) {
         this.state.fontSize = height;
     }
-    execute_setpencolor(color = "") {
-        this.state.penColor = color;
+    execute_setpencolor(colorIndex = 0) {
+        this.state.penColorIndex = colorIndex;
     }
     execute_setpensize(size = this.defaults.penSize) {
         this.state.penSize = size;
@@ -889,6 +958,14 @@ class Turtle {
         this.deleteTurtle();
         this.drawTurtle();
         this.renderFrame();
+    }
+    getColor(colorIndex = 0) {
+        if (colorIndex < 0 || colorIndex > Turtle.colors.length) {
+            // It is easier to just paint black (color 0)
+            // than to raise an error
+            colorIndex = 0;
+        }
+        return Turtle.colors[colorIndex].color;
     }
     increaseTurtleHeading(deg = 0) {
         this.heading += deg;
@@ -911,74 +988,6 @@ class Turtle {
 //      ██ ██   ████    ██    ███████ ██   ██ ██      ██   ██ ███████    ██    ███████ ██   ██
 //
 class Interpreter {
-    // Color names taken from Berkely LOGO 6.1 manual
-    // Colors taken from css colors, except Grey which matches our grey background
-    // The values are the index in the array 0..15
-    static colors = [
-        {   "name": "black",
-            "color": "#000000"
-        },
-        {
-            "name": "blue",
-            "color": "#0000FF"
-        },
-        {
-            "name": "green",
-            "color": "#008000"
-        },
-        {
-            "name": "cyan",
-            "color": "#00FFFF"
-        },
-        {
-            "name": "red",
-            "color": "#FF0000"
-        },
-        {
-            "name": "magenta",
-            "color": "#FF00FF"
-        },
-        {
-            "name": "yellow",
-            "color": "#FFFF00"
-        },
-        {
-            "name": "white",
-            "color": "#FFFFFF"
-        },
-        {
-            "name": "brown",
-            "color": "#A52A2A"
-        },
-        {
-            "name": "tan",
-            "color": "#D2B48C"
-        },
-        {
-            "name": "forest",
-            "color": "#228B22" // ForestGreen in css
-        },
-        {
-            "name": "aqua",
-            "color": "#00FFFF" // Same as cyan in css
-        },
-        {
-            "name": "salmon",
-            "color": "#FA8072"
-        },
-        {
-            "name": "purple",
-            "color": "#800080"
-        },
-        {
-            "name": "orange",
-            "color": "#FFA500"
-        },
-        {
-            "name": "grey",
-            "color": "#E8E8E8" // Different than css, this one matches our background color
-        }
-    ];
     constructor(editorId, canvasId, statusBarId, examplesDropdownId, languageDropdownId, i18n, defaultLanguage) {
         
         this.storageKeyPrefix = "oliverius_logo";
@@ -1076,7 +1085,7 @@ class Interpreter {
                     this.turtle.execute_right(arg);
                     break;
                 case Tokenizer.primitives.SETBACKGROUND:
-                    this.turtle.execute_setbackground(this.getColor(arg));
+                    this.turtle.execute_setbackground(arg);
                     break;
                 case Tokenizer.primitives.SETHEADING:
                     this.turtle.execute_setheading(arg);
@@ -1085,7 +1094,7 @@ class Interpreter {
                     this.turtle.execute_setlabelheight(arg);
                     break;
                 case Tokenizer.primitives.SETPENCOLOR:
-                    this.turtle.execute_setpencolor(this.getColor(arg));
+                    this.turtle.execute_setpencolor(arg);
                     break;
                 case Tokenizer.primitives.SETPENSIZE:
                     this.turtle.execute_setpensize(arg);
@@ -1100,13 +1109,6 @@ class Interpreter {
         this.setEditor("");
         this.setStatusBar("");
         this.turtle.execute_clearscreen();
-    }
-    getColor(value = 0) {
-        if (value < 0 || value > Interpreter.colors.length) {
-            // TODO Error if color not found or if we find more than one, this will be an interpreter error, not a
-            // parser error, maybe send colors as parameter in parser, so the parser has a copy of them?
-        }        
-        return Interpreter.colors[value].color;
     }
     getLatestScriptRun() {  
         return localStorage.getItem(this.storageKey) ?? "";
