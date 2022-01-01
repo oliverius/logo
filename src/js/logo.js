@@ -271,7 +271,9 @@ class Parser {
             "values": {
                 "NONE": 0,
                 "START_PARSING": 1,
-                "END_PARSING": 2
+                "END_PARSING": 2,
+                "START_PAUSE_PARSING": 3,
+                "END_PAUSE_PARSING": 4
             }
         },
         "turtleDrawingEvent": {
@@ -685,9 +687,11 @@ class Parser {
     }
     pauseParsing() {
         this.pauseParsingRequested = true;
+        this.raiseStatusEvent(Parser.events.statusEvent.values.START_PAUSE_PARSING);
     }
     resumeParsing() {
         this.pauseParsingRequested = false;
+        this.raiseStatusEvent(Parser.events.statusEvent.values.END_PAUSE_PARSING);
     }
     stopParsing() {
         this.stopParsingRequested = true;

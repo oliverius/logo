@@ -244,17 +244,19 @@ const i18n = {
                     '  label "💩',
                     "end",
                     "to hexagon :side",
-                    "  repeat 6 [fd :side pooemoji 40 rt 60]",
+                    "  repeat 6 [pooemoji 40 fd :side rt 60]",
                     "end",
                     "to moveleft :length",
                     "  lt 90 pu fd :length pd rt 90",
                     "end",
                     "cs",
+                    "st",
                     "setbg 9",
                     "pooemoji 100",
                     "moveleft 130",
                     "rt 30",
-                    "pu hexagon 130 pd"
+                    "pu hexagon 130 pd",
+                    "ht"
                 ]
             }
         ],
@@ -512,17 +514,19 @@ const i18n = {
                     '  etiqueta "💩',
                     "fin",
                     "para hexagono :lado",
-                    "  repite 6 [av :lado caca 40 gd 60]",
+                    "  repite 6 [caca 40 av :lado gd 60]",
                     "fin",
                     "para mueveizquierda :longitud",
                     "  gi 90 sl av :longitud bl gd 90",
                     "fin",
                     "bp",
+                    "mt",
                     "ponfondo 9",
                     "caca 100",
                     "mueveizquierda 130",
                     "gd 30",
-                    "sl hexagono 130 bl"
+                    "sl hexagono 130 bl",
+                    "ot"
                 ]
             }
         ],
