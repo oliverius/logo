@@ -84,7 +84,7 @@ class Tokenizer {
         "END_OF_TOKEN_STREAM": 7,
         "UNKNOWN_TOKEN": 8,
     };    
-    LF = "\n";
+    static LF = "\n";
     NUL = "\0";
     TEXT_PREFIX = '"';
     VARIABLE_PREFIX = ":";
@@ -122,7 +122,7 @@ class Tokenizer {
         return "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".indexOf(c) !== -1;
     }
     isNewLine(c) {
-        return this.LF.indexOf(c) !== -1;
+        return Tokenizer.LF.indexOf(c) !== -1;
     }
     isNumber(c) {
         return "0123456789".indexOf(c) !== -1;
