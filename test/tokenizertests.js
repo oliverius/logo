@@ -16,12 +16,14 @@ function runTokenizerTests(i18n) {
         }
         return success;
     };
-    let assertTokens = (testName = "", language = "English", script = "", expectedTokens = []) => {
+    let assertTokens = (testName = "", language = "English", script = "", actualTokens = []) => {
         let tokenizer = new Tokenizer(i18n[language].primitiveAliases);
-        
-        let actualTokens = tokenizer.tokenize(script);
 
-        if (expectedTokens.length !== actualTokens.length) {
+        let expectedTokens = tokenizer.tokenize(script);
+        
+        if (actualTokens.length !== expectedTokens.length) {
+            console.table(expectedTokens);
+            console.table(actualTokens);
             throw `TEST "${testName}": Expected and actual have different number of tokens`;
         }
         let success = expectedTokens.every((expectedToken, index) => assertToken(expectedToken, actualTokens[index]));
@@ -60,6 +62,127 @@ function runTokenizerTests(i18n) {
             "English",
             "   ",
             []
+        )
+    );
+    tests.push(
+        assertTokens(
+            'All delimiters',
+            "English",
+            "[ ] + - * / > <",
+            [
+                new Token(0,    "[",        Tokenizer.tokenTypes.DELIMITER, Tokenizer.primitives.NONE),
+                new Token(2,    "]",        Tokenizer.tokenTypes.DELIMITER, Tokenizer.primitives.NONE),
+                new Token(4,    "+",        Tokenizer.tokenTypes.DELIMITER, Tokenizer.primitives.NONE),
+                new Token(6,    "-",        Tokenizer.tokenTypes.DELIMITER, Tokenizer.primitives.NONE),
+                new Token(8,    "*",        Tokenizer.tokenTypes.DELIMITER, Tokenizer.primitives.NONE),
+                new Token(10,   "/",        Tokenizer.tokenTypes.DELIMITER, Tokenizer.primitives.NONE),
+                new Token(12,   ">",        Tokenizer.tokenTypes.DELIMITER, Tokenizer.primitives.NONE),
+                new Token(14,   "<",        Tokenizer.tokenTypes.DELIMITER, Tokenizer.primitives.NONE),
+            ]
+        )
+    );
+    tests.push(
+        assertTokens(
+            'All primitives full and shorthand in English',
+            "English",
+            lines([
+                "back bk clean clearscreen cs end forward fd hideturtle ht home",
+                "if label left lt pendown pd penup pu repeat right rt",
+                "setbackground setbg setheading seth setlabelheight setpencolor setpc",
+                "setpensize showturtle st stop to wait"
+            ]),
+            [
+                new Token(0,    "back",             Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.BACK),
+                new Token(5,    "bk",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.BACK),
+                new Token(8,    "clean",            Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.CLEAN),
+                new Token(14,   "clearscreen",      Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.CLEARSCREEN),
+                new Token(26,   "cs",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.CLEARSCREEN),
+                new Token(29,   "end",              Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.END),
+                new Token(33,   "forward",          Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.FORWARD),
+                new Token(41,   "fd",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.FORWARD),
+                new Token(44,   "hideturtle",       Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.HIDETURTLE),
+                new Token(55,   "ht",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.HIDETURTLE),
+                new Token(58,   "home",             Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.HOME),
+                new Token(62,   Tokenizer.LF,       Tokenizer.tokenTypes.DELIMITER,     Tokenizer.primitives.NONE),
+                new Token(63,   "if",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.IF),
+                new Token(66,   "label",            Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.LABEL),
+                new Token(72,   "left",             Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.LEFT),
+                new Token(77,   "lt",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.LEFT),
+                new Token(80,   "pendown",          Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.PENDOWN),
+                new Token(88,   "pd",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.PENDOWN),
+                new Token(91,   "penup",            Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.PENUP),
+                new Token(97,   "pu",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.PENUP),
+                new Token(100,  "repeat",           Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.REPEAT),
+                new Token(107,  "right",            Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.RIGHT),
+                new Token(113,  "rt",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.RIGHT),
+                new Token(115,  Tokenizer.LF,       Tokenizer.tokenTypes.DELIMITER,     Tokenizer.primitives.NONE),
+                new Token(116,  "setbackground",    Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETBACKGROUND),
+                new Token(130,  "setbg",            Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETBACKGROUND),
+                new Token(136,  "setheading",       Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETHEADING),
+                new Token(147,  "seth",             Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETHEADING),
+                new Token(152,  "setlabelheight",   Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETLABELHEIGHT),
+                new Token(167,  "setpencolor",      Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETPENCOLOR),
+                new Token(179,  "setpc",            Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETPENCOLOR),
+                new Token(184,  Tokenizer.LF,       Tokenizer.tokenTypes.DELIMITER,     Tokenizer.primitives.NONE),
+                new Token(185,  "setpensize",       Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETPENSIZE),
+                new Token(196,  "showturtle",       Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SHOWTURTLE),
+                new Token(207,  "st",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SHOWTURTLE),
+                new Token(210,  "stop",             Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.STOP),
+                new Token(215,  "to",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.TO),
+                new Token(218,  "wait",             Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.WAIT)
+            ]
+        )
+    );
+    tests.push(
+        assertTokens(
+            'All primitives full and shorthand in Spanish',
+            "Spanish",
+            lines([
+                "retrocede re limpia borrapantalla bp fin avanza av ocultatortuga ot centro",
+                "si etiqueta giraizquierda gi bajalapiz bl subelapiz sl repite giraderecha gd",
+                "ponfondo ponrumbo ponr ponfuente poncolorlapiz poncl",
+                "pongrosor pong muestratortuga mt alto para espera"
+            ]),
+            [
+                new Token(0,    "retrocede",        Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.BACK),
+                new Token(10,   "re",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.BACK),
+                new Token(13,   "limpia",           Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.CLEAN),
+                new Token(20,   "borrapantalla",    Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.CLEARSCREEN),
+                new Token(34,   "bp",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.CLEARSCREEN),
+                new Token(37,   "fin",              Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.END),
+                new Token(41,   "avanza",           Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.FORWARD),
+                new Token(48,   "av",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.FORWARD),
+                new Token(51,   "ocultatortuga",    Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.HIDETURTLE),
+                new Token(65,   "ot",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.HIDETURTLE),
+                new Token(68,   "centro",           Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.HOME),
+                new Token(74,   Tokenizer.LF,       Tokenizer.tokenTypes.DELIMITER,     Tokenizer.primitives.NONE),
+                new Token(75,   "si",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.IF),
+                new Token(78,   "etiqueta",         Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.LABEL),
+                new Token(87,   "giraizquierda",    Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.LEFT),
+                new Token(101,  "gi",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.LEFT),
+                new Token(104,  "bajalapiz",        Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.PENDOWN),
+                new Token(114,  "bl",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.PENDOWN),
+                new Token(117,  "subelapiz",        Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.PENUP),
+                new Token(127,  "sl",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.PENUP),
+                new Token(130,  "repite",           Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.REPEAT),
+                new Token(137,  "giraderecha",      Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.RIGHT),
+                new Token(149,  "gd",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.RIGHT),
+                new Token(151,  Tokenizer.LF,       Tokenizer.tokenTypes.DELIMITER,     Tokenizer.primitives.NONE),
+                new Token(152,  "ponfondo",         Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETBACKGROUND),
+                new Token(161,  "ponrumbo",         Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETHEADING),
+                new Token(170,  "ponr",             Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETHEADING),
+                new Token(175,  "ponfuente",        Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETLABELHEIGHT),
+                new Token(185,  "poncolorlapiz",    Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETPENCOLOR),
+                new Token(199,  "poncl",            Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETPENCOLOR),
+                new Token(204,  Tokenizer.LF,       Tokenizer.tokenTypes.DELIMITER,     Tokenizer.primitives.NONE),
+                new Token(205,  "pongrosor",        Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETPENSIZE),
+                new Token(215,  "pong",             Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SETPENSIZE),
+                new Token(220,  "muestratortuga",   Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SHOWTURTLE),
+                new Token(235,  "mt",               Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.SHOWTURTLE),
+                new Token(238,  "alto",             Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.STOP),
+                new Token(243,  "para",             Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.TO),
+                new Token(248,  "espera",           Tokenizer.tokenTypes.PRIMITIVE,     Tokenizer.primitives.WAIT)
+            ]
         )
     );
     tests.push(
