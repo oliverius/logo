@@ -313,7 +313,7 @@ const i18n = {
             },
             {
                 "primitive": "PENDOWN",
-                "aliases": [ "bajalapiz", "pd", "bl"]
+                "aliases": [ "bajalapiz", "bl"]
             },
             {
                 "primitive": "PENUP",
