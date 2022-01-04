@@ -99,6 +99,7 @@ const i18n = {
             "EXPECTED_NUMBER_OR_VARIABLE": "Expected a number or a variable and instead we have: {0}",
             "PROCEDURE_CALL_STACK_OVERFLOW": "You have called a procedure more than {0} times and we stop the program",
             "PROCEDURE_NOT_DEFINED": "The procedure {0} hasn't been defined yet before using it",
+            "PROCEDURE_WITHOUT_END_TOKEN": "Last procedure is missing the primitive 'END'",
             "UNKNOWN_TOKEN_FOUND": "Found a symbol '{0}' that wasn't recognized",
             "UNMATCHED_CLOSING_BRACKET": "A closing bracket ] was found without a matching opening bracket [ first"
         },
@@ -368,6 +369,7 @@ const i18n = {
             "EXPECTED_NUMBER_OR_VARIABLE": "Esperábamos un número o una variable y en vez de eso tenemos: {0}",
             "PROCEDURE_CALL_STACK_OVERFLOW": "Has llamado un procedimiento mas de {0} veces y hemos parado el programa",
             "PROCEDURE_NOT_DEFINED": "El procedimiento {0} tiene que ser definido antes de usarlo",
+            "PROCEDURE_WITHOUT_END_TOKEN": "Al último procedimiento le falta la primitiva 'FIN'",
             "UNKNOWN_TOKEN_FOUND": "Hemos encontrado un símbolo '{0}' que no hemos reconocido",
             "UNMATCHED_CLOSING_BRACKET": "Un corchete ] fue encontrado sin encontrar primero un corchete ["
         },

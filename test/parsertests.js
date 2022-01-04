@@ -404,9 +404,21 @@ function runParserTests(Tokenizer, Parser, i18n) {
             "English",
             "fd 2^3",
             [
-                [Tokenizer.primitives.FORWARD, 2]              
+                [Tokenizer.primitives.FORWARD, 2]
             ],
             Parser.errors.UNKNOWN_TOKEN_FOUND
+        )
+    );
+    tests.push(
+        assertScript(
+            "Trigger error PROCEDURE_WITHOUT_END_TOKEN",
+            "English",
+            lines([
+                "to test",
+                "  fd 60"
+            ]),
+            [],
+            Parser.errors.PROCEDURE_WITHOUT_END_TOKEN
         )
     );
     return tests.every(test => test);

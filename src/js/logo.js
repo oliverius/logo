@@ -256,8 +256,9 @@ class Parser {
         "EXPECTED_NUMBER_OR_VARIABLE": 2,
         "PROCEDURE_CALL_STACK_OVERFLOW": 3,
         "PROCEDURE_NOT_DEFINED": 4,
-        "UNKNOWN_TOKEN_FOUND": 5,
-        "UNMATCHED_CLOSING_BRACKET": 6
+        "PROCEDURE_WITHOUT_END_TOKEN": 5,
+        "UNKNOWN_TOKEN_FOUND": 6,
+        "UNMATCHED_CLOSING_BRACKET": 7
     };
     static events = {
         "errorEvent": {
@@ -509,6 +510,9 @@ class Parser {
         this.pauseParsingRequested = false;
         this.stopParsingRequested = false;
     }
+    isEndOfScript() {
+        return this.currentToken.tokenType === Tokenizer.tokenTypes.END_OF_TOKEN_STREAM;
+    }
     jumpToProcedure(name) {
         if (this.procedures[name] !== undefined) {
             if (this.procedureCallStack.length + 1 > this.maxProcedureCallStack) {
@@ -547,8 +551,7 @@ class Parser {
 
         this.parsingLoop = setInterval(() => {
             this.raiseLogEvent("⌛️💓"); // heartbeat
-            if (this.currentToken.tokenType !== Tokenizer.tokenTypes.END_OF_TOKEN_STREAM &&
-                !this.stopParsingRequested) {
+            if (!this.isEndOfScript() && !this.stopParsingRequested) {
                 this.parsingStep();
             } else {
                 clearInterval(this.parsingLoop);
@@ -682,7 +685,13 @@ class Parser {
     }
     skipUntilEndOfProcedure() {
         while (this.currentToken.primitive !== Tokenizer.primitives.END) {
-            this.getNextToken();
+            if (!this.isEndOfScript()) {
+                this.getNextToken();
+            } else {
+                this.stopParsing();
+                this.raiseErrorEvent(Parser.errors.PROCEDURE_WITHOUT_END_TOKEN, []);
+                break;
+            }
         }
     }
     pauseParsing() {
@@ -1032,6 +1041,9 @@ class Interpreter {
                 case Parser.errors.PROCEDURE_NOT_DEFINED:
                     message = this.locale.errors.PROCEDURE_NOT_DEFINED;
                     message = message.replace("{0}", e.detail.args[0]);
+                    break;
+                case Parser.errors.PROCEDURE_WITHOUT_END_TOKEN:
+                    message = this.locale.errors.PROCEDURE_WITHOUT_END_TOKEN;
                     break;
                 case Parser.errors.UNKNOWN_TOKEN_FOUND:
                     message = this.locale.errors.UNKNOWN_TOKEN_FOUND;
