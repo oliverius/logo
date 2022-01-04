@@ -339,31 +339,6 @@ function runParserTests(Tokenizer, Parser, i18n) {
     );
     tests.push(
         assertScript(
-            "Trigger error PROCEDURE_CALL_STACK_OVERFLOW",
-            "English",
-            lines([
-                "to getoverflow",
-                "  getoverflow",
-                "end",
-                "getoverflow"
-            ]),
-            [],
-            Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW
-        )
-    );
-    tests.push(
-        assertScript(
-            "Trigger error UNMATCHED_CLOSING_BRACKET",
-            "English",
-            "fd 60 ]",
-            [
-                [Tokenizer.primitives.FORWARD, 60]
-            ],
-            Parser.errors.UNMATCHED_CLOSING_BRACKET
-        )
-    );
-    tests.push(
-        assertScript(
             "Trigger error CODEBLOCK_EXPECTED_OPENING_BRACKET when missing opening bracket",
             "English",
             "repeat 4 fd 60",
@@ -391,11 +366,37 @@ function runParserTests(Tokenizer, Parser, i18n) {
     );
     tests.push(
         assertScript(
+            "Trigger error PROCEDURE_CALL_STACK_OVERFLOW",
+            "English",
+            lines([
+                "to getoverflow",
+                "  getoverflow",
+                "end",
+                "getoverflow"
+            ]),
+            [],
+            Parser.errors.PROCEDURE_CALL_STACK_OVERFLOW
+        )
+    );
+    tests.push(
+        assertScript(
             "Trigger error PROCEDURE_NOT_DEFINED",
             "English",
             "potato fd 60",
             [],
             Parser.errors.PROCEDURE_NOT_DEFINED
+        )
+    );
+    tests.push(
+        assertScript(
+            "Trigger error PROCEDURE_WITHOUT_END_TOKEN",
+            "English",
+            lines([
+                "to test",
+                "  fd 60"
+            ]),
+            [],
+            Parser.errors.PROCEDURE_WITHOUT_END_TOKEN
         )
     );
     tests.push(
@@ -411,14 +412,13 @@ function runParserTests(Tokenizer, Parser, i18n) {
     );
     tests.push(
         assertScript(
-            "Trigger error PROCEDURE_WITHOUT_END_TOKEN",
+            "Trigger error UNMATCHED_CLOSING_BRACKET",
             "English",
-            lines([
-                "to test",
-                "  fd 60"
-            ]),
-            [],
-            Parser.errors.PROCEDURE_WITHOUT_END_TOKEN
+            "fd 60 ]",
+            [
+                [Tokenizer.primitives.FORWARD, 60]
+            ],
+            Parser.errors.UNMATCHED_CLOSING_BRACKET
         )
     );
     return tests.every(test => test);
