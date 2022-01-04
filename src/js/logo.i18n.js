@@ -94,17 +94,25 @@ const i18n = {
                 "aliases": [ "wait" ]
             }
         ],
+        "errors": {
+            "CODEBLOCK_EXPECTED_OPENING_BRACKET": "Expected opening bracket [ after an 'IF' or 'REPEAT'",
+            "EXPECTED_NUMBER_OR_VARIABLE": "Expected a number or a variable and instead we have: {0}",
+            "PROCEDURE_CALL_STACK_OVERFLOW": "You have called a procedure more than {0} times and we stop the program",
+            "PROCEDURE_NOT_DEFINED": "The procedure {0} hasn't been defined yet before using it",
+            "UNKNOWN_TOKEN_FOUND": "Found a symbol '{0}' that wasn't recognized",
+            "UNMATCHED_CLOSING_BRACKET": "A closing bracket ] was found without a matching opening bracket [ first"
+        },
         "UI": [
             {
-                "id": "run",
+                "id": "logo-run",
                 "text": "Run ▶️"
             },
             {
-                "id": "stop",
+                "id": "logo-stop",
                 "text": "Stop ⏹"
             },
             {
-                "id": "clear",
+                "id": "logo-clear",
                 "text": "Clear ❌"
             },
             {
@@ -255,19 +263,10 @@ const i18n = {
                     "pooemoji 100",
                     "moveleft 130",
                     "rt 30",
-                    "pu hexagon 130 pd",
-                    "ht"
+                    "pu hexagon 130 pd"
                 ]
             }
-        ],
-        "errors": {
-            "CODEBLOCK_EXPECTED_OPENING_BRACKET": "Expected opening bracket [ after an 'IF' or 'REPEAT'",
-            "EXPECTED_NUMBER_OR_VARIABLE": "Expected a number or a variable and instead we have: {0}",
-            "PROCEDURE_CALL_STACK_OVERFLOW": "You have called a procedure more than {0} times and we stop the program",
-            "PROCEDURE_NOT_DEFINED": "The procedure {0} hasn't been defined yet before using it",
-            "UNKNOWN_TOKEN_FOUND": "Found a symbol '{0}' that wasn't recognized",
-            "UNMATCHED_CLOSING_BRACKET": "A closing bracket ] was found without a matching opening bracket [ first"
-        }
+        ]
     },
     "Spanish": {
         "primitiveAliases": [
@@ -364,17 +363,25 @@ const i18n = {
                 "aliases": [ "espera" ]
             }
         ],
+        "errors": {
+            "CODEBLOCK_EXPECTED_OPENING_BRACKET": "Esperábamos un corchete abierto [ en un 'SI' o 'REPITE'",
+            "EXPECTED_NUMBER_OR_VARIABLE": "Esperábamos un número o una variable y en vez de eso tenemos: {0}",
+            "PROCEDURE_CALL_STACK_OVERFLOW": "Has llamado un procedimiento mas de {0} veces y hemos parado el programa",
+            "PROCEDURE_NOT_DEFINED": "El procedimiento {0} tiene que ser definido antes de usarlo",
+            "UNKNOWN_TOKEN_FOUND": "Hemos encontrado un símbolo '{0}' que no hemos reconocido",
+            "UNMATCHED_CLOSING_BRACKET": "Un corchete ] fue encontrado sin encontrar primero un corchete ["
+        },
         "UI": [
             {
-                "id": "run",
+                "id": "logo-run",
                 "text": "Corre ▶️"
             },
             {
-                "id": "stop",
+                "id": "logo-stop",
                 "text": "Para ⏹"
             },
             {
-                "id": "clear",
+                "id": "logo-clear",
                 "text": "Limpia ❌"
             },
             {
@@ -525,18 +532,9 @@ const i18n = {
                     "caca 100",
                     "mueveizquierda 130",
                     "gd 30",
-                    "sl hexagono 130 bl",
-                    "ot"
+                    "sl hexagono 130 bl"
                 ]
             }
-        ],
-        "errors": {
-            "CODEBLOCK_EXPECTED_OPENING_BRACKET": "Esperábamos un corchete abierto [ en un 'SI' o 'REPITE'",
-            "EXPECTED_NUMBER_OR_VARIABLE": "Esperábamos un número o una variable y en vez de eso tenemos: {0}",
-            "PROCEDURE_CALL_STACK_OVERFLOW": "Has llamado un procedimiento mas de {0} veces y hemos parado el programa",
-            "PROCEDURE_NOT_DEFINED": "El procedimiento {0} tiene que ser definido antes de usarlo",
-            "UNKNOWN_TOKEN_FOUND": "Hemos encontrado un símbolo '{0}' que no hemos reconocido",
-            "UNMATCHED_CLOSING_BRACKET": "Un corchete ] fue encontrado sin encontrar primero un corchete ["
-        }
+        ]
     }
 };

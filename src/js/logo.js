@@ -1117,7 +1117,7 @@ class Interpreter {
     getLatestScriptRun() {  
         return localStorage.getItem(this.storageKey) ?? "";
     }
-    populateExamples(dropdownId, language, title, examples) {
+    populateExamples(dropdownId, title, examples) {
         let select = document.getElementById(dropdownId);
 
         select.removeEventListener('change', this);
@@ -1155,6 +1155,9 @@ class Interpreter {
         this.editor.value = text;
         this.editor.focus();
     }
+    setLocale(language = "English") {
+        this.locale = this.i18n[language];
+    }
     setStatusBar(message) {
         this.statusbar.innerText = message;
     }
@@ -1167,8 +1170,7 @@ class Interpreter {
             let selectedLanguage = event.target.value;
 
             this.setLocalizedStorageKey(selectedLanguage);
-
-            this.locale = this.i18n[selectedLanguage];
+            this.setLocale(selectedLanguage);
             
             this.locale.UI.forEach(uiElement => {
                 let control = document.getElementById(uiElement.id);
@@ -1179,7 +1181,7 @@ class Interpreter {
                     case "select-one":
                         let title = uiElement.text;
                         let examples = this.locale.examples;
-                        this.populateExamples(examplesDropdownId, selectedLanguage, title, examples);
+                        this.populateExamples(examplesDropdownId, title, examples);
                         break;
                 }
             });
